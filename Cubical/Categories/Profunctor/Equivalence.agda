@@ -55,52 +55,31 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') (R : C *-[ ℓs ]-o
   isUnivProf*-o : (ℓ : Level) → isUnivalent (PROF*-o C D ℓ)
   isUnivProf*-o ℓ = isUnivalentFUNCTOR (D ^op ×C C) (SET ℓ) (isUnivalentSET)
 
-  isPropProfRepresents : (G : Functor C D) → isProp (ProfRepresents C D R G)
-  isPropProfRepresents G η η' = 
-   NatIso≡ {f = η} {g = η'} (funExt (λ (d , c) → {!refl!}))
-       
+  open isWeakEquivalence
 
-
-  -- TODO not exactuly sure how to build this. Can get paths between
-  -- (LiftF ∘F Functor→Prof*-o C D) G and
-  -- (LiftF ∘F Functor→Prof*-o C D) G'
-  -- Can then maybe use properties of LiftF, Functor→Prof*-o and sigma types
-  -- to get that x and y are path equal? seems like a stretch
-  -- Hope that
-  -- 1. We get G ≡ G' from properties of LiftF and Functor→Prof*-o
-  -- 2. We get p ≡ p' from isPropProfRepresents
-  isPropProfRepresentation : isProp (ProfRepresentation C D R)
-  isPropProfRepresentation (G , p) (G' , p') =
-    Σ≡Prop (λ F → {!!}) {!!}
-  --
-  -- sym (
-  --   CatIsoToPath (isUnivProf*-o _)
-  --   (NatIso→FUNCTORIso (D ^op ×C C) (SET _) (p))
-  -- )
-  --   ∙
-  -- CatIsoToPath (isUnivProf*-o _)
-  -- (NatIso→FUNCTORIso (D ^op ×C C) (SET _) (p'))
-  
-
-  -- this seemingly needs univalence
-  ProfRepresentation≡PshFunctorRepresentation : ProfRepresentation C D R ≡ PshFunctorRepresentation C D R
-  ProfRepresentation≡PshFunctorRepresentation = 
-    ua ({!   !})
-    -- hPropExt 
-    --   {!!} 
-    --   {!!} 
-    --   (ProfRepresentation→PshFunctorRepresentation C D R) 
-    --   (PshFunctorRepresentation→ProfRepresentation C D R)
-
-  
   Psh→Prof→Psh : {C : Category ℓC ℓC'} {D : Category ℓD ℓD'} {R : C *-[ ℓs ]-o D} 
     (Psh : PshFunctorRepresentation C D R) 
       → (ProfRepresentation→PshFunctorRepresentation C D R) 
           ((PshFunctorRepresentation→ProfRepresentation C D R) Psh
           ) ≡ Psh
-  Psh→Prof→Psh {C = C} {D = D} {R = R} (G , η) = 
-    let (G' , η') = (ProfRepresentation→PshFunctorRepresentation C D R) ((PshFunctorRepresentation→ProfRepresentation C D R) (G , η)) in 
-      {!  !}
+  Psh→Prof→Psh {C = C} {D = D} {R = R} (G , η) =
+    let (G' , η') = (ProfRepresentation→PshFunctorRepresentation C D R) ((PshFunctorRepresentation→ProfRepresentation C D R) (G , η))
+    in
+    ΣPathP (refl , (
+      η'
+        ≡⟨ refl ⟩
+      snd (ProfRepresentation→PshFunctorRepresentation C D R (PshFunctorRepresentation→ProfRepresentation C D R (G , η)))
+      -- TODO this refl hangs
+        ≡⟨ {!refl!} ⟩
+      snd (ProfRepresentation→PshFunctorRepresentation C D R (G ,
+      FUNCTORIso→NatIso (D ^op ×C C) (SET _)
+        (liftIso {F = curryFl (D ^op) (SET _) {Γ = C}}
+        (isEquiv→isWeakEquiv (curryFl-isEquivalence (D ^op) (SET _) {Γ = C}) .fullfaith)
+        (NatIso→FUNCTORIso C _ η)
+        )
+    ))
+        ≡⟨ {!!} ⟩
+      η ∎))
 
   PshFunctorRepresentation≅ProfRepresentation : Iso (PshFunctorRepresentation C D R) (ProfRepresentation C D R)
   PshFunctorRepresentation≅ProfRepresentation .Iso.fun = PshFunctorRepresentation→ProfRepresentation C D R
@@ -114,3 +93,8 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') (R : C *-[ ℓs ]-o
         -- f ∎
       -- !})
   PshFunctorRepresentation≅ProfRepresentation .Iso.leftInv = {!!}
+
+
+  ParamUniversalElement≅ParamUnivElt : Iso {ℓ-max (ℓ-max (ℓ-max ℓC ℓD) ℓD') ℓs} (ParamUniversalElement C D R) (ParamUnivElt C D R)
+  ParamUniversalElement≅ParamUnivElt =
+    codomainIsoDep λ c → UniversalElement≅UnivElt D (funcComp R (Id ,F Constant (D ^op) C c))

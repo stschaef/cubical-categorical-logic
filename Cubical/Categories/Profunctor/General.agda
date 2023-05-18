@@ -143,10 +143,16 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') where
     -- Here we provide functions between definitions,
     -- we offload the proofs that these are indeed equivalences to Profunctor.Equivalence
 
+    -- Try to replace the snd of the next term with its own function
+    -- this hangs, while the original will typecheck. Both with ℓs and with _ after "SET"
+    TODOa : {G : Functor C D} → NatIso (LiftF {ℓs}{ℓD'} ∘F R) (LiftF {ℓD'}{ℓs} ∘F Functor→Prof*-o C D G)
+      → NatIso (Prof*-o→Functor C D (LiftF {ℓs}{ℓD'} ∘F R)) (Prof*-o→Functor C D (LiftF {ℓD'}{ℓs} ∘F Functor→Prof*-o C D G))
+    TODOa η = (preservesNatIsosF (curryFl (D ^op) (SET _) {Γ = C}) η)
+
     -- | Definition 1 → Definition 2
     ProfRepresentation→PshFunctorRepresentation : ProfRepresentation → PshFunctorRepresentation
     ProfRepresentation→PshFunctorRepresentation (G , η) = (G ,
-        (preservesNatIsosF (curryFl (D ^op) (SET _)) η)
+        (preservesNatIsosF (curryFl (D ^op) (SET _) {Γ = C}) η)
       )
 
     open isEquivalence
@@ -160,22 +166,22 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') where
         (liftIso {F = curryFl (D ^op) (SET _) {Γ = C}}
         (isEquiv→isWeakEquiv (curryFl-isEquivalence (D ^op) (SET _) {Γ = C}) .fullfaith)
         (NatIso→FUNCTORIso C _ η)
+        -- TODO below hangs but above doesn't. Shouldn't it be cheaper to compute the _ up front?
+        -- (NatIso→FUNCTORIso C (FUNCTOR (D ^op) (SET (ℓ-max ℓD' ℓs))) η)
       ))
 
     open isIso
     open NatTrans
 
-    -- TODO fork Functors.Constant and generalize
+    -- TODO refactor?
     -- | Definition 2 → Definition 3
     PshFunctorRepresentation→ParamUniversalElement : PshFunctorRepresentation → ParamUniversalElement
     PshFunctorRepresentation→ParamUniversalElement (G , η) = (λ c →
       RepresentationToUniversalElement D ( R ∘F (Id {C = D ^op} ,F Constant (D ^op) C c) )
         (G .F-ob c ,
-          NatIso→FUNCTORIso _ _
+          NatIso→FUNCTORIso (D ^op) (SET (ℓ-max ℓD' ℓs))
           (seqNatIso
-            -- due diligence: check that the 2 notions of hom functor agree
-            -- (LiftF ∘ʳi (HomViaProduct G c))
-            (LiftF ∘ʳi
+            (LiftF {ℓD'} {ℓs} ∘ʳi
               (pathToNatIso (
                 (D [-, G .F-ob c ])
                   ≡⟨ sym (HomFunctorPath (G .F-ob c)) ⟩
@@ -190,17 +196,17 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') where
             )
         (seqNatIso
         (seqNatIso
-        (CAT⋆Assoc (Id {C = D ^op} ,F Constant (D ^op) C c) (Functor→Prof*-o C D G) (LiftF))
+        (CAT⋆Assoc (Id {C = D ^op} ,F Constant (D ^op) C c) (Functor→Prof*-o C D G) (LiftF {ℓD'} {ℓs}))
         (
         (Id {C = D ^op} ,F Constant (D ^op) C c) ∘ˡi
           (FUNCTORIso→NatIso (D ^op ×C C) (SET _)
-          (liftIso {F = curryFl (D ^op) (SET _) {Γ = C}}
+            (liftIso {F = curryFl (D ^op) (SET _) {Γ = C}}
             (isEquiv→isWeakEquiv (curryFl-isEquivalence (D ^op) (SET _) {Γ = C}) .fullfaith)
             (NatIso→FUNCTORIso C _ (symNatIso η)))
           )
         ))
         (symNatIso
-        (CAT⋆Assoc (Id {C = D ^op} ,F Constant (D ^op) C c) (R) (LiftF))))) ))
+        (CAT⋆Assoc (Id {C = D ^op} ,F Constant (D ^op) C c) (R) (LiftF {ℓs} {ℓD'}))))) ))
         where
         HomFunctorPath : (d : D .ob) → HomFunctor D ∘F (Id {C = D ^op} ,F Constant (D ^op) D d ) ≡ D [-, d ]
         HomFunctorPath d = Functor≡
