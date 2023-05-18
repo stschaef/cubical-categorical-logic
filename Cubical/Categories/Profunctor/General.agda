@@ -152,23 +152,38 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') where
     -- | Definition 1 → Definition 2
     ProfRepresentation→PshFunctorRepresentation : ProfRepresentation → PshFunctorRepresentation
     ProfRepresentation→PshFunctorRepresentation (G , η) = (G ,
-        (preservesNatIsosF (curryFl (D ^op) (SET _) {Γ = C}) η)
+        -- (preservesNatIsosF (curryFl (D ^op) (SET _) {Γ = C}) η)
+        TODOa η
       )
 
     open isEquivalence
     open NatIso
     open isWeakEquivalence
 
+    TODOb : {G : Functor C D}
+      → NatIso (Prof*-o→Functor C D (LiftF {ℓs}{ℓD'} ∘F R)) (Prof*-o→Functor C D (LiftF {ℓD'}{ℓs} ∘F Functor→Prof*-o C D G))
+      → NatIso (LiftF {ℓs}{ℓD'} ∘F R) (LiftF {ℓD'}{ℓs} ∘F Functor→Prof*-o C D G)
+    TODOb η =
+      FUNCTORIso→NatIso (D ^op ×C C) (SET _)
+        (liftIso {F = curryFl (D ^op) (SET _) {Γ = C}}
+          (isEquiv→isWeakEquiv (curryFl-isEquivalence (D ^op) (SET _) {Γ = C}) .fullfaith)
+          (NatIso→FUNCTORIso C _ η)
+        -- TODO below hangs but above doesn't. Shouldn't it be cheaper to compute the _ up front?
+        -- (NatIso→FUNCTORIso C (FUNCTOR (D ^op) (SET (ℓ-max ℓD' ℓs))) η)
+        )
+
     -- | Definition 2 → Definition 1
     PshFunctorRepresentation→ProfRepresentation : PshFunctorRepresentation → ProfRepresentation
     PshFunctorRepresentation→ProfRepresentation (G , η) = (G ,
-      FUNCTORIso→NatIso (D ^op ×C C) (SET _)
-        (liftIso {F = curryFl (D ^op) (SET _) {Γ = C}}
-        (isEquiv→isWeakEquiv (curryFl-isEquivalence (D ^op) (SET _) {Γ = C}) .fullfaith)
-        (NatIso→FUNCTORIso C _ η)
-        -- TODO below hangs but above doesn't. Shouldn't it be cheaper to compute the _ up front?
-        -- (NatIso→FUNCTORIso C (FUNCTOR (D ^op) (SET (ℓ-max ℓD' ℓs))) η)
-      ))
+      -- FUNCTORIso→NatIso (D ^op ×C C) (SET _)
+      --   (liftIso {F = curryFl (D ^op) (SET _) {Γ = C}}
+      --     (isEquiv→isWeakEquiv (curryFl-isEquivalence (D ^op) (SET _) {Γ = C}) .fullfaith)
+      --     (NatIso→FUNCTORIso C _ η)
+      --   -- TODO below hangs but above doesn't. Shouldn't it be cheaper to compute the _ up front?
+      --   -- (NatIso→FUNCTORIso C (FUNCTOR (D ^op) (SET (ℓ-max ℓD' ℓs))) η)
+      -- )
+      TODOb η
+      )
 
     open isIso
     open NatTrans
