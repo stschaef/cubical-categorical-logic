@@ -2,12 +2,13 @@
   Show equivalence of definitions from Profunctor.General
 -}
 
-{-# OPTIONS --safe #-}
+{-# OPTIONS --safe --lossy-unification #-}
 module Cubical.Categories.Profunctor.Equivalence where
 
 open import Cubical.Categories.Profunctor.General
 open import Cubical.Foundations.Prelude hiding (Path)
 open import Cubical.Foundations.Structure
+open import Cubical.Foundations.Path
 open import Cubical.Foundations.Univalence
 open import Cubical.Foundations.Function renaming (_∘_ to _∘f_)
 
@@ -17,6 +18,7 @@ open import Cubical.Data.Sigma.Properties
 
 open import Cubical.Categories.Category
 open import Cubical.Categories.Functor
+open import Cubical.Categories.Isomorphism
 open import Cubical.Categories.Instances.Functors
 open import Cubical.Categories.NaturalTransformation
 open import Cubical.Categories.Constructions.BinProduct
@@ -47,9 +49,9 @@ open import Cubical.Categories.Presheaf.More
 private
   variable ℓC ℓC' ℓD ℓD' ℓs : Level
 
-module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') (R : C *-[ ℓs ]-o D)
-  (isUnivC : isUnivalent C ) (isUnivD : isUnivalent D) where
+module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') (R : C *-[ ℓs ]-o D) where
 
+<<<<<<< HEAD
   open isUnivalent
 
   isUnivProf*-o : (ℓ : Level) → isUnivalent (PROF*-o C D ℓ)
@@ -98,3 +100,52 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') (R : C *-[ ℓs ]-o
   ParamUniversalElement≅ParamUnivElt : Iso {ℓ-max (ℓ-max (ℓ-max ℓC ℓD) ℓD') ℓs} (ParamUniversalElement C D R) (ParamUnivElt C D R)
   ParamUniversalElement≅ParamUnivElt =
     codomainIsoDep λ c → UniversalElement≅UnivElt D (funcComp R (Id ,F Constant (D ^op) C c))
+=======
+  open Category
+  open NatIso
+  open NatTrans
+  open Functor
+
+  PshFunctorRepresentation≅ProfRepresentation : Iso (PshFunctorRepresentation C D R) (ProfRepresentation C D R)
+  PshFunctorRepresentation≅ProfRepresentation =
+    record {
+      fun = PshFunctorRepresentation→ProfRepresentation C D R;
+      inv = ProfRepresentation→PshFunctorRepresentation C D R;
+      rightInv = Prof→Psh→Prof;
+      leftInv = Psh→Prof→Psh
+    }
+    where
+    Prof→Psh→Prof : (Prof : ProfRepresentation C D R)
+        → (PshFunctorRepresentation→ProfRepresentation C D R)
+          ((ProfRepresentation→PshFunctorRepresentation C D R) Prof
+          ) ≡ Prof
+    Prof→Psh→Prof (G , η) =
+      let (G' , η') = (PshFunctorRepresentation→ProfRepresentation C D R) ((ProfRepresentation→PshFunctorRepresentation C D R) (G , η)) in
+      let G≡G' = Functor≡ (λ _ → refl) (λ _ → refl) in
+        ΣPathP (G≡G' ,
+          makeNatIsoPathP
+            refl
+            (cong′ (λ X → (LiftF ∘F (Functor→Prof*-o C D X))) G≡G')
+            (funExt λ (d , c) →
+              funExt λ _ → refl
+            )
+        )
+    Psh→Prof→Psh : (Psh : PshFunctorRepresentation C D R)
+      → (ProfRepresentation→PshFunctorRepresentation C D R)
+        ((PshFunctorRepresentation→ProfRepresentation C D R) Psh
+        ) ≡ Psh
+    Psh→Prof→Psh (G , η) =
+      let (G' , η') = (ProfRepresentation→PshFunctorRepresentation C D R) ((PshFunctorRepresentation→ProfRepresentation C D R) (G , η)) in
+      let G≡G' = Functor≡ (λ _ → refl) (λ _ → refl) in
+          ΣPathP (G≡G' ,
+            makeNatIsoPathP refl (cong′ (λ X → (Prof*-o→Functor C D) (LiftF ∘F (Functor→Prof*-o C D X))) G≡G')
+            (funExt (λ (c : C .ob) →
+              makeNatTransPathP
+                refl
+                (cong′ (λ X → (Prof*-o→Functor C D (LiftF {ℓD'}{ℓs} ∘F (Functor→Prof*-o C D X))) .F-ob c) G≡G')
+                (funExt (λ (d : D .ob) →
+                  funExt λ _ → refl
+                ))
+              ))
+          )
+>>>>>>> 92a32ee26dcec6e094a47fdab81481684ff2430b
