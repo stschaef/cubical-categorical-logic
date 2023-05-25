@@ -71,16 +71,12 @@ module _ {B : Category ℓB ℓB'}{C : Category ℓC ℓC'}{D : Category ℓD �
   _∘ˡi_ K β .trans = β .trans ∘ˡ K 
   _∘ˡi_ K β .nIso b  = β .nIso (K ⟅ b ⟆)
   
-
-
   CAT⋆Assoc : {E : Category ℓE ℓE'}
             (F : Functor B C)(G : Functor C D)(H : Functor D E)
             → NatIso (H ∘F (G ∘F F)) ((H ∘F G) ∘F F)
   CAT⋆Assoc F G H .trans .N-ob = idTrans ((H ∘F G) ∘F F) .N-ob
   CAT⋆Assoc F G H .trans .N-hom = idTrans ((H ∘F G) ∘F F) .N-hom
   CAT⋆Assoc F G H .nIso = idNatIso ((H ∘F G) ∘F F) .nIso
-
-
 
 module _ {A : Category ℓA ℓA'}{B : Category ℓB ℓB'}{C : Category ℓC ℓC'}{D : Category ℓD ℓD'} where
   preservesNatIsosF : ∀ (𝔽 : Functor (FUNCTOR A B) (FUNCTOR C D)) → {F G : Functor A B} → (β : NatIso F G) 

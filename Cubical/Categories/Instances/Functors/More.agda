@@ -300,6 +300,5 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') where
     curryFl : Functor (FUNCTOR (C ×C Γ) D) (FUNCTOR Γ (FUNCTOR C D))
     curryFl = curryF ∘F swapArgs
 
-
     curryFl-isEquivalence : isEquivalence curryFl
     curryFl-isEquivalence = isEquivalenceComp swapArgs-isEquivalence curryF-isEquivalence

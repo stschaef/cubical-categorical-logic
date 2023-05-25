@@ -196,47 +196,6 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') where
     -- | Definition 2 → Definition 3
     PshFunctorRepresentation→ParamUniversalElement : PshFunctorRepresentation → ParamUniversalElement
     PshFunctorRepresentation→ParamUniversalElement (G , η) = (λ c →
-<<<<<<< HEAD
-      RepresentationToUniversalElement D ( R ∘F (Id {C = D ^op} ,F Constant (D ^op) C c) )
-        (G .F-ob c ,
-          NatIso→FUNCTORIso (D ^op) (SET (ℓ-max ℓD' ℓs))
-          (seqNatIso
-            (LiftF {ℓD'} {ℓs} ∘ʳi
-              (pathToNatIso (
-                (D [-, G .F-ob c ])
-                  ≡⟨ sym (HomFunctorPath (G .F-ob c)) ⟩
-                HomFunctor D ∘F (Id ,F Constant (D ^op) D (G .F-ob c))
-                  ≡⟨ ((λ i → ( HomFunctor D ∘F (Id ,F ConstantComposeFunctor C D c G i)  ))) ⟩
-                HomFunctor D ∘F (Id ,F (G ∘F (Constant (D ^op) C c)))
-                  ≡⟨ Functor≡ (λ c → refl) (λ f → refl) ⟩
-                HomFunctor D ∘F (Id {C = D ^op} ×F G) ∘F (Id {C = D ^op} ,F Constant (D ^op) C c)
-                  ≡⟨ F-assoc ⟩
-                Functor→Prof*-o C D G ∘F (Id {C = D ^op} ,F Constant (D ^op) C c) ∎
-              ))
-            )
-        (seqNatIso
-        (seqNatIso
-        (CAT⋆Assoc (Id {C = D ^op} ,F Constant (D ^op) C c) (Functor→Prof*-o C D G) (LiftF {ℓD'} {ℓs}))
-        (
-        (Id {C = D ^op} ,F Constant (D ^op) C c) ∘ˡi
-          (FUNCTORIso→NatIso (D ^op ×C C) (SET _)
-            (liftIso {F = curryFl (D ^op) (SET _) {Γ = C}}
-            (isEquiv→isWeakEquiv (curryFl-isEquivalence (D ^op) (SET _) {Γ = C}) .fullfaith)
-            (NatIso→FUNCTORIso C _ (symNatIso η)))
-          )
-        ))
-        (symNatIso
-        (CAT⋆Assoc (Id {C = D ^op} ,F Constant (D ^op) C c) (R) (LiftF {ℓs} {ℓD'}))))) ))
-        where
-        HomFunctorPath : (d : D .ob) → HomFunctor D ∘F (Id {C = D ^op} ,F Constant (D ^op) D d ) ≡ D [-, d ]
-        HomFunctorPath d = Functor≡
-          ((λ c → ( refl )))
-          (λ f → (
-            HomFunctor D .F-hom (f , id (D ^op))
-              ≡⟨ funExt (λ θ → ( (D ∘ id D) ((D ∘ θ) f) ≡⟨ solveCat! D ⟩ seq' D f θ ∎ )) ⟩
-            (D [-, d ]) .F-hom f ∎
-          ))
-=======
       let R⟅-,c⟆ = (R ∘F (Id {C = D ^op} ,F Constant (D ^op) C c)) in
       let η⁻¹ = symNatIso η in
         UnivElt→UniversalElement D R⟅-,c⟆ record {
@@ -270,7 +229,6 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') where
           }
         }
       )
->>>>>>> 92a32ee26dcec6e094a47fdab81481684ff2430b
 
     open UnivElt
     open isUniversal
