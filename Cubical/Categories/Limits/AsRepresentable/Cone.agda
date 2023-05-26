@@ -2,6 +2,7 @@
 
 module Cubical.Categories.Limits.AsRepresentable.Cone where
 
+open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Prelude
 open import Cubical.Categories.Category renaming (isIso to isIsoC)
 open import Cubical.Categories.Constructions.BinProduct
@@ -42,11 +43,7 @@ module _ {ℓj}{ℓj'}{ℓc}{ℓc'}(J : Category ℓj ℓj')(C : Category ℓc �
 
     Cone→CONE : Cone D c → (CONE ⟅ c , D ⟆) .fst
     Cone→CONE record-cone .N-ob x =  record-cone .coneOut x
-    Cone→CONE record-cone .N-hom {x}{y} f = 
-      (fst (((λFr J C (Fst C J) ^opF) ×F Id) ⟅ c , D ⟆) .F-hom f
-        ⋆⟨ C ⟩
-        record-cone .coneOut y)
-        ≡⟨ refl ⟩
+    Cone→CONE record-cone .N-hom {x}{y} f =
       Constant J C c .F-hom f ⋆⟨ C ⟩ record-cone .coneOut y
         ≡⟨ solveCat! C ⟩
           record-cone .coneOut y
@@ -54,3 +51,9 @@ module _ {ℓj}{ℓj'}{ℓc}{ℓc'}(J : Category ℓj ℓj')(C : Category ℓc �
       (record-cone .coneOut x
         ⋆⟨ C ⟩
         snd (((λFr J C (Fst C J) ^opF) ×F Id) ⟅ c , D ⟆) .F-hom f) ∎
+
+    CONE≅Cone : Iso ((CONE ⟅ c , D ⟆) .fst) (Cone D c)
+    CONE≅Cone .fun = CONE→Cone
+    CONE≅Cone .inv = Cone→CONE
+    CONE≅Cone .rightInv = λ b i → {!!}
+    CONE≅Cone .leftInv = {!!}
