@@ -1,6 +1,6 @@
 {-# OPTIONS --safe #-}
 
-module Cubical.Categories.Limits.AsRepresentables where
+module Cubical.Categories.Limits.AsRepresentable where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Categories.Category renaming (isIso to isIsoC)
