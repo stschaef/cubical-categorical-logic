@@ -53,7 +53,10 @@ module _ {ℓj}{ℓj'}{ℓc}{ℓc'}(J : Category ℓj ℓj')(C : Category ℓc �
         snd (((λFr J C (Fst C J) ^opF) ×F Id) ⟅ c , D ⟆) .F-hom f) ∎
 
     CONE≅Cone : Iso ((CONE ⟅ c , D ⟆) .fst) (Cone D c)
-    CONE≅Cone .fun = CONE→Cone
-    CONE≅Cone .inv = Cone→CONE
-    CONE≅Cone .rightInv = λ b i → {!!}
-    CONE≅Cone .leftInv = {!!}
+    CONE≅Cone =
+      record {
+        fun = CONE→Cone ;
+        inv = Cone→CONE ;
+        rightInv = λ record-cone → (cone≡ λ v → refl);
+        leftInv = λ η → makeNatTransPath refl
+      }
