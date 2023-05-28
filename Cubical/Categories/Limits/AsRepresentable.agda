@@ -33,11 +33,29 @@ module _ {ℓj}{ℓj'}{ℓc}{ℓc'}(J : Category ℓj ℓj')(C : Category ℓc �
 
   Limit→LimCone : ∀ {D : Functor J C} → Limit D → LimCone D
   Limit→LimCone x .lim = x .vertex
-  Limit→LimCone {D} x .limCone = CONE→Cone J C D (lim (Limit→LimCone x)) (x .element)
-  Limit→LimCone x .univProp = λ c cc →
-    ({!!} ,
-      (λ v → {!!})) ,
-      (λ y → {!!})
+  Limit→LimCone {D} x .limCone = CONE→Cone J C D (x .vertex) (x .element)
+  Limit→LimCone {D} x .univProp c cc =
+    (x .universal .coinduction ηc , {!!}) , {!!}
+    where
+    -- ηc an element of this hom set
+    -- i.e. a natural transformation
+    ηc : (funcComp (CONE J C) (Id ,F Constant (C ^op) (FUNCTOR J C) _) ⟅ c ⟆) .fst
+    ηc .N-ob v = cc .coneOut v
+    ηc .N-hom {u}{v} ϕ =
+      fst
+      (((λFr J C (Fst C J) ^opF) ×F Id) ⟅
+       (Id ,F Constant (C ^op) (FUNCTOR J C) D) ⟅ c ⟆ ⟆)
+      .F-hom ϕ
+      ⋆⟨ C ⟩ N-ob ηc v
+        ≡⟨ {!solveCat! C!} ⟩
+      coneOut cc v
+        ≡⟨ sym (cc .coneOutCommutes ϕ) ⟩
+      N-ob ηc u ⋆⟨ C ⟩
+      snd
+      (((λFr J C (Fst C J) ^opF) ×F Id) ⟅
+       (Id ,F Constant (C ^op) (FUNCTOR J C) D) ⟅ c ⟆ ⟆)
+      .F-hom ϕ ∎
+
 
   LimCone→Limit : ∀ {D : Functor J C} → LimCone D → Limit D
   LimCone→Limit x .vertex = x .lim
