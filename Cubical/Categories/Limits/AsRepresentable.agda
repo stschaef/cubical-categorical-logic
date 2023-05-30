@@ -61,6 +61,19 @@ module _ {ℓj}{ℓj'}{ℓc}{ℓc'}(J : Category ℓj ℓj')(C : Category ℓc �
   LimCone→Limit x .vertex = x .lim
   LimCone→Limit x .element .N-ob v = x .limCone .coneOut v
   LimCone→Limit x .element .N-hom {u}{v} ϕ = {!!}
-  LimCone→Limit x .universal .coinduction = λ x₁ → {!!}
-  LimCone→Limit x .universal .commutes = λ ϕ → {!!}
-  LimCone→Limit x .universal .is-uniq = λ ϕ f x₁ → {!!}
+  LimCone→Limit x .universal .coinduction {b} x₁ = x .univProp b {!x₁!} .fst .fst
+  LimCone→Limit x .universal .commutes {b} ϕ = {!!}
+  LimCone→Limit x .universal .is-uniq {b} ϕ f x₁ = {!!}
+    where
+    cone-over-b : {b : Category.ob C} → {D : Functor J C} → (x₁ : (funcComp (CONE J C) (Id ,F Constant (C ^op) (FUNCTOR J C) D) ⟅ b ⟆) .fst) → Cone D b
+    coneOut (cone-over-b {b} {D} x₁) v = x₁ .N-ob v
+    coneOutCommutes (cone-over-b {b} {D} x₁) {u}{v} ϕ =
+      seq' C (coneOut (cone-over-b x₁) u) (D .F-hom ϕ)
+        ≡⟨ sym (x₁ .N-hom ϕ) ⟩
+      fst
+        (((λFr J C (Fst C J) ^opF) ×F Id) ⟅
+         (Id ,F Constant (C ^op) (FUNCTOR J C) D) ⟅ b ⟆ ⟆)
+        .F-hom ϕ
+        ⋆⟨ C ⟩ N-ob x₁ v
+        ≡⟨ {!solveCat! C!} ⟩
+      coneOut (cone-over-b x₁) v ∎
