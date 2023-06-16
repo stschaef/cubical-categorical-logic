@@ -3,6 +3,7 @@
 module Cubical.Categories.Instances.Posets.Base where
 
 open import Cubical.Foundations.Prelude
+open import Cubical.Data.Unit
 open import Cubical.Categories.Category
 open import Cubical.Relation.Binary.Preorder
 open import Cubical.Relation.Binary.Poset
@@ -23,10 +24,28 @@ open Category
 open PreorderStr
 
 -- Category of Posets
+
 POSET : (ℓ ℓ' : Level) → Category _ _
 POSET ℓ ℓ' = FullSubcategory
   (PREORDER ℓ ℓ')
   λ p → IsPoset (p .snd ._≤_)
+
+
+-- Trivial Display where no restrictions are placed on morphisms
+PosetDisplay : DisplayedPoset (PREORDER ℓ ℓ') {ℓ-max ℓ ℓ'}
+PosetDisplay = record
+  { D-ob = λ p → IsPoset (p .snd ._≤_)
+  ; D-Hom_[_,_] = λ f x y → Unit* {_}
+  ; isPropHomf = isPropUnit*
+  ; D-id = tt*
+  ; _D-⋆_ = λ _ _ → tt*
+  }
+
+-- Same thing, defined as a DisplayedPoset
+POSET' : (ℓ ℓ' : Level) → Category _ _
+POSET' ℓ ℓ' = Grothendieck
+  (PREORDER ℓ ℓ')
+  (DisplayedPoset→Cat (PREORDER ℓ ℓ') PosetDisplay)
 
 
 -- Displayed Poset for picking out Posets
