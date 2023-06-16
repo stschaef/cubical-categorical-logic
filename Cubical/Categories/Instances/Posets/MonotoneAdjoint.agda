@@ -10,11 +10,12 @@ open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.HLevels
 
 open import Cubical.Relation.Binary.Poset
+open import Cubical.Relation.Binary.Preorder
 open import Cubical.Data.Sigma
 open import Cubical.HITs.PropositionalTruncation.Base
 open import Cubical.HITs.PropositionalTruncation.Properties
 
-open import Cubical.Categories.Instances.Posets.Monotone
+open import Cubical.Categories.Instances.Preorders.Monotone
 
 
 private
@@ -26,32 +27,45 @@ module _ {ℓ ℓ' : Level} where
 
   -- the Galois Connection between Posets
   -- adjoints for monotone functions
-  record _⊣_ {X Y : Poset ℓ ℓ'}
+  record _⊣_ {X Y : Preorder ℓ ℓ'}
              (L : MonFun X Y) (R : MonFun Y X) : Type (ℓ-max ℓ ℓ') where
     field
       adjIff : ∀ {x y} → Iso
-        ((PosetStr._≤_ (Y .snd)) (MonFun.f L x) y)
-        ((PosetStr._≤_ (X .snd)) x (MonFun.f R y))
+        ((PreorderStr._≤_ (Y .snd)) (MonFun.f L x) y)
+        ((PreorderStr._≤_ (X .snd)) x (MonFun.f R y))
 
   -- monotone functions that have left and right adjoint
+  HasLeftAdj : {X Y : Preorder ℓ ℓ'} → (f : MonFun X Y) → Type ((ℓ-max ℓ ℓ'))
+  HasLeftAdj {X} {Y} f = Σ[ L ∈ MonFun Y X ] ∥ (L ⊣ f) ∥₁
+
+  HasRightAdj : {X Y : Preorder ℓ ℓ'} → (f : MonFun X Y) → Type ((ℓ-max ℓ ℓ'))
+  HasRightAdj {X} {Y} f = Σ[ R ∈ MonFun Y X ] ∥ (f ⊣ R) ∥₁
+
+  record HasBothAdj {X Y : Preorder ℓ ℓ'} (f : MonFun X Y) : Type ((ℓ-max ℓ ℓ')) where
+    field
+      left-adj : HasLeftAdj f
+      right-adj : HasRightAdj f
+  {-
   record MonFunAdj (X Y : Poset ℓ ℓ') : Type ((ℓ-max ℓ ℓ')) where
     field
       morphism : MonFun X Y
       left-adj : Σ[ L ∈ MonFun Y X ] ∥ (L ⊣ morphism) ∥₁
       right-adj : Σ[ R ∈ MonFun Y X ] ∥ (morphism ⊣ R) ∥₁
 
-  MonId⊣MonId : {X : Poset ℓ ℓ'} → MonId {X = X} ⊣ MonId {X = X}
+  -}
+
+  MonId⊣MonId : {X : Preorder ℓ ℓ'} → MonId {X = X} ⊣ MonId {X = X}
   MonId⊣MonId {X} =
     record { adjIff = iso (λ h → h) (λ h → h) ( λ _ → refl)  (λ _ → refl) }
 
-  open MonFunAdj
+  open HasBothAdj
   open _⊣_
 
-  MonIdAdj : {X : Poset ℓ ℓ'} → MonFunAdj X X
-  MonIdAdj {X} = record {
-    morphism = MonId ;
+  IdHasBothAdj : {X : Preorder ℓ ℓ'} → HasBothAdj {X} {X} MonId
+  IdHasBothAdj {X} = record {
     left-adj = MonId , ∣ MonId⊣MonId ∣₁ ;
     right-adj =  MonId , ∣ MonId⊣MonId ∣₁ }
+  {-
 
   MonCompAdj : {X Y Z : Poset ℓ ℓ'} ->
     MonFunAdj X Y -> MonFunAdj Y Z -> MonFunAdj X Z
@@ -111,3 +125,4 @@ module _ {ℓ ℓ' : Level} where
           (λ R → isPropPropTrunc {A = morphism (w i j) ⊣ R})))
         (cong right-adj p) (cong right-adj q)
         refl refl i j
+  -}
