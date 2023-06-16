@@ -150,7 +150,8 @@ module _ {ℓ ℓ' : Level} where
 
     ≤mon-trans : isTrans _≤mon_
     ≤mon-trans = λ f g h f≤g g≤h x →
-      (is-trans (isPreorder (str Y))) (MonFun.f f x) (MonFun.f g x) (MonFun.f h x)
+      (is-trans (isPreorder (str Y)))
+        (MonFun.f f x) (MonFun.f g x) (MonFun.f h x)
         (f≤g x) (g≤h x)
     {-
     ≤mon-antisym : isAntisym _≤mon_

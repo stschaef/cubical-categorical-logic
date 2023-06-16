@@ -59,7 +59,8 @@ record PreorderStr (ℓ' : Level) (A : Type ℓ) : Type (ℓ-max ℓ (ℓ-suc �
 Preorder : ∀ ℓ ℓ' → Type (ℓ-max (ℓ-suc ℓ) (ℓ-suc ℓ'))
 Preorder ℓ ℓ' = TypeWithStr ℓ (PreorderStr ℓ')
 
-preorder : (A : Type ℓ) (_≤_ : A → A → Type ℓ') (h : IsPreorder _≤_) → Preorder ℓ ℓ'
+preorder : (A : Type ℓ) (_≤_ : A → A → Type ℓ')
+           (h : IsPreorder _≤_) → Preorder ℓ ℓ'
 preorder A _≤_ h = A , preorderstr _≤_ h
 
 record IsPreorderEquiv {A : Type ℓ₀} {B : Type ℓ₁}
@@ -77,10 +78,12 @@ record IsPreorderEquiv {A : Type ℓ₀} {B : Type ℓ₁}
     pres≤ : (x y : A) → x M.≤ y ≃ equivFun e x N.≤ equivFun e y
 
 
-PreorderEquiv : (M : Preorder ℓ₀ ℓ₀') (M : Preorder ℓ₁ ℓ₁') → Type (ℓ-max (ℓ-max ℓ₀ ℓ₀') (ℓ-max ℓ₁ ℓ₁'))
+PreorderEquiv : (M : Preorder ℓ₀ ℓ₀') (M : Preorder ℓ₁ ℓ₁')
+                   → Type (ℓ-max (ℓ-max ℓ₀ ℓ₀') (ℓ-max ℓ₁ ℓ₁'))
 PreorderEquiv M N = Σ[ e ∈ ⟨ M ⟩ ≃ ⟨ N ⟩ ] IsPreorderEquiv (M .snd) e (N .snd)
 
-isPropIsPreorder : {A : Type ℓ} (_≤_ : A → A → Type ℓ') → isProp (IsPreorder _≤_)
+isPropIsPreorder : {A : Type ℓ} (_≤_ : A → A → Type ℓ')
+                    → isProp (IsPreorder _≤_)
 isPropIsPreorder _≤_ = isOfHLevelRetractFromIso 1 IsPreorderIsoΣ
   (isPropΣ isPropIsSet
     λ isSetA → isPropΣ (isPropΠ2 (λ _ _ → isPropIsProp))
@@ -113,12 +116,14 @@ module _ {P : Preorder ℓ₀ ℓ₀'} {S : Preorder ℓ₁ ℓ₁'} (e : ⟨ P 
     open IsPreorder
 
     makeIsPreorderEquiv : IsPreorderEquiv (P .snd) e (S .snd)
-    pres≤ makeIsPreorderEquiv x y = propBiimpl→Equiv (P.isPreorder .is-prop-valued _ _)
-                                                  (S.isPreorder .is-prop-valued _ _)
-                                                  (isMon _ _) (isMonInv' _ _)
+    pres≤ makeIsPreorderEquiv x y =
+      propBiimpl→Equiv (P.isPreorder .is-prop-valued _ _)
+        (S.isPreorder .is-prop-valued _ _)
+        (isMon _ _) (isMonInv' _ _)
       where
       isMonInv' : ∀ x y → equivFun e x S.≤ equivFun e y → x P.≤ y
-      isMonInv' x y ex≤ey = transport (λ i → retEq e x i P.≤ retEq e y i) (isMonInv _ _ ex≤ey)
+      isMonInv' x y ex≤ey =
+        transport (λ i → retEq e x i P.≤ retEq e y i) (isMonInv _ _ ex≤ey)
 
 
 module PreorderReasoning (P' : Preorder ℓ ℓ') where
