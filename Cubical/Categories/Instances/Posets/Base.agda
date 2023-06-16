@@ -54,7 +54,7 @@ BothAdjDisplay : DisplayedPoset (PREORDER ℓ ℓ') {ℓ-max ℓ ℓ'}
 BothAdjDisplay = record
   { D-ob = λ p → IsPoset (p .snd ._≤_)
   ; D-Hom_[_,_] = λ f x y → HasBothAdj f
-  ; isPropHomf = (isPropHasBothAdj _)
+  ; isPropHomf = λ {_} {_} {_} {x} → (isPropHasBothAdj x _)
   ; D-id = IdHasBothAdj
   ; _D-⋆_ = CompHasBothAdj
   }
@@ -71,7 +71,7 @@ LeftAdjDisplay : DisplayedPoset (PREORDER ℓ ℓ') {ℓ-max ℓ ℓ'}
 LeftAdjDisplay = record
   { D-ob = λ p → IsPoset (p .snd ._≤_)
   ; D-Hom_[_,_] = λ f x y → HasLeftAdj f
-  ; isPropHomf = (isPropHasLeftAdj _)
+  ; isPropHomf = λ {_} {_} {_} {x} → (isPropHasLeftAdj x _)
   ; D-id = IdHasLeftAdj
   ; _D-⋆_ = CompHasLeftAdj
   }
@@ -87,7 +87,7 @@ RightAdjDisplay : DisplayedPoset (PREORDER ℓ ℓ') {ℓ-max ℓ ℓ'}
 RightAdjDisplay = record
   { D-ob = λ p → IsPoset (p .snd ._≤_)
   ; D-Hom_[_,_] = λ f x y → HasRightAdj f
-  ; isPropHomf = (isPropHasRightAdj _)
+  ; isPropHomf = λ {_} {_} {_} {x} → (isPropHasRightAdj x _)
   ; D-id = IdHasRightAdj
   ; _D-⋆_ = CompHasRightAdj
   }

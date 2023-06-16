@@ -25,6 +25,8 @@ record Hyperdoctrine ℓ ℓ' : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
     func : Functor (cc  ^op) (POSETADJ ℓ ℓ')
 
   open Notation cc bp
+  open HasBothAdj
+
   field
     {-
     Beck-Chevalley condition
@@ -41,33 +43,25 @@ record Hyperdoctrine ℓ ℓ' : Type (ℓ-suc (ℓ-max ℓ ℓ')) where
                              ---------→
                              left-adj
 
-    TODO: Can probably be more cleanly expressed as a bifunctor
     -}
     nat-left : ∀ {b c : cc .ob}
       (a : cc .ob) (f : cc [ b , c ]) →
-      (π₂ab-left-adj : Σ[ L ∈ (POSETADJ ℓ ℓ') [ func ⟅ a × b ⟆ , func ⟅ b ⟆ ] ]
-        (L .fst ⊣ (func ⟪ π₂ {a} {b} ⟫) .fst) ) →
-      (π₂ac-left-adj : Σ[ L ∈ (POSETADJ ℓ ℓ') [ func ⟅ a × c ⟆ , func ⟅ c ⟆ ] ]
-        (L .fst ⊣ (func ⟪ π₂ {a} {c} ⟫) .fst) ) →
       ((MonComp
         ((func ⟪ (cc .id) ×p f ⟫) .fst)
-        (π₂ab-left-adj .fst .fst))
+        ((func ⟪ π₂ {a} {b} ⟫) .snd .left-adj .fst))
       ≡
       (MonComp
-        (π₂ac-left-adj .fst .fst)
+        ((func ⟪ π₂ {a} {c} ⟫) .snd .left-adj .fst)
         ((func ⟪ f ⟫) .fst))
       )
+
     nat-right : ∀ {b c : cc .ob}
       (a : cc .ob) (f : cc [ b , c ]) →
-      (π₂ab-right-adj : Σ[ R ∈ (POSETADJ ℓ ℓ') [ func ⟅ a × b ⟆ , func ⟅ b ⟆ ] ]
-        ((func ⟪ π₂ {a} {b} ⟫) .fst ⊣ R .fst) ) →
-      (π₂ac-right-adj : Σ[ R ∈ (POSETADJ ℓ ℓ') [ func ⟅ a × c ⟆ , func ⟅ c ⟆ ] ]
-        ((func ⟪ π₂ {a} {c} ⟫) .fst ⊣ R .fst) ) →
       ((MonComp
         ((func ⟪ (cc .id) ×p f ⟫) .fst)
-        (π₂ab-right-adj .fst .fst))
+        ((func ⟪ π₂ {a} {b} ⟫) .snd .right-adj .fst))
       ≡
       (MonComp
-        (π₂ac-right-adj .fst .fst)
+        ((func ⟪ π₂ {a} {c} ⟫) .snd .right-adj .fst)
         ((func ⟪ f ⟫) .fst))
       )
