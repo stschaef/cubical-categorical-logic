@@ -3,7 +3,7 @@
 -- defines adjoint for monotone functions and morphisms in the Poset Category
 -- where each morphism has left and right adjoints
 
-module Cubical.Categories.Instances.Posets.MonotoneAdjoint where
+module Cubical.Categories.Instances.Preorders.Monotone.Adjoint where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Isomorphism
@@ -50,7 +50,8 @@ module _ {ℓ ℓ' : Level} where
     → isProp (HasRightAdj f)
   isPropHasRightAdj f = isPropPropTrunc
 
-  record HasBothAdj {X Y : Preorder ℓ ℓ'} (f : MonFun X Y) : Type ((ℓ-max ℓ ℓ')) where
+  record HasBothAdj {X Y : Preorder ℓ ℓ'}
+    (f : MonFun X Y) : Type ((ℓ-max ℓ ℓ')) where
     field
       left-adj : HasLeftAdj f
       right-adj : HasRightAdj f
@@ -69,24 +70,39 @@ module _ {ℓ ℓ' : Level} where
   MonId⊣MonId {X} =
     record { adjIff = iso (λ h → h) (λ h → h) ( λ _ → refl)  (λ _ → refl) }
 
+  IdHasLeftAdj : {X : Preorder ℓ ℓ'} → HasLeftAdj {X} {X} MonId
+  IdHasLeftAdj {X} = ∣ MonId , MonId⊣MonId ∣₁
+
+  IdHasRightAdj : {X : Preorder ℓ ℓ'} → HasRightAdj {X} {X} MonId
+  IdHasRightAdj {X} = ∣ MonId , MonId⊣MonId ∣₁
 
   IdHasBothAdj : {X : Preorder ℓ ℓ'} → HasBothAdj {X} {X} MonId
   IdHasBothAdj {X} = record {
-    left-adj = ∣ MonId , MonId⊣MonId ∣₁ ;
-    right-adj = ∣ MonId , MonId⊣MonId ∣₁ }
+    left-adj = IdHasLeftAdj ;
+    right-adj = IdHasRightAdj }
+
+  CompHasLeftAdj : {X Y Z : Preorder ℓ ℓ'} →
+    {f : MonFun X Y} → {g : MonFun Y Z } →
+    HasLeftAdj f → HasLeftAdj g → HasLeftAdj (MonComp f g)
+  CompHasLeftAdj f-adj g-adj = rec2 isPropPropTrunc
+    (λ (l1 , l1⊣f) (l2 , l2⊣g) →  ∣ MonComp l2 l1 ,
+      record { adjIff = compIso (l1⊣f .adjIff) (l2⊣g .adjIff) } ∣₁
+    )
+    (f-adj) (g-adj)
+
+  CompHasRightAdj : {X Y Z : Preorder ℓ ℓ'} →
+    {f : MonFun X Y} → {g : MonFun Y Z } →
+    HasRightAdj f → HasRightAdj g → HasRightAdj (MonComp f g)
+  CompHasRightAdj f-adj g-adj = rec2 isPropPropTrunc
+    (λ (r1 , f⊣r1) (r2 , g⊣r2) →  ∣ MonComp r2 r1 ,
+      record { adjIff = compIso (g⊣r2 .adjIff) (f⊣r1 .adjIff) } ∣₁
+    )
+    (f-adj) (g-adj)
+
 
   CompHasBothAdj : {X Y Z : Preorder ℓ ℓ'} →
     {f : MonFun X Y} → {g : MonFun Y Z } →
     HasBothAdj f → HasBothAdj g → HasBothAdj (MonComp f g)
   CompHasBothAdj f-adj g-adj = record {
-    left-adj = rec2 isPropPropTrunc
-      (λ (l1 , l1⊣f) (l2 , l2⊣g) →  ∣ MonComp l2 l1 ,
-        record { adjIff = compIso (l1⊣f .adjIff) (l2⊣g .adjIff) } ∣₁
-      )
-      (f-adj .left-adj) (g-adj .left-adj) ;
-    right-adj = rec2 isPropPropTrunc
-      (λ (r1 , f⊣r1) (r2 , g⊣r2) →  ∣ MonComp r2 r1 ,
-        record { adjIff = compIso (g⊣r2 .adjIff) (f⊣r1 .adjIff) } ∣₁
-      )
-      (f-adj .right-adj) (g-adj .right-adj) }
-
+    left-adj = CompHasLeftAdj (f-adj .left-adj) (g-adj .left-adj) ;
+    right-adj = CompHasRightAdj (f-adj .right-adj) (g-adj .right-adj) }
