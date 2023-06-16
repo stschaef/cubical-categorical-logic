@@ -32,34 +32,21 @@ POSET ℓ ℓ' = FullSubcategory
 
 -- Displayed Category for picking out Posets
 -- and monotone functions with adjoints
-AdjDisplay : DisplayedCategory (PREORDER ℓ ℓ') {{!!}}
+AdjDisplay : DisplayedCategory (PREORDER ℓ ℓ') {ℓ-max ℓ ℓ'}
 AdjDisplay = record
   { D-ob = λ p → IsPoset (p .snd ._≤_)
   ; D-Hom_[_,_] = λ f x y → HasBothAdj f
-  ; isSetHomf = {!!}
-  ; D-id = {!IdHasBothAdj!}
-  ; _D-⋆_ = {!!}
-  ; D-⋆IdL = {!!}
-  ; D-⋆IdR = {!!}
-  ; D-⋆Assoc = {!!}
-  }
+  ; isSetHomf = λ {a} {b} {f} → isProp→isSet (isPropHasBothAdj f)
+  ; D-id = IdHasBothAdj
+  ; _D-⋆_ = CompHasBothAdj
+  ; D-⋆IdL = λ {a} {b} {f} k →
+    isProp→PathP (λ i → isPropHasBothAdj (((PREORDER _ _ .⋆IdL f) i))) _ _
+  ; D-⋆IdR = λ {a} {b} {f} k →
+    isProp→PathP (λ i → isPropHasBothAdj (((PREORDER _ _ .⋆IdR f) i))) _ _
+  ; D-⋆Assoc = λ {a} {b} {c} {d} {f} {g} {h} k l m →
+    isProp→PathP (λ i → isPropHasBothAdj (((PREORDER _ _ .⋆Assoc f g h) i))) _ _}
 
 POSETADJ : (ℓ ℓ' : Level) → Category _ _
 POSETADJ ℓ ℓ' = Grothendieck
   (PREORDER ℓ ℓ')
   AdjDisplay
-{-
-POSETADJ ℓ ℓ' = record
-  { ob = Poset ℓ ℓ'
-  ; Hom[_,_] = λ X Y → MonFunAdj X Y
-  ; id = MonIdAdj
-  ; _⋆_ = MonCompAdj
-  ; ⋆IdL = λ {X} {Y} f → eqMonAdj _ _
-         (eqMon _ _ refl) (eqMon _ _ refl) (eqMon _ _ refl)
-  ; ⋆IdR = λ {X} {Y} f → eqMonAdj _ _
-         (eqMon _ _ refl) (eqMon _ _ refl) (eqMon _ _ refl)
-  ; ⋆Assoc = λ {X} {Y} {Z} {W} f g h → eqMonAdj _ _
-           (eqMon _ _ refl) (eqMon _ _ refl) (eqMon _ _ refl)
-  ; isSetHom = MonFunAdjIsSet
-  }
--}
