@@ -4,6 +4,7 @@ module Cubical.Categories.Constructions.Subcategory where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.HLevels
+open import Cubical.Categories.Functor
 
 open import Cubical.Data.Sigma
 
@@ -96,5 +97,13 @@ module _ (C : Category ℓC ℓC') where
     } where
     open DisplayedCategory D
 
+  open Functor
+
+  GrothendieckForgetful : {ℓPPP : Level} → {D : DisplayedCategory {ℓPPP}} →
+                           Functor (Grothendieck D) C
+  GrothendieckForgetful .F-ob = fst
+  GrothendieckForgetful .F-hom = fst
+  GrothendieckForgetful .F-id = refl
+  GrothendieckForgetful {ℓPPP} {D} .F-seq = λ f g → cong {x = f ⋆⟨ Grothendieck {ℓPPP} D ⟩ g} fst refl
   -- TODO: There are several results in FullSubCategory that may be true
   -- here as well
