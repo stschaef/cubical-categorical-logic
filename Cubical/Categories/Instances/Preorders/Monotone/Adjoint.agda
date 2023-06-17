@@ -29,10 +29,13 @@ module _ {ℓ ℓ' : Level} where
   -- adjoints for monotone functions
   record _⊣_ {X Y : Preorder ℓ ℓ'}
              (L : MonFun X Y) (R : MonFun Y X) : Type (ℓ-max ℓ ℓ') where
+    private
+      module 𝕏 = PreorderStr (X .snd)
+      module 𝕐 = PreorderStr (Y .snd)
     field
       adjIff : ∀ {x y} → Iso
-        ((PreorderStr._≤_ (Y .snd)) (MonFun.f L x) y)
-        ((PreorderStr._≤_ (X .snd)) x (MonFun.f R y))
+        ((L $ x) 𝕐.≤ y)
+        (x 𝕏.≤ (R $ y))
 
   -- monotone functions that have left and right adjoint
   HasLeftAdj : {X Y : Preorder ℓ ℓ'} → (f : MonFun X Y) → Type ((ℓ-max ℓ ℓ'))

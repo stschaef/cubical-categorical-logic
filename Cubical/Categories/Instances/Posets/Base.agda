@@ -14,7 +14,8 @@ open import Cubical.Categories.Instances.Preorders.Monotone
 open import Cubical.Categories.Instances.Preorders.Monotone.Adjoint
 
 
-open import Cubical.Categories.Constructions.Subcategory
+open import Cubical.Categories.Constructions.DisplayedCategory.DisplayedPoset
+open import Cubical.Categories.Constructions.DisplayedCategory.Grothendieck
 
 private
   variable
@@ -24,7 +25,6 @@ open Category
 open PreorderStr
 
 -- Category of Posets
-
 POSET : (ℓ ℓ' : Level) → Category _ _
 POSET ℓ ℓ' = FullSubcategory
   (PREORDER ℓ ℓ')
@@ -32,7 +32,7 @@ POSET ℓ ℓ' = FullSubcategory
 
 
 -- Trivial Display where no restrictions are placed on morphisms
-PosetDisplay : DisplayedPoset (PREORDER ℓ ℓ') {ℓ-max ℓ ℓ'}
+PosetDisplay : DisplayedPoset (PREORDER ℓ ℓ')
 PosetDisplay = record
   { D-ob = λ p → IsPoset (p .snd ._≤_)
   ; D-Hom_[_,_] = λ f x y → Unit* {_}
@@ -41,7 +41,7 @@ PosetDisplay = record
   ; _D-⋆_ = λ _ _ → tt*
   }
 
--- Same thing, defined as a DisplayedPoset
+-- Same category, defined as a DisplayedPoset
 POSET' : (ℓ ℓ' : Level) → Category _ _
 POSET' ℓ ℓ' = Grothendieck
   (PREORDER ℓ ℓ')
@@ -50,7 +50,7 @@ POSET' ℓ ℓ' = Grothendieck
 
 -- Displayed Poset for picking out Posets
 -- and monotone functions with adjoints
-BothAdjDisplay : DisplayedPoset (PREORDER ℓ ℓ') {ℓ-max ℓ ℓ'}
+BothAdjDisplay : DisplayedPoset (PREORDER ℓ ℓ')
 BothAdjDisplay = record
   { D-ob = λ p → IsPoset (p .snd ._≤_)
   ; D-Hom_[_,_] = λ f x y → HasBothAdj f
@@ -67,7 +67,7 @@ POSETADJ ℓ ℓ' = Grothendieck
 
 -- Displayed Poset for picking out Posets
 -- and monotone functions with left adjoints
-LeftAdjDisplay : DisplayedPoset (PREORDER ℓ ℓ') {ℓ-max ℓ ℓ'}
+LeftAdjDisplay : DisplayedPoset (PREORDER ℓ ℓ')
 LeftAdjDisplay = record
   { D-ob = λ p → IsPoset (p .snd ._≤_)
   ; D-Hom_[_,_] = λ f x y → HasLeftAdj f
@@ -83,7 +83,7 @@ POSETADJL ℓ ℓ' = Grothendieck
 
 -- Displayed Poset for picking out Posets
 -- and monotone functions with right adjoints
-RightAdjDisplay : DisplayedPoset (PREORDER ℓ ℓ') {ℓ-max ℓ ℓ'}
+RightAdjDisplay : DisplayedPoset (PREORDER ℓ ℓ')
 RightAdjDisplay = record
   { D-ob = λ p → IsPoset (p .snd ._≤_)
   ; D-Hom_[_,_] = λ f x y → HasRightAdj f
