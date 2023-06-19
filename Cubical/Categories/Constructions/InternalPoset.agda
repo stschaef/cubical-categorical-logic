@@ -9,7 +9,9 @@ open import Cubical.Data.Unit
 open import Cubical.Data.Sigma
 
 open import Cubical.Categories.Category
+open import Cubical.Categories.Bifunctor.Base
 open import Cubical.Categories.Functor.Base
+open import Cubical.Categories.Exponentials
 
 open import Cubical.Categories.Instances.Posets.Base
 open import Cubical.Categories.Instances.Preorders.Base
@@ -19,15 +21,20 @@ open import Cubical.Categories.Instances.Preorders.Monotone.Adjoint
 open import Cubical.Categories.Limits.BinProduct
 open import Cubical.Categories.Limits.BinProduct.More
 
+open import Cubical.Categories.Yoneda.More
+
 open import Cubical.Categories.Constructions.DisplayedCategory
 open import Cubical.Categories.Constructions.DisplayedCategory.DisplayedPoset
 open import Cubical.Categories.Constructions.DisplayedCategory.Grothendieck
+open import Cubical.Categories.Constructions.BinProduct.Redundant.Base
+import Cubical.Categories.Constructions.BinProduct.Redundant.Base as R
 
 open import Cubical.Relation.Binary.Poset
 open import Cubical.Relation.Binary.Preorder
 
 open import Cubical.Categories.Presheaf.Base
 open import Cubical.Categories.Presheaf.More
+import Cubical.Categories.Bifunctor.Redundant as R
 
 private
   variable
@@ -36,7 +43,11 @@ private
 open Category
 
 -- Define some order theory internal to the category of presheaves.
-module _ (C : Category ℓC ℓC' ) (ℓS : Level) where
+module _ (C : Category ℓC ℓC' ) (ℓS : Level)
+  (bp : BinProducts C)
+  (bpPsh : BinProducts (PresheafCategory C ℓS))
+  (expPsh : Exponentials (PresheafCategory C ℓS) bpPsh)
+  where
   -- record InternalPreorder : Type (ℓ-suc (ℓ-max ℓC (ℓ-max ℓC' ℓS))) where
   --   field
   --     P : PresheafCategory C ℓS .ob
@@ -78,6 +89,25 @@ module _ (C : Category ℓC ℓC' ) (ℓS : Level) where
 
   open MonFun
   open Functor
+  open ExpNotation
+  open Notation
+  open R.Bifunctor
+
+  Power : (X : InternalPoset) →
+          (A : PresheafCategory C ℓS .ob) →
+          InternalPoset
+  Power X A .P .F-ob Γ = 
+    ExponentialBif (PresheafCategory C ℓS) bpPsh expPsh
+      .Bif-ob
+        (×Bif (PresheafCategory C ℓS) bpPsh .Bif-ob {!YONEDA .F-ob Γ!} A)
+        (X .P) .F-ob Γ
+
+  Power X A .P .F-hom = {!!}
+  Power X A .P .F-id = {!!}
+  Power X A .P .F-seq = {!!}
+  Power X A ._≤_ = {!!}
+  Power X A .≤-is-poset = {!!}
+  Power X A .naturally-monotone = {!!}
 
   FunctorToPoset≅InternalPoset : Iso (Functor (C ^op) (POSET' ℓS ℓS))
                                      InternalPoset
@@ -93,11 +123,12 @@ module _ (C : Category ℓC ℓC' ) (ℓS : Level) where
     (λ F → Functor≡ (λ Γ → {!!}) {!!})
     where
       the-fun : (Functor (C ^op) (POSET' ℓS ℓS)) → InternalPoset
-      the-fun F .P = PREORDER→SET ℓS ℓS
-                     ∘F GrothendieckForgetful
-                       (PREORDER ℓS ℓS)
-                     {DisplayedPoset→Cat (PREORDER ℓS ℓS) PosetDisplay}
-                     ∘F F
+      the-fun F .P =
+        PREORDER→SET ℓS ℓS
+          ∘F Cubical.Categories.Constructions.DisplayedCategory.Grothendieck.Fst
+             (PREORDER ℓS ℓS)
+             {DisplayedPoset→Cat (PREORDER ℓS ℓS) PosetDisplay}
+          ∘F F
       the-fun F ._≤_ {Γ} = (F ⟅ Γ ⟆) .fst .snd ._≤_
       the-fun F .≤-is-poset = λ Γ → (F ⟅ Γ ⟆) .snd
       the-fun F .naturally-monotone = λ γ x y x≤y → (F ⟪ γ ⟫) .fst .isMon x≤y
