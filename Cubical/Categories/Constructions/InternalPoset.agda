@@ -3,6 +3,7 @@
 module Cubical.Categories.Constructions.InternalPoset where
 
 open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Isomorphism
 
 open import Cubical.Data.Unit
@@ -39,18 +40,39 @@ open import Cubical.Categories.Presheaf.Base
 open import Cubical.Categories.Presheaf.More
 import Cubical.Categories.Bifunctor.Redundant as R
 
-private
-  variable
-    ℓC ℓC' : Level
-
 open Category
 
+
+
 -- Define some order theory internal to the category of presheaves.
-module _ (C : Category ℓC ℓC' )
+module _ {ℓC ℓC' : Level} (C : Category ℓC ℓC' )
   (bp : BinProducts C)
   (bpPsh : BinProducts (PresheafCategory C (ℓ-max ℓC ℓC')))
   (expPsh : Exponentials (PresheafCategory C (ℓ-max ℓC ℓC')) bpPsh)
   where
+
+  bpSET : BinProducts (SET (ℓ-max ℓC ℓC'))
+  bpSET = λ x y →
+    record {
+    binProdOb = x .fst Cubical.Data.Sigma.× y .fst , λ p q e₁ e₂ i →
+      ΣPathP
+      (x .snd (p .fst) (q .fst) (cong fst e₁) (cong fst e₂) i ,
+      y .snd (p .snd) (q .snd) (cong snd e₁) (cong snd e₂) i
+      );
+    binProdPr₁ = fst ;
+    binProdPr₂ = snd ;
+    univProp =
+    λ {z} p₁ p₂ →
+      ((λ a → p₁ a , p₂ a) , refl , refl) ,
+      λ (mor , fstMor≡p₁ , sndMor≡p₂) →
+        let q = (λ i z₀ → fstMor≡p₁ (~ i) z₀ , sndMor≡p₂ (~ i) z₀)
+        in
+        Σ≡Prop (λ f →
+          isProp× (isSetHom (SET (ℓ-max ℓC ℓC')) {z}{x} (λ x → fst (f x)) p₁)
+                  (isSetHom (SET (ℓ-max ℓC ℓC')) {z}{y} (λ x → snd (f x)) p₂))
+          q
+    }
+
   -- record InternalPreorder : Type (ℓ-suc (ℓ-max ℓC (ℓ-max ℓC' ℓS))) where
   --   field
   --     P : PresheafCategory C ℓS .ob
@@ -111,36 +133,19 @@ module _ (C : Category ℓC ℓC' )
       (funExt (λ a → funExt (λ h i → lift (C .⋆Assoc (lower h) f g (~ i)))))
 
 
-  Power : (X : InternalPoset) →
-          (A : PresheafCategory C (ℓ-max ℓC ℓC') .ob) →
-          InternalPoset
-  Power X A .P =
-    {! (PresheafCategory C (ℓ-max ℓC ℓC')) [-, (X .P)] !}
-  Power X A ._≤_ {Γ} f g = 
-      (Δ : C .ob) →
-      (a : (A ⟅ Δ ⟆) .fst) →
-      X ._≤_ {Δ}
-        {!!}
-        {!!}
-    
-    -- (Δ : C .ob) → (γ : C [ Δ , Γ ]) →
-    -- (a : (A ⟅ Δ ⟆) .fst ) →
-    -- X ._≤_ {Δ}
-      -- ((f .N-ob Δ) {!!})
-      -- ((g .N-ob Δ) {!!})
-  Power X A .≤-is-poset = {!!}
-  Power X A .naturally-monotone = {!YONEDA!}
-
-  -- X^A(Γ) = Set^{C ^op} (YΓ × A , X)
   -- Power : (X : InternalPoset) →
-          -- (A : PresheafCategory C (ℓ-max ℓC ℓC') .ob) →
-          -- InternalPoset
+  --         (A : PresheafCategory C (ℓ-max ℓC ℓC') .ob) →
+  --         InternalPoset
   -- Power X A .P =
-    -- ((PresheafCategory C (ℓ-max ℓC ℓC')) [-, (X .P) ]) ∘F
-    -- (((R.appR (×Bif (PresheafCategory C (ℓ-max ℓC ℓC')) bpPsh) A) ^opF)) ∘F
-    -- (BinProductWithF (PresheafCategory C (ℓ-max ℓC ℓC')) (bpPsh A) ^opF) ∘F
-    -- (Yon ^opF)
+  --   {! (PresheafCategory C (ℓ-max ℓC ℓC')) [-, (X .P)] !}
   -- Power X A ._≤_ {Γ} f g =
+  --     (Δ : C .ob) →
+  --     (γ : C [ Δ , Γ ]) →
+  --     (a : (A ⟅ Δ ⟆) .fst) →
+  --     X ._≤_ {Δ}
+  --       {!!}
+  --       {!!}
+
     -- (Δ : C .ob) → (γ : C [ Δ , Γ ]) →
     -- (a : (A ⟅ Δ ⟆) .fst ) →
     -- X ._≤_ {Δ}
@@ -148,6 +153,24 @@ module _ (C : Category ℓC ℓC' )
       -- ((g .N-ob Δ) {!!})
   -- Power X A .≤-is-poset = {!!}
   -- Power X A .naturally-monotone = {!YONEDA!}
+
+  -- X^A(Γ) = Set^{C ^op} (YΓ × A , X)
+  Power : (X : InternalPoset) →
+          (A : PresheafCategory C (ℓ-max ℓC ℓC') .ob) →
+          InternalPoset
+  Power X A .P =
+    ((PresheafCategory C (ℓ-max ℓC ℓC')) [-, (X .P) ]) ∘F
+    (((R.appR (×Bif (PresheafCategory C (ℓ-max ℓC ℓC')) bpPsh) A) ^opF)) ∘F
+    (BinProductWithF (PresheafCategory C (ℓ-max ℓC ℓC')) (bpPsh A) ^opF) ∘F
+    (Yon ^opF)
+  Power X A ._≤_ {Γ} f g =
+    (Δ : C .ob) → (γ : C [ Δ , Γ ]) →
+    (a : (A ⟅ Δ ⟆) .fst ) →
+    X ._≤_ {Δ}
+      ((f .N-ob Δ) {!!})
+      ((g .N-ob Δ) {!!})
+  Power X A .≤-is-poset = {!!}
+  Power X A .naturally-monotone = {!YONEDA!}
 
   -- FunctorToPoset≅InternalPoset : Iso (Functor (C ^op) (POSET' ℓS ℓS))
   --                                    InternalPoset
