@@ -215,6 +215,40 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') (R : C *-[ ℓS ]-o
           ((R ⟪ f ⟫r) (ues _ .element)) .fst .snd))
       ∙ sym (funExt⁻ (R .Bif-R-seq _ _) _) ))
 
+  UniqueFunctorComprehension :
+    isUnivalent D
+    → (∀ (c : C .ob) → UniversalElement D (appR R c))
+    → ∃![ F ∈ Functor C D ] (∀ (c : C .ob)
+    → UniversalElementOn D (appR R c) (F ⟅ c ⟆))
+  UniqueFunctorComprehension isUnivD ues =
+    (F , universalAtF) ,
+    (λ (G , universalAtG) →
+      ΣPathP (
+        the-functor-path G universalAtG isUnivD ,
+        funExt (λ c → {!universalAtG c .fst!})
+      )
+    )
+    where
+    F : Functor C D
+    F = FunctorComprehension ues .fst
+
+    universalAtF : _
+    universalAtF = FunctorComprehension ues .snd
+
+    the-functor-path : (G : Functor C D)
+      → (∀ (c : C .ob) → UniversalElementOn D (appR R c) (G ⟅ c ⟆))
+      → isUnivalent D
+      → F ≡ G
+    the-functor-path G universalAtG isUnivD = {!universalAtG!}
+
+    the-ue-path : {G : Functor C D} → isUnivalent D → F ≡ G
+      → (universalAtG : ∀ (c : C .ob) → UniversalElementOn D (appR R c) (G ⟅ c ⟆))
+      → (∀ (c : C .ob)
+        → PathP (λ i → (appR R c ⟅ (the-functor-path G universalAtG isUnivD (~ i)) ⟅ c ⟆ ⟆) .fst)
+          (universalAtG c .fst) (universalAtF c .fst))
+    the-ue-path {G} isUnivD p universalAtG c = ?
+
+
   -- ProfRepresents : Functor C D → Type _
   -- ProfRepresents G = ProfIso {C = D}{D = C} R (Functor→Prof*-o C D G)
 
