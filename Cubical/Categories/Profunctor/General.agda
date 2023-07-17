@@ -269,23 +269,49 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') (R : C *-[ ℓS ]-o
     (F , universalAtF) ,
     λ (G , universalAtG) →
     ΣPathP (
-      {!TODO G universalAtG isUnivD!} ,
+      {!isFullyFaithful→isFullyFaithfulPostcomp !} ,
       -- UniversalElementOnToPshFunctorRepresentation F universalAtF) ,
-      funExt (λ c → {!NatIsoToPath ?!})
+      funExt (λ c → {!(Prof*-o→Functor C D (compF LiftF (Functor→Prof*-o C D F)))!})
       )
     where
     F = FunctorComprehension ues .fst
     universalAtF = FunctorComprehension ues .snd
 
-    TODO : (G : Functor C D) → ((c : C .ob) →
-           UniversalElementOn D (appR R c) (G ⟅ c ⟆)) → isUnivalent D → _
-    TODO G universalAtG isUnivD =
+    TODO : (G : Functor C D) →
+           ((c : C .ob) →
+           UniversalElementOn D (appR R c) (G ⟅ c ⟆)) →
+           _
+    TODO G universalAtG =
       seqNatIso
         (symNatIso
           (UniversalElementOnToPshFunctorRepresentation F universalAtF))
           (UniversalElementOnToPshFunctorRepresentation G universalAtG)
 
-    
+    the-functor-iso : (G : Functor C D) →
+                      ((c : C .ob) →
+                      UniversalElementOn D (appR R c) (G ⟅ c ⟆)) →
+                      CatIso (FUNCTOR C D) F G
+    the-functor-iso G universalAtG =
+      {!the-yoneda-iso .fst!} ,
+      (isFullyFaithful→Conservative
+        (isFullyFaithful→isFullyFaithfulPostcomp {!!} {!!} {!!})
+        {!the-yoneda-iso-curried !}
+      )
+      where
+      the-yoneda-iso-curried : CatIso _
+        (Prof*-o→Functor C D (compF LiftF (Functor→Prof*-o C D F)))
+        (Prof*-o→Functor C D (compF LiftF (Functor→Prof*-o C D G)))
+      the-yoneda-iso-curried = NatIso→FUNCTORIso _ _ (TODO G universalAtG)
+
+      the-yoneda-iso :
+        CatIso _
+          (BifunctorToParFunctor (compF LiftF (Functor→Prof*-o C D F)))
+          (BifunctorToParFunctor (compF LiftF (Functor→Prof*-o C D G)))
+      the-yoneda-iso =
+        liftIso {F = curryFl (D ^op) (SET _) {Γ = C}}
+          (isEquiv→isWeakEquiv (curryFl-isEquivalence (D ^op) (SET _) {Γ = C})
+            .fullfaith)
+          the-yoneda-iso-curried
 
     -- ueF : ∀ (c : C .ob) → UniversalElement D (appR R c)
     -- ueF c .vertex = F ⟅ c ⟆
