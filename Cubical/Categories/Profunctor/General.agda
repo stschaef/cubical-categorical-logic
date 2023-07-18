@@ -259,7 +259,18 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') (R : C *-[ ℓS ]-o
   UniversalElementOnToPshFunctorRepresentation F universalAtF
     .nIso = {!!}
 
+
   open isWeakEquivalence
+  ProfRepresents : Functor C D → Type _
+  ProfRepresents G = ProfIso {C = D}{D = C} R (Functor→Prof*-o C D G)
+
+  ProfRepresentation : Type _
+  ProfRepresentation = Σ[ G ∈ Functor C D ] ProfRepresents G
+
+  UniversalElementOnToProfRepresentation : (F : Functor C D) →
+    ((∀ (c : C .ob) → UniversalElementOn D (appR R c) (F ⟅ c ⟆)))
+    → ProfRepresents F
+  UniversalElementOnToProfRepresentation F universalAtF = {!YO ∘F!}
 
   UniqueFunctorComprehension : isUnivalent D →
     ((∀ (c : C .ob) → UniversalElement D (appR R c)))
@@ -271,11 +282,30 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') (R : C *-[ ℓS ]-o
     ΣPathP (
       {!isFullyFaithful→isFullyFaithfulPostcomp !} ,
       -- UniversalElementOnToPshFunctorRepresentation F universalAtF) ,
-      funExt (λ c → {!(Prof*-o→Functor C D (compF LiftF (Functor→Prof*-o C D F)))!})
+      funExt (λ c → {!TODO' G universalAtG .!})
       )
     where
     F = FunctorComprehension ues .fst
     universalAtF = FunctorComprehension ues .snd
+
+    -- TODO : (G : Functor C D) →
+    --        ((c : C .ob) →
+    --        UniversalElementOn D (appR R c) (G ⟅ c ⟆)) →
+    --        _
+    -- TODO G universalAtG = {!TODO'!}
+
+    -- TODO' : (G : Functor C D) →
+    --        ((c : C .ob) →
+    --        UniversalElementOn D (appR R c) (G ⟅ c ⟆)) →
+    --        ProfIso (Functor→Prof*-o C D F) (Functor→Prof*-o C D G)
+    -- TODO' G universalAtG = {!
+    -- !}
+
+    TODO'' : (G : Functor C D) →
+           ((c : C .ob) →
+           UniversalElementOn D (appR R c) (G ⟅ c ⟆)) →
+           NatIso {!Functor→Prof*-o C D F!} {!!}
+    TODO'' G universalAtG = {!!}
 
     TODO : (G : Functor C D) →
            ((c : C .ob) →
@@ -292,9 +322,9 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') (R : C *-[ ℓS ]-o
                       UniversalElementOn D (appR R c) (G ⟅ c ⟆)) →
                       CatIso (FUNCTOR C D) F G
     the-functor-iso G universalAtG =
-      {!the-yoneda-iso .fst!} ,
+      {!the-yoneda-iso!} ,
       (isFullyFaithful→Conservative
-        (isFullyFaithful→isFullyFaithfulPostcomp {!!} {!!} {!!})
+        (isFullyFaithful→isFullyFaithfulPostcomp {!!} YON {!!})
         {!the-yoneda-iso-curried !}
       )
       where
@@ -302,6 +332,42 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') (R : C *-[ ℓS ]-o
         (Prof*-o→Functor C D (compF LiftF (Functor→Prof*-o C D F)))
         (Prof*-o→Functor C D (compF LiftF (Functor→Prof*-o C D G)))
       the-yoneda-iso-curried = NatIso→FUNCTORIso _ _ (TODO G universalAtG)
+
+      -- Echoing this from Categories.Yoneda but without levels issues
+      yon : {ℓE ℓE' : Level} {E : Category ℓE ℓE'} → (E .ob) → Functor (E ^op) (SET _)
+      yon {_}{_}{E} x .F-ob y .fst = E [ y , x ]
+      yon {_}{_}{E} x .F-ob y .snd = E .isSetHom
+      yon {_}{_}{E} x .F-hom f g = f ⋆⟨ E ⟩ g
+      yon {_}{_}{E} x .F-id i f = E .⋆IdL f i
+      yon {_}{_}{E} x .F-seq f g i h = E .⋆Assoc g f h i
+
+      YON : {ℓE ℓE' : Level} {E : Category ℓE ℓE'} → Functor E (FUNCTOR (E ^op) (SET _))
+      YON {_}{_}{E} .F-ob e = yon e
+      YON {_}{_}{E} .F-hom f .N-ob z g = g ⋆⟨ E ⟩ f
+      YON {_}{_}{E} .F-hom f .N-hom g i h = E .⋆Assoc g h f i
+      YON {_}{_}{E} .F-id = makeNatTransPath λ i _ → λ f → E .⋆IdR f i
+      YON {_}{_}{E} .F-seq f g = makeNatTransPath λ i _ → λ h → E .⋆Assoc h f g (~ i)
+
+      Yon : Functor C (FUNCTOR (C ^op) (SET (ℓ-max ℓC ℓC')))
+      Yon .F-ob a = LiftF {ℓC'}{ℓ-max ℓC ℓC'} ∘F (C [-, a ])
+      Yon .F-hom f .N-ob b g = lift (lower g ⋆⟨ C ⟩ f)
+      Yon .F-hom f .N-hom g = funExt (λ h i → lift (C .⋆Assoc g (lower h) f i))
+      Yon .F-id =
+        makeNatTransPath
+          (funExt (λ a → funExt (λ f i → lift (C .⋆IdR (lower f) i ))))
+      Yon .F-seq f g =
+        makeNatTransPath
+        (funExt (λ a → funExt (λ h i → lift (C .⋆Assoc (lower h) f g (~ i)))))
+
+      test : (Prof*-o→Functor C D (compF LiftF (Functor→Prof*-o C D F))) ≡ YON ∘F F
+      test = {!refl!}
+
+      _ : {!!}
+      _ =
+        isFullyFaithful→Conservative
+        (isFullyFaithful→isFullyFaithfulPostcomp {C = D} C YON {!!})
+        {!the-yoneda-iso-curried .snd!}
+
 
       the-yoneda-iso :
         CatIso _
@@ -335,11 +401,6 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') (R : C *-[ ℓS ]-o
       -- {!(intro-natural {P = appR R c} (ueG G c (universalAtG c)) {f = G .F-hom ϕ}) ∙ ?!}
       -- intro-natural {P = appR R c} {!ueG G c (universalAtG c')!}
 
-  -- ProfRepresents : Functor C D → Type _
-  -- ProfRepresents G = ProfIso {C = D}{D = C} R (Functor→Prof*-o C D G)
-
-  -- ProfRepresentation : Type _
-  -- ProfRepresentation = Σ[ G ∈ Functor C D ] ProfRepresents G
 
  -- -- ParamUnivElt → PshFunctorRepresentation
   -- ParamUnivElt→PshFunctorRepresentation : ParamUnivElt →
