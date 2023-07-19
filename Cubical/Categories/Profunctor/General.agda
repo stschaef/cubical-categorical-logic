@@ -30,9 +30,13 @@ open import Cubical.Categories.Functors.HomFunctor
 open import Cubical.Categories.Equivalence.WeakEquivalence
 open import Cubical.Data.Sigma
 
+open import Cubical.HITs.PropositionalTruncation
+
 open import Cubical.Categories.Presheaf.Representable
 open import Cubical.Categories.Presheaf.More
 open import Cubical.Categories.Instances.Functors.More
+
+open import Cubical.Tactics.CategorySolver.Reflection
 
 private
   variable
@@ -261,17 +265,6 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') (R : C *-[ ℓS ]-o
 
 
   open isWeakEquivalence
-  ProfRepresents : Functor C D → Type _
-  ProfRepresents G = ProfIso {C = D}{D = C} R (Functor→Prof*-o C D G)
-
-  ProfRepresentation : Type _
-  ProfRepresentation = Σ[ G ∈ Functor C D ] ProfRepresents G
-
-  UniversalElementOnToProfRepresentation : (F : Functor C D) →
-    ((∀ (c : C .ob) → UniversalElementOn D (appR R c) (F ⟅ c ⟆)))
-    → ProfRepresents F
-  UniversalElementOnToProfRepresentation F universalAtF = {!YO ∘F!}
-
   UniqueFunctorComprehension : isUnivalent D →
     ((∀ (c : C .ob) → UniversalElement D (appR R c)))
     → ∃![ F ∈ Functor C D ] (∀ (c : C .ob)
@@ -288,25 +281,6 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') (R : C *-[ ℓS ]-o
     F = FunctorComprehension ues .fst
     universalAtF = FunctorComprehension ues .snd
 
-    -- TODO : (G : Functor C D) →
-    --        ((c : C .ob) →
-    --        UniversalElementOn D (appR R c) (G ⟅ c ⟆)) →
-    --        _
-    -- TODO G universalAtG = {!TODO'!}
-
-    -- TODO' : (G : Functor C D) →
-    --        ((c : C .ob) →
-    --        UniversalElementOn D (appR R c) (G ⟅ c ⟆)) →
-    --        ProfIso (Functor→Prof*-o C D F) (Functor→Prof*-o C D G)
-    -- TODO' G universalAtG = {!
-    -- !}
-
-    TODO'' : (G : Functor C D) →
-           ((c : C .ob) →
-           UniversalElementOn D (appR R c) (G ⟅ c ⟆)) →
-           NatIso {!Functor→Prof*-o C D F!} {!!}
-    TODO'' G universalAtG = {!!}
-
     TODO : (G : Functor C D) →
            ((c : C .ob) →
            UniversalElementOn D (appR R c) (G ⟅ c ⟆)) →
@@ -317,67 +291,200 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') (R : C *-[ ℓS ]-o
           (UniversalElementOnToPshFunctorRepresentation F universalAtF))
           (UniversalElementOnToPshFunctorRepresentation G universalAtG)
 
-    the-functor-iso : (G : Functor C D) →
-                      ((c : C .ob) →
-                      UniversalElementOn D (appR R c) (G ⟅ c ⟆)) →
-                      CatIso (FUNCTOR C D) F G
-    the-functor-iso G universalAtG =
-      {!the-yoneda-iso!} ,
-      (isFullyFaithful→Conservative
-        (isFullyFaithful→isFullyFaithfulPostcomp {!!} YON {!!})
-        {!the-yoneda-iso-curried !}
-      )
+    -- Echoing this from Categories.Yoneda but without levels issues
+    yon : {ℓE ℓE' : Level} {E : Category ℓE ℓE'} → (E .ob) → Functor (E ^op) (SET (ℓ-max ℓE' ℓS))
+    yon {_}{ℓE'}{E} x .F-ob y .fst = Lift {ℓE'}{ℓS} (E [ y , x ])
+    yon {_}{_}{E} x .F-ob y .snd =
+      λ x₁ y₁ x₂ y₂ i i₁ →
+        lift (E .isSetHom (lower x₁) (lower y₁) (cong lower x₂) (cong lower y₂) i i₁)
+    yon {_}{_}{E} x .F-hom f g = lift (f ⋆⟨ E ⟩ (lower g))
+    yon {_}{_}{E} x .F-id i f = lift (E .⋆IdL (lower f) i)
+    yon {_}{_}{E} x .F-seq f g i h = lift (E. ⋆Assoc g f (lower h) i)
+
+    YON : {ℓE ℓE' : Level} {E : Category ℓE ℓE'} → Functor E (FUNCTOR (E ^op) (SET (ℓ-max ℓE' ℓS)))
+    YON {_}{_}{E} .F-ob e = yon {E = E} e
+    YON {_}{_}{E} .F-hom f .N-ob z g = lift (lower g ⋆⟨ E ⟩ f)
+    YON {_}{_}{E} .F-hom f .N-hom g i h = lift (E .⋆Assoc g (lower h) f i)
+    YON {_}{_}{E} .F-id = makeNatTransPath (λ i _ → λ f → lift (E .⋆IdR (lower f) i) )
+    YON {_}{_}{E} .F-seq f g = makeNatTransPath λ i _ → λ h → lift (E .⋆Assoc (lower h) f g (~ i))
+
+    the-trans : (H : Functor C D) →
+                NatTrans (Prof*-o→Functor C D (compF (LiftF {ℓD'}{ℓS})
+                        (Functor→Prof*-o C D H)))
+                        (YON ∘F H)
+
+    the-trans H .N-ob c .N-ob d f = f
+    the-trans H .N-ob c .N-hom ϕ =
+      (SET _) .⋆IdR _ ∙
+      funExt (λ z i → lift ((cong (λ a → (D ⋆ seq' D ϕ (lower z)) a) (H .F-id)) i)) ∙
+      funExt (λ z i → lift (D .⋆IdR (seq' D ϕ (lower z)) i)) ∙
+      funExt (λ z i → lift ((SET _) .⋆IdL
+        {Hom[ D , _ ] (H .F-ob c) , D .isSetHom}
+        {Hom[ D , _ ] (H .F-ob c) , D .isSetHom} (λ x → ϕ ⋆⟨ D ⟩ x) i (lower z)))
+    the-trans H .N-hom {c}{c'} ϕ =
+      let
+        prop-proof : (c : C .ob) → (d : D .ob) →
+                     (x y : Lift {ℓD'}{ℓS} (Hom[ D , d ] (F-ob H c))) →
+                     isProp (x ≡ y)
+        prop-proof c d x y x₁ y₁ i i₁ =
+          lift (D .isSetHom
+            (lower x)
+            (lower y)
+            (cong lower x₁)
+            (cong lower y₁) i i₁)
+      in
+      makeNatTransPath (funExt (λ d →
+        (SET _) .⋆IdR
+          {Lift (Hom[ D , d ] (F-ob H c)) , prop-proof c d}
+          {Lift (Hom[ D , d ] (H ⟅ c' ⟆)) , prop-proof c' d}
+          _ ∙
+        funExt (λ z → cong lift
+          (cong (λ a → a (lower z))
+            (sym((Functor→Prof*-o C D H) .Bif-R×-agree ϕ)))) ∙
+        sym ((SET _) .⋆IdL
+          {Lift (Hom[ D , d ] (F-ob H c)) , prop-proof c d}
+          {Lift (Hom[ D , d ] (H ⟅ c' ⟆)) , prop-proof c' d}
+          _)
+      ))
+
+
+    TODONatIso : (H : Functor C D) →
+                 NatIso (Prof*-o→Functor C D (compF (LiftF {ℓD'}{ℓS})
+                                           (Functor→Prof*-o C D H)))
+                        (YON ∘F H)
+    TODONatIso H .trans = the-trans H
+    TODONatIso H .nIso c =
+      isiso
+        the-inverse the-sec the-ret
       where
-      the-yoneda-iso-curried : CatIso _
-        (Prof*-o→Functor C D (compF LiftF (Functor→Prof*-o C D F)))
-        (Prof*-o→Functor C D (compF LiftF (Functor→Prof*-o C D G)))
-      the-yoneda-iso-curried = NatIso→FUNCTORIso _ _ (TODO G universalAtG)
 
-      -- Echoing this from Categories.Yoneda but without levels issues
-      yon : {ℓE ℓE' : Level} {E : Category ℓE ℓE'} → (E .ob) → Functor (E ^op) (SET _)
-      yon {_}{_}{E} x .F-ob y .fst = E [ y , x ]
-      yon {_}{_}{E} x .F-ob y .snd = E .isSetHom
-      yon {_}{_}{E} x .F-hom f g = f ⋆⟨ E ⟩ g
-      yon {_}{_}{E} x .F-id i f = E .⋆IdL f i
-      yon {_}{_}{E} x .F-seq f g i h = E .⋆Assoc g f h i
+      prop-proof : (c : C .ob) → (d : D .ob) →
+                   (x y : Lift {ℓD'}{ℓS} (Hom[ D , d ] (F-ob H c))) →
+                   isProp (x ≡ y)
+      prop-proof c d x y x₁ y₁ i i₁ =
+        lift (D .isSetHom
+          (lower x)
+          (lower y)
+          (cong lower x₁)
+          (cong lower y₁) i i₁)
 
-      YON : {ℓE ℓE' : Level} {E : Category ℓE ℓE'} → Functor E (FUNCTOR (E ^op) (SET _))
-      YON {_}{_}{E} .F-ob e = yon e
-      YON {_}{_}{E} .F-hom f .N-ob z g = g ⋆⟨ E ⟩ f
-      YON {_}{_}{E} .F-hom f .N-hom g i h = E .⋆Assoc g h f i
-      YON {_}{_}{E} .F-id = makeNatTransPath λ i _ → λ f → E .⋆IdR f i
-      YON {_}{_}{E} .F-seq f g = makeNatTransPath λ i _ → λ h → E .⋆Assoc h f g (~ i)
+      the-inverse :
+        NatTrans ((YON ∘F H) .F-ob c)
+                 (Prof*-o→Functor C D
+                   (compF LiftF (Functor→Prof*-o C D H)) .F-ob c)
+      the-inverse .N-ob d f = f
+      the-inverse .N-hom {x}{y} ϕ =
+        (SET _) .⋆IdR _ ∙
+        funExt (λ z → sym (cong lift (((cong (λ a → a (lower z)) (sym ((Functor→Prof*-o C D H) .Bif-L×-agree ϕ))))))) ∙
+        sym ((SET _) .⋆IdL
+          {Lift (Hom[ D , _ ] (F-ob H c)) , prop-proof c x}
+          {Lift (Hom[ D , _ ] (H ⟅ c ⟆)) , prop-proof c y}
+        _)
 
-      Yon : Functor C (FUNCTOR (C ^op) (SET (ℓ-max ℓC ℓC')))
-      Yon .F-ob a = LiftF {ℓC'}{ℓ-max ℓC ℓC'} ∘F (C [-, a ])
-      Yon .F-hom f .N-ob b g = lift (lower g ⋆⟨ C ⟩ f)
-      Yon .F-hom f .N-hom g = funExt (λ h i → lift (C .⋆Assoc g (lower h) f i))
-      Yon .F-id =
+      the-sec : seq' (FUNCTOR (D ^op) (SET (ℓ-max ℓD' ℓS))) the-inverse
+               (N-ob (TODONatIso H .trans) c)
+               ≡ FUNCTOR (D ^op) (SET (ℓ-max ℓD' ℓS)) .id
+      the-sec =
         makeNatTransPath
-          (funExt (λ a → funExt (λ f i → lift (C .⋆IdR (lower f) i ))))
-      Yon .F-seq f g =
+        (funExt (λ d → (SET _) .⋆IdR
+          {Lift (D [ d , H ⟅ c ⟆ ]) , prop-proof c d}
+          {Lift (D [ d , H ⟅ c ⟆ ]) , prop-proof c d}
+        _))
+
+      the-ret : seq' (FUNCTOR (D ^op) (SET (ℓ-max ℓD' ℓS)))
+               (N-ob (TODONatIso H .trans) c) the-inverse
+               ≡ FUNCTOR (D ^op) (SET (ℓ-max ℓD' ℓS)) .id
+      the-ret =
         makeNatTransPath
-        (funExt (λ a → funExt (λ h i → lift (C .⋆Assoc (lower h) f g (~ i)))))
+        (funExt (λ d → (SET _) .⋆IdR
+          {Lift (D [ d , H ⟅ c ⟆ ]) , prop-proof c d}
+          {Lift (D [ d , H ⟅ c ⟆ ]) , prop-proof c d}
+          _
+        ))
 
-      test : (Prof*-o→Functor C D (compF LiftF (Functor→Prof*-o C D F))) ≡ YON ∘F F
-      test = {!refl!}
-
-      _ : {!!}
-      _ =
-        isFullyFaithful→Conservative
-        (isFullyFaithful→isFullyFaithfulPostcomp {C = D} C YON {!!})
-        {!the-yoneda-iso-curried .snd!}
+    TODOFunc≅R : (G : Functor C D) →
+           ((c : C .ob) →
+           UniversalElementOn D (appR R c) (G ⟅ c ⟆)) →
+           NatIso (Prof*-o→Functor C D (compF (LiftF {ℓD'}{ℓS}) (Functor→Prof*-o C D G)))
+                  (Prof*-o→Functor C D (LiftF {ℓS}{ℓD'} ∘Fb R))
+    TODOFunc≅R G universalAtG = {!!}
 
 
-      the-yoneda-iso :
-        CatIso _
-          (BifunctorToParFunctor (compF LiftF (Functor→Prof*-o C D F)))
-          (BifunctorToParFunctor (compF LiftF (Functor→Prof*-o C D G)))
-      the-yoneda-iso =
-        liftIso {F = curryFl (D ^op) (SET _) {Γ = C}}
-          (isEquiv→isWeakEquiv (curryFl-isEquivalence (D ^op) (SET _) {Γ = C})
-            .fullfaith)
-          the-yoneda-iso-curried
+    TODOYonF≅YonG : (G : Functor C D) →
+           ((c : C .ob) →
+           UniversalElementOn D (appR R c) (G ⟅ c ⟆)) →
+           _
+    TODOYonF≅YonG G universalAtG =
+      seqNatIso
+        (symNatIso (TODONatIso F))
+        (seqNatIso (TODO G universalAtG) (TODONatIso G))
+
+    yon-yon-yon :
+      {ℓE ℓE' : Level} {E : Category ℓE ℓE'}{x : E .ob} →
+      (H : Functor (E ^op) (SET _)) →
+      NatTrans (yon x) H → H .F-ob x .fst
+    yon-yon-yon {_}{_}{E}{x} H α = α .N-ob x (lift (E .id))
+
+    non-non-non : {ℓE ℓE' : Level} {E : Category ℓE ℓE'}{x : E .ob} →
+      (H : Functor (E ^op) (SET _)) →
+      H .F-ob x .fst → NatTrans (yon x) H
+    non-non-non {_} {_} {E} {x} H f .N-ob y ϕ = H .F-hom (lower ϕ) f
+    non-non-non {_} {_} {E} {x} H f .N-hom a = funExt (λ g i → H .F-seq (lower g) a i f)
+
+    yonIso : {ℓE ℓE' : Level} {E : Category ℓE ℓE'}{x : E .ob} →
+      (H : Functor (E ^op) (SET _)) →
+      Iso (NatTrans (yon x) H) (H .F-ob x .fst)
+    yonIso {_} {_} {E} {x} H .Iso.fun = yon-yon-yon H
+    yonIso {_} {_} {E} {x} H .Iso.inv = non-non-non H
+    yonIso {_} {_} {E} {x} H .Iso.rightInv b i = H .F-id i b
+    yonIso {_} {_} {E} {x} H .Iso.leftInv a = makeNatTransPath (funExt λ _ → funExt λ x₁ i → rem (lower x₁) i)
+      where
+        rem : ∀ {z} (x₁ : E [ z , x ]) → H .F-hom x₁ (yon-yon-yon H a) ≡ (a .N-ob z) (lift x₁)
+        rem g =
+          H .F-hom g (yon-yon-yon H a)
+            ≡[ i ]⟨ a .N-hom g (~ i) (lift (E .id)) ⟩
+          a .N-hom g i0 (lift (E .id))
+            ≡[ i ]⟨ a .N-ob _ (lift(E .⋆IdR g i)) ⟩
+          (a .N-ob _) (lift g)
+            ∎
+
+    yonEquiv : {ℓE ℓE' : Level} {E : Category ℓE ℓE'}{x : E .ob} →
+      (H : Functor (E ^op) (SET _)) →
+      NatTrans (yon x) H ≃ H .F-ob x .fst
+    yonEquiv H = isoToEquiv (yonIso H)
+
+    isFullYON : {ℓE ℓE' : Level} {E : Category ℓE ℓE'} → isFull (YON {E = E})
+    isFullYON {_}{_}{E} x y F[f] = ∣ lower (yon-yon-yon (F-ob (YON {E = E}) y) F[f]) , yonIso {x = x} (yon y) .Iso.leftInv F[f] ∣₁
+
+    isFaithfulYON : {ℓE ℓE' : Level} {E : Category ℓE ℓE'} → isFaithful (YON {E = E})
+    isFaithfulYON {_}{_}{E} x y f g p i =
+      hcomp
+        (λ j → λ{ (i = i0) → E .⋆IdL f j ; (i = i1) → E .⋆IdL g j })
+        (lower (yon-yon-yon _ (p i)))
+
+    isFullyFaithfulYON : isFullyFaithful YON
+    isFullyFaithfulYON = isFull+Faithful→isFullyFaithful {F = YON} isFullYON isFaithfulYON
+
+    _ :  postcomposeF C YON .F-ob F ≡ YON ∘F F
+    _ = refl
+
+
+    the-yoneda-comp-iso : (G : Functor C D) →
+                    ((c : C .ob) →
+                    UniversalElementOn D (appR R c) (G ⟅ c ⟆)) →
+                    _
+    the-yoneda-comp-iso G universalAtG =
+      NatIso→FUNCTORIso C (FUNCTOR (D ^op) (SET (ℓ-max ℓD' ℓS)))
+        {F = YON ∘F F}{G = YON ∘F G} (TODOYonF≅YonG G universalAtG)
+
+    TODOYonedaIso : (G : Functor C D) →
+                    ((c : C .ob) →
+                    UniversalElementOn D (appR R c) (G ⟅ c ⟆)) →
+                    _
+    TODOYonedaIso G universalAtG =
+      isFullyFaithful→Conservative {F = postcomposeF C (YON {ℓD}{ℓD'}{D})}
+        (isFullyFaithful→isFullyFaithfulPostcomp C (YON {ℓD}{ℓD'}{D}) isFullyFaithfulYON)
+      {!the-yoneda-comp-iso G universalAtG .snd!}
 
     -- ueF : ∀ (c : C .ob) → UniversalElement D (appR R c)
     -- ueF c .vertex = F ⟅ c ⟆
