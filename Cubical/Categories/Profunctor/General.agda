@@ -231,10 +231,6 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') (R : C *-[ ℓS ]-o
     NatIso (Prof*-o→Functor C D ((LiftF {ℓS}{ℓD'}) ∘Fb R ))
            (Prof*-o→Functor C D (LiftF {ℓD'}{ℓS} ∘Fb (Functor→Prof*-o C D G)))
 
--- ((∀ (c : C .ob) → UniversalElement D (appR R c)))
--- UniversalElementOn D (appR R c) (F ⟅ c ⟆)
---
-
   UEOToUE : {F : Functor C D } → {c : C .ob} →
             UniversalElementOn D (appR R c) (F ⟅ c ⟆) →
             UniversalElement D (appR R c)
@@ -252,17 +248,39 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') (R : C *-[ ℓS ]-o
       λ f → lift {ℓD'}{ℓS} (intro (UEOToUE (universalAtF c)) (lower f))
   UniversalElementOnToPshFunctorRepresentation F universalAtF
     .trans .N-ob c .N-hom {d}{d'} ϕ =
-      let coind = intro (UEOToUE (universalAtF c)) in
       funExt (λ x →
-          ((λ i → lift (coind (R .Bif-hom× ϕ (C .id) (lower x))))) ∙
-          {!!} ∙
-          {!!}
-        )
+          cong lift (
+            cong (λ a → intro (UEOToUE (universalAtF c)) a)
+              (cong (λ a → lower (a x)) (sym ((compF LiftF R) .Bif-L×-agree ϕ)))  ∙
+            sym (intro-natural (UEOToUE (universalAtF c))) ∙
+            cong (λ a → a (intro (UEOToUE (universalAtF c)) (lower x)))
+              ((Functor→Prof*-o C D F) .Bif-L×-agree ϕ)
+          )
+      )
   UniversalElementOnToPshFunctorRepresentation F universalAtF
-    .trans .N-hom ϕ = {!!}
+    .trans .N-hom {x}{y} ϕ =
+    makeNatTransPath (funExt (λ d → funExt (λ α →
+      cong lift (
+        cong (λ a → intro (UEOToUE (universalAtF y)) a)
+          (cong (λ a → lower (a α)) (sym ((compF LiftF R) .Bif-R×-agree ϕ))) ∙
+        extensionality (UEOToUE (universalAtF y)) (
+          β (UEOToUE (universalAtF y)) ∙
+          -- cong (λ a → a (lower α)) (R .Bif-R×-agree ϕ) ∙
+          {!cong (λ a → R .Bif-hom)!} ∙
+          -- cong (λ a → a (universalAtF y .fst))
+          --   (sym (R .Bif-L×-agree (Functor→Prof*-o C D F .Bif-hom×
+          --     ((D ^op) .id) ϕ (intro (UEOToUE (universalAtF x))
+          --       (lower α))))) ∙
+          cong (λ a → ((appR R y) .F-hom a) (universalAtF y .fst))
+            (cong (λ a → a (intro (UEOToUE (universalAtF x)) (lower α)))
+              (sym ((Functor→Prof*-o C D F) .Bif-R×-agree ϕ)))
+        ) ∙
+        cong (λ a → a (intro (UEOToUE (universalAtF x)) (lower α)))
+          ((Functor→Prof*-o C D F) .Bif-R×-agree ϕ)
+      )
+    )))
   UniversalElementOnToPshFunctorRepresentation F universalAtF
     .nIso = {!!}
-
 
   open isWeakEquivalence
   UniqueFunctorComprehension : isUnivalent D →
