@@ -32,6 +32,7 @@ open import Cubical.Data.Sigma
 
 open import Cubical.HITs.PropositionalTruncation
 
+open import Cubical.Categories.Presheaf.Base
 open import Cubical.Categories.Presheaf.Representable
 open import Cubical.Categories.Presheaf.More
 open import Cubical.Categories.Instances.Functors.More
@@ -265,12 +266,25 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') (R : C *-[ ℓS ]-o
           (cong (λ a → lower (a α)) (sym ((compF LiftF R) .Bif-R×-agree ϕ))) ∙
         extensionality (UEOToUE (universalAtF y)) (
           β (UEOToUE (universalAtF y)) ∙
-          -- cong (λ a → a (lower α)) (R .Bif-R×-agree ϕ) ∙
-          {!cong (λ a → R .Bif-hom)!} ∙
-          -- cong (λ a → a (universalAtF y .fst))
-          --   (sym (R .Bif-L×-agree (Functor→Prof*-o C D F .Bif-hom×
-          --     ((D ^op) .id) ϕ (intro (UEOToUE (universalAtF x))
-          --       (lower α))))) ∙
+-- Goal: lower (compF LiftF R .Bif-homR d ϕ α) ≡ _y_2120
+          cong (λ a → R .Bif-homR d ϕ a) (sym (β (UEOToUE (universalAtF x)))) ∙
+          cong (λ a → a (universalAtF x .fst))
+            (R .Bif-LR-fuse (intro (UEOToUE (universalAtF x)) (lower α))
+            ϕ) ∙
+          cong (λ a → a (universalAtF x .fst))
+            (sym (R .Bif-RL-fuse (intro (UEOToUE (universalAtF x)) (lower α))
+              ϕ)) ∙
+          cong (λ a → (R .Bif-homL (intro (UEOToUE (universalAtF x)) (lower α)) y) a)
+            (sym (β (UEOToUE (universalAtF y)))) ∙
+          cong (λ a → a (universalAtF y .fst))
+            (sym (R .Bif-L-seq (intro (UEOToUE (universalAtF y))
+                  (R .Bif-homR (F ⟅ x ⟆) ϕ (universalAtF x .fst)))
+              (intro (UEOToUE (universalAtF x)) (lower α)))) ∙
+          cong (λ a → (R ⟪ a ⟫l) (universalAtF y .fst))
+            (cong (λ a → (intro (UEOToUE (universalAtF x)) (lower α)) ⋆⟨ D ⟩ a) (sym yoneda-trick)) ∙
+          cong (λ a → (R ⟪ a ⟫l) (universalAtF y .fst))
+            (cong (λ a → a (intro (UEOToUE (universalAtF x)) (lower α)) ⋆⟨ D ⟩ F ⟪ ϕ ⟫)
+                (sym (HomBif D .Bif-L-id))) ∙
           cong (λ a → ((appR R y) .F-hom a) (universalAtF y .fst))
             (cong (λ a → a (intro (UEOToUE (universalAtF x)) (lower α)))
               (sym ((Functor→Prof*-o C D F) .Bif-R×-agree ϕ)))
@@ -279,6 +293,12 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') (R : C *-[ ℓS ]-o
           ((Functor→Prof*-o C D F) .Bif-R×-agree ϕ)
       )
     )))
+    where
+    yoneda-trick : F ⟪ ϕ ⟫ ≡
+                   intro (UEOToUE (universalAtF y))
+                         (R .Bif-homR (F ⟅ x ⟆) ϕ (universalAtF x .fst))
+    yoneda-trick = {!!}
+
   UniversalElementOnToPshFunctorRepresentation F universalAtF
     .nIso = {!!}
 
