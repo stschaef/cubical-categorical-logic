@@ -266,7 +266,6 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') (R : C *-[ ℓS ]-o
           (cong (λ a → lower (a α)) (sym ((compF LiftF R) .Bif-R×-agree ϕ))) ∙
         extensionality (UEOToUE (universalAtF y)) (
           β (UEOToUE (universalAtF y)) ∙
--- Goal: lower (compF LiftF R .Bif-homR d ϕ α) ≡ _y_2120
           cong (λ a → R .Bif-homR d ϕ a) (sym (β (UEOToUE (universalAtF x)))) ∙
           cong (λ a → a (universalAtF x .fst))
             (R .Bif-LR-fuse (intro (UEOToUE (universalAtF x)) (lower α))
@@ -297,7 +296,7 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') (R : C *-[ ℓS ]-o
     yoneda-trick : F ⟪ ϕ ⟫ ≡
                    intro (UEOToUE (universalAtF y))
                          (R .Bif-homR (F ⟅ x ⟆) ϕ (universalAtF x .fst))
-    yoneda-trick = {!!}
+    yoneda-trick = ?
 
   UniversalElementOnToPshFunctorRepresentation F universalAtF
     .nIso = {!!}
