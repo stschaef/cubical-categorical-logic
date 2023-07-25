@@ -1,4 +1,18 @@
 {-# OPTIONS --safe #-}
+{-
+
+  If we think of a category D displayed over C as a functor p : D → C,
+  then a section is a functor s : C → D with p ∘ s definitionally
+  equal to the identity.
+
+  There is also an analogy with dependent types. In this analogy we think of
+  1. Categories as contexts Γ
+  2. Categories displayed over Γ as *sets* in context Γ ⊢ A set
+  3. Preorders displyaed over Γ as *propositions* in context Γ ⊢ P prop
+
+  Then a section is like a term Γ ⊢ M : A
+-}
+
 module Cubical.Categories.Displayed.Section where
 
 open import Cubical.Foundations.Prelude
@@ -64,6 +78,9 @@ module _ {C : Category ℓC ℓC'} (D : Categoryᴰ C ℓD ℓD') where
   SectionIsSection F = Functor≡ (λ c → refl) λ f → refl
 
   open Preorderᴰ
+  -- Γ ⊢ M : A    Γ ⊢ N : A
+  -- -----------------------
+  --     Γ ⊢ M ≡ N prop
   SecPath : (F G : Section) → Preorderᴰ C ℓD ℓD'
   SecPath F G .ob[_] c = Path (D.ob[ c ]) (F .F-ob c) (G .F-ob c)
   SecPath F G .Hom[_][_,_] f p q =
@@ -85,8 +102,18 @@ module _ {C : Category ℓC ℓC'} (D : Categoryᴰ C ℓD ℓD') where
     (λ c → p .F-ob c)
     λ f → p .F-hom f
 
+
 open Section
 open Preorder.Section
+
+module _ {C : Category ℓC ℓC'} (D : Categoryᴰ C ℓD ℓD') where
+  -- Γ , D ⊢ D
+  Snd : Section (weakenᴰ D D)
+  Snd .F-ob  = snd
+  Snd .F-hom = snd
+  Snd .F-id = refl
+  Snd .F-seq f g = refl
+
 module _ (C : Category ℓC ℓC') (P : Preorderᴰ C ℓD ℓD') where
   open Iso
   open Preorderᴰ
@@ -125,3 +152,4 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') where
   SectionToWkIsoFunctor .inv F .F-seq = F .F-seq
   SectionToWkIsoFunctor .rightInv b = Functor≡ (λ _ → refl) (λ _ → refl)
   SectionToWkIsoFunctor .leftInv a = refl
+
