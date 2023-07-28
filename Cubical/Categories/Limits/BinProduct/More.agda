@@ -52,10 +52,28 @@ module _ (C : Category ℓ ℓ') where
   BinProductToRepresentable bp .universal A .equiv-proof (f1 , f2) .snd y =
     Σ≡Prop (λ _ → isSet× (isSetHom C) (isSetHom C) _ _)
     (cong fst (bp .univProp f1 f2 .snd ((y .fst) , PathPΣ (y .snd))))
+  open UniversalElement
+  RightAdjoint'ToBinProducts : RightAdjoint' C (C ×C C) (Δ C) → BinProducts C
+  RightAdjoint'ToBinProducts bp x y .binProdOb = bp (x , y) .vertex
+  RightAdjoint'ToBinProducts bp x y .binProdPr₁ = bp (x , y) .element .fst
+  RightAdjoint'ToBinProducts bp x y .binProdPr₂ = bp (x , y) .element .snd
+  RightAdjoint'ToBinProducts bp x y .univProp f₁ f₂ .fst .fst =
+    invIsEq (bp (x , y) .universal _) (f₁ , f₂)
+  RightAdjoint'ToBinProducts bp x y .univProp f₁ f₂ .fst .snd =
+    PathPΣ (secIsEq (bp (x , y) .universal _) (f₁ , f₂))
+  RightAdjoint'ToBinProducts bp x y .univProp f₁ f₂ .snd y₁ =
+    Σ≡Prop (λ _ → isProp× (isSetHom C _ _) (isSetHom C _ _))
+    ( cong (invIsEq (bp (x , y) .universal _))
+      (ΣPathP ((sym (y₁ .snd .fst)) , (sym (y₁ .snd .snd))))
+    ∙ retIsEq (bp (x , y) .universal _) (y₁ .fst))
 
   module _ (bp : BinProducts C) where
     BinProductsToUnivElts : RightAdjoint C (C ×C C) (Δ C)
     BinProductsToUnivElts c = BinProductToRepresentable (bp (c .fst) (c .snd))
+
+    BinProductsToRightAdjoint' : RightAdjoint' C (C ×C C) (Δ C)
+    BinProductsToRightAdjoint' =
+      RightAdjoint→Prime C (C ×C C) (Δ C) BinProductsToUnivElts
 
     ProdProf : C o-[ ℓ' ]-* (C ×C C)
     ProdProf = Functor→Profo-* C (C ×C C) (Δ C)

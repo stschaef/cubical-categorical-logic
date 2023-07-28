@@ -54,6 +54,18 @@ RightAdjoint' : (C : Category ℓC ℓC')
               → Type _
 RightAdjoint' C D F = ∀ d → RightAdjointAt' C D F d
 
+RightAdjoint→Prime : (C : Category ℓC ℓC')
+                (D : Category ℓD ℓD')
+                (F : Functor C D)
+              → RightAdjoint C D F
+              → RightAdjoint' C D F
+RightAdjoint→Prime C D F x d .UniversalElement.vertex =
+  UniversalElement.vertex (x d)
+RightAdjoint→Prime C D F x d .UniversalElement.element =
+  UniversalElement.element (x d)
+RightAdjoint→Prime C D F x d .UniversalElement.universal =
+  UniversalElement.universal (x d)
+
 IdRightAdj' : (C : Category ℓC ℓC')
       → RightAdjoint' C C Id
 IdRightAdj' C c .UniversalElement.vertex = c

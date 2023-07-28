@@ -81,14 +81,19 @@ module UniversalElementNotation {ℓo}{ℓh}
   open UniversalElement ue
 
   intro : ∀ {c} → ⟨ P ⟅ c ⟆ ⟩ → C [ c , vertex ]
-  intro p = universal _ .equiv-proof p .fst .fst
+  intro = invIsEq (universal _)
+
+  ≡intro : ∀ {c} {f : C [ c , vertex ]}{p}
+         → element ∘ᴾ⟨ C , P ⟩ f ≡ p
+         → f ≡ intro p
+  ≡intro ef≡p = isoFunInjective (equivToIso (_ , universal _)) _ _
+    (ef≡p ∙ sym (secIsEq (universal _) _))
 
   β : ∀ {c} → {p : ⟨ P ⟅ c ⟆ ⟩} → (element ∘ᴾ⟨ C , P ⟩ intro p) ≡ p
-  β {p = p} = universal _ .equiv-proof p .fst .snd
+  β {p = p} = secIsEq (universal _) p
 
   η : ∀ {c} → {f : C [ c , vertex ]} → f ≡ intro (element ∘ᴾ⟨ C , P ⟩ f)
-  η {f = f} = cong fst (sym (universal _ .equiv-proof (element ∘ᴾ⟨ C , P ⟩ f)
-    .snd (_ , refl)))
+  η {f = f} = sym (retIsEq (universal _) f)
 
   weak-η : C .id ≡ intro element
   weak-η = η ∙ cong intro (∘ᴾId C P _)
@@ -100,11 +105,7 @@ module UniversalElementNotation {ℓo}{ℓh}
 
   intro-natural : ∀ {c' c} → {p : ⟨ P ⟅ c ⟆ ⟩}{f : C [ c' , c ]}
                 → intro p ∘⟨ C ⟩ f ≡ intro (p ∘ᴾ⟨ C , P ⟩ f)
-  intro-natural = extensionality
-    ( (∘ᴾAssoc C P _ _ _
-    ∙ cong (action C P _) β)
-    ∙ sym β)
-
+  intro-natural = ≡intro (∘ᴾAssoc C P _ _ _ ∙ cong (action C P _) β)
 module _ {C : Category ℓ ℓ'} (isUnivC : isUnivalent C) (P : Presheaf C ℓS) where
   open Contravariant
   isPropUniversalElement : isProp (UniversalElement C P)

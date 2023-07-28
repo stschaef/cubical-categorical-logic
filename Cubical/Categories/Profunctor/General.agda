@@ -27,6 +27,7 @@ open import Cubical.Categories.Functors.More
 open import Cubical.Categories.Functors.HomFunctor
 open import Cubical.Data.Sigma
 
+open import Cubical.Categories.Presheaf
 open import Cubical.Categories.Presheaf.Representable
 open import Cubical.Categories.Presheaf.More
 open import Cubical.Categories.Instances.Functors.More
@@ -176,6 +177,30 @@ Functor→Profo-* C D F = HomBif D ∘Fl (F ^opF)
 --                   (D : Category ℓD ℓD') (R : C o-[ ℓS ]-* D) →
 --                     Functor (C ^op) (FUNCTOR D (SET ℓS))
 -- Profo-*→Functor C D R = curryF D (SET _) ⟅ Bifunctor→Functor R ⟆
+
+module _ {C : Category ℓC ℓC'} {D : Category ℓD ℓD'}
+         (F~ : Functor C (PresheafCategory D ℓS))
+         (F-repr : (∀ c → UniversalElement D (F~ ⟅ c ⟆)))
+       where
+  private
+    module UE {c : C .ob} = UniversalElementNotation (F-repr c)
+  
+  FunctorComprehension'
+    : Functor C D
+  FunctorComprehension' .F-ob x = F-repr x .vertex
+  FunctorComprehension' .F-hom {x}{y} f =
+    UE.intro (((F~ ⟪ f ⟫) ⟦ _ ⟧) (F-repr x .element))
+  FunctorComprehension' .F-id {x} =
+    (λ i → UE.intro (((F~ .F-id i) ⟦ _ ⟧) (F-repr x .element)))
+    ∙ sym UE.weak-η
+  FunctorComprehension' .F-seq {x}{y}{z} f g =
+    sym (UE.≡intro
+      ((∘ᴾAssoc _ _ _ _ _
+      ∙ cong ((F~ ⟅ z ⟆) .F-hom _) UE.β
+      ∙ (λ i → (F~ ⟪ g ⟫) .N-hom (UE.intro (((F~ ⟪ f ⟫) ⟦ F-repr x .vertex ⟧) (F-repr x .element))) (~ i) (F-repr y .element))
+      ∙ cong ((F~ ⟪ g ⟫) ⟦ _ ⟧) UE.β)
+      ∙ (λ i → (F~ .F-seq f g (~ i) ⟦ _ ⟧) (F-repr x .element))))
+    where open NatTrans
 
 module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') (R : C *-[ ℓS ]-o D) where
 

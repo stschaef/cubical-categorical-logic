@@ -36,8 +36,16 @@ module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'} where
       sec : inv ⋆ᴰ fᴰ ≡[ fIsIso .sec ] idᴰ
       ret : fᴰ ⋆ᴰ inv ≡[ fIsIso .ret ] idᴰ
 
+  -- TODO: show isProp (isIsoᴰ ___...)
+
   CatᴰIso : ∀ {x y}(iso : CatIso C x y)(xᴰ : ob[ x ])(yᴰ : ob[ y ]) → Type ℓCᴰ'
   CatᴰIso iso xᴰ yᴰ = Σ[ fᴰ ∈ Cᴰ [ iso .fst ][ xᴰ , yᴰ ] ] isIsoᴰ (iso .snd) fᴰ
+
+  conservative : Type _
+  conservative = ∀ {x y} {f : C [ x , y ]}{xᴰ yᴰ} (fᴰ : Cᴰ [ f ][ xᴰ , yᴰ ])
+               → (fIsIso : isIso C f)
+               → isIsoᴰ fIsIso fᴰ
+               
 
   idCatᴰIso : ∀ {x}{xᴰ : ob[ x ]} → CatᴰIso idCatIso xᴰ xᴰ
   idCatᴰIso .fst = idᴰ
@@ -54,6 +62,8 @@ module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'} where
     p
     pᴰ
 
+  -- Note: the 1lab has an alternative definition that they say is
+  -- much easier to work with.
   isUnivalentᴰ : Type (ℓ-max (ℓ-max ℓC ℓCᴰ) ℓCᴰ')
   isUnivalentᴰ = ∀ {x}{y} (xᴰ : ob[ x ])(yᴰ : ob[ y ])(p : x ≡ y) →
     isEquiv (pathᴰToIsoᴰ {xᴰ = xᴰ}{yᴰ = yᴰ}{p = p})

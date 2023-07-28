@@ -12,12 +12,14 @@ open import Cubical.Data.Sigma
 open import Cubical.Categories.Category
 open import Cubical.Categories.Instances.Sets
 open import Cubical.Categories.Presheaf
+open import Cubical.Categories.Presheaf.More
 open import Cubical.Categories.Presheaf.Representable
 open import Cubical.Categories.Functor
 open import Cubical.Categories.Displayed.Base
 open import Cubical.Categories.Displayed.Base.More
 open import Cubical.Categories.Displayed.Instances.Sets
 open import Cubical.Categories.Displayed.Functor
+open import Cubical.Categories.Displayed.Constructions.Functors
 
 private
   variable
@@ -35,6 +37,11 @@ Presheafᴰ : {C : Category ℓC ℓC'} (D : Categoryᴰ C ℓD ℓD')
                     (ℓ-suc ℓP'))
 Presheafᴰ {ℓP = ℓP} D P ℓP' = Functorᴰ P (D ^opᴰ) (SETS ℓP ℓP')
 
+PRESHEAFᴰ : {C : Category ℓC ℓC'} (D : Categoryᴰ C ℓD ℓD')
+            (ℓP : Level) (ℓP' : Level)
+          → Categoryᴰ (PresheafCategory C ℓP) _ _
+PRESHEAFᴰ D ℓP ℓP' = FUNCTORᴰ (D ^opᴰ) (SETS ℓP ℓP')
+
 module _ {C : Category ℓC ℓC'} (D : Categoryᴰ C ℓD ℓD')
          {P : Presheaf C ℓP} (Pᴰ : Presheafᴰ D P ℓP') where
 
@@ -43,10 +50,19 @@ module _ {C : Category ℓC ℓC'} (D : Categoryᴰ C ℓD ℓD')
   record UniversalElementᴰ (ue : UniversalElement C P)
     : Type (ℓ-max (ℓ-max (ℓ-max (ℓ-max ℓC ℓC') ℓD) ℓD') ℓP') where
     open UniversalElement ue
+    open UniversalElementNotation ue
     open Categoryᴰ D
     field
       vertexᴰ : ob[ vertex ]
       elementᴰ : ⟨ Pᴰ .F-obᴰ vertexᴰ element ⟩
-      universalᴰ : ∀ {x xᴰ}{f : C [ x , vertex ]}
+      universalᴰ : ∀ {x} xᴰ {f : C [ x , vertex ]}
                  → isEquiv λ (fᴰ : Hom[ f ][ xᴰ , vertexᴰ ]) →
                      Pᴰ .F-homᴰ fᴰ _ elementᴰ
+    introᴰ : ∀ {x xᴰ} {p : ⟨ P .F-ob x ⟩}
+           → ⟨ Pᴰ .F-obᴰ xᴰ p ⟩
+           → D [ intro p ][ xᴰ , vertexᴰ ]
+    introᴰ {x}{xᴰ}{p} pᴰ  = invIsEq (universalᴰ xᴰ) pᴰ'
+      where pᴰ' = transport (λ i → ⟨ Pᴰ .F-obᴰ xᴰ (β {p = p} (~ i)) ⟩) pᴰ
+
+    -- weak-ηᴰ : idᴰ {p = vertexᴰ} ≡[ weak-η ] (introᴰ {p = element} elementᴰ)
+    -- weak-ηᴰ = {!!}
