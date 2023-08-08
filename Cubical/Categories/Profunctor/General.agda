@@ -253,7 +253,8 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') (R : C *-[ ℓS ]-o
       funExt (λ x →
           cong lift (
             cong (λ a → intro (UEOToUE (universalAtF c)) a)
-              (cong (λ a → lower (a x)) (sym ((compF LiftF R) .Bif-L×-agree ϕ)))  ∙
+              (cong (λ a → lower (a x))
+                (sym ((compF LiftF R) .Bif-L×-agree ϕ)))  ∙
             sym (intro-natural (UEOToUE (universalAtF c))) ∙
             cong (λ a → a (intro (UEOToUE (universalAtF c)) (lower x)))
               ((Functor→Prof*-o C D F) .Bif-L×-agree ϕ)
@@ -261,46 +262,76 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') (R : C *-[ ℓS ]-o
       )
   UniversalElementOnToPshFunctorRepresentation F universalAtF
     .trans .N-hom {x}{y} ϕ =
+    let xelt = UEOToUE (universalAtF x) in
+    let yelt = UEOToUE (universalAtF y) in
     makeNatTransPath (funExt (λ d → funExt (λ α →
       cong lift (
-        cong (λ a → intro (UEOToUE (universalAtF y)) a)
-          (cong (λ a → lower (a α)) (sym ((compF LiftF R) .Bif-R×-agree ϕ))) ∙
-        extensionality (UEOToUE (universalAtF y)) (
-          β (UEOToUE (universalAtF y)) ∙
-          cong (λ a → R .Bif-homR d ϕ a) (sym (β (UEOToUE (universalAtF x)))) ∙
-          cong (λ a → a (universalAtF x .fst))
-            (R .Bif-LR-fuse (intro (UEOToUE (universalAtF x)) (lower α))
-            ϕ) ∙
-          cong (λ a → a (universalAtF x .fst))
-            (sym (R .Bif-RL-fuse (intro (UEOToUE (universalAtF x)) (lower α))
-              ϕ)) ∙
-          cong (λ a → (R .Bif-homL (intro (UEOToUE (universalAtF x)) (lower α)) y) a)
-            (sym (β (UEOToUE (universalAtF y)))) ∙
-          cong (λ a → a (universalAtF y .fst))
-            (sym (R .Bif-L-seq (intro (UEOToUE (universalAtF y))
-                  (R .Bif-homR (F ⟅ x ⟆) ϕ (universalAtF x .fst)))
-              (intro (UEOToUE (universalAtF x)) (lower α)))) ∙
-          cong (λ a → (R ⟪ a ⟫l) (universalAtF y .fst))
-            (cong (λ a → (intro (UEOToUE (universalAtF x)) (lower α)) ⋆⟨ D ⟩ a) (sym yoneda-trick)) ∙
-          cong (λ a → (R ⟪ a ⟫l) (universalAtF y .fst))
-            (cong (λ a → a (intro (UEOToUE (universalAtF x)) (lower α)) ⋆⟨ D ⟩ F ⟪ ϕ ⟫)
-                (sym (HomBif D .Bif-L-id))) ∙
-          cong (λ a → ((appR R y) .F-hom a) (universalAtF y .fst))
-            (cong (λ a → a (intro (UEOToUE (universalAtF x)) (lower α)))
-              (sym ((Functor→Prof*-o C D F) .Bif-R×-agree ϕ)))
+        cong (λ a → intro yelt (a (lower α))) (sym (R .Bif-R×-agree ϕ)) ∙
+        cong (λ a → intro yelt a) (
+          cong (λ a → R .Bif-homR d ϕ a) (sym (β xelt)) ∙
+          cong (λ a → a (xelt .element)) (R .Bif-LR-fuse (intro (UEOToUE (universalAtF x)) (lower α)) ϕ) ∙
+          sym (cong (λ a → a (xelt .element))
+            (R .Bif-RL-fuse (intro (UEOToUE (universalAtF x)) (lower α)) ϕ))
         ) ∙
-        cong (λ a → a (intro (UEOToUE (universalAtF x)) (lower α)))
-          ((Functor→Prof*-o C D F) .Bif-R×-agree ϕ)
+        -- (sym (intro-natural yelt {p = (R .Bif-homR _ ϕ) (xelt .element)} {f = intro xelt (lower α)})) ∙
+        -- {!refl!} ∙
+        extensionality yelt (
+          β yelt ∙
+          cong (λ a → a (xelt .element)) (R .Bif-RL-fuse (intro (UEOToUE (universalAtF x)) (lower α)) ϕ) ∙
+          sym (cong (λ a → a (xelt .element)) (R .Bif-LR-fuse (intro (UEOToUE (universalAtF x)) (lower α)) ϕ)) ∙
+           cong (λ a → (R .Bif-homR d ϕ) (a)) (β xelt) ∙
+          {!!} ∙
+          {!!} ∙
+          sym (cong (λ a → a (yelt .element)) ((appR R y) .F-seq (F ⟪ ϕ ⟫) (intro (UEOToUE (universalAtF x)) (lower α)))) ∙
+          cong (λ a → action D (appR R y) (a (intro xelt (lower α))) (yelt .element)) (Functor→Prof*-o C D F .Bif-R×-agree ϕ)
+          -- {!!}
+          )
       )
     )))
+    -- makeNatTransPath (funExt (λ d → funExt (λ α →
+    --   cong lift (
+    --     cong (λ a → intro (UEOToUE (universalAtF y)) a)
+    --       (cong (λ a → lower (a α)) (sym ((compF LiftF R) .Bif-R×-agree ϕ))) ∙
+    --     extensionality (UEOToUE (universalAtF y)) (
+    --       β (UEOToUE (universalAtF y)) ∙
+    --       cong (λ a → R .Bif-homR d ϕ a) (sym (β (UEOToUE (universalAtF x)))) ∙
+    --       cong (λ a → a (universalAtF x .fst))
+    --         (R .Bif-LR-fuse (intro (UEOToUE (universalAtF x)) (lower α))
+    --         ϕ) ∙
+    --       cong (λ a → a (universalAtF x .fst))
+    --         (sym (R .Bif-RL-fuse (intro (UEOToUE (universalAtF x)) (lower α))
+    --           ϕ)) ∙
+    --       cong (λ a → (R .Bif-homL (intro
+    --         (UEOToUE (universalAtF x)) (lower α)) y) a)
+    --         (sym (β (UEOToUE (universalAtF y)))) ∙
+    --       cong (λ a → a (universalAtF y .fst))
+    --         (sym (R .Bif-L-seq (intro (UEOToUE (universalAtF y))
+    --               (R .Bif-homR (F ⟅ x ⟆) ϕ (universalAtF x .fst)))
+    --           (intro (UEOToUE (universalAtF x)) (lower α)))) ∙
+    --       cong (λ a → (R ⟪ a ⟫l) (universalAtF y .fst))
+    --         (cong (λ a → (intro (UEOToUE (universalAtF x)) (lower α)) ⋆⟨ D ⟩ a)
+    --           (sym yoneda-trick)) ∙
+    --       cong (λ a → (R ⟪ a ⟫l) (universalAtF y .fst))
+    --         (cong (λ a → a (intro (UEOToUE (universalAtF x)) (lower α)) ⋆⟨ D ⟩
+    --           F ⟪ ϕ ⟫)
+    --             (sym (HomBif D .Bif-L-id))) ∙
+    --       cong (λ a → ((appR R y) .F-hom a) (universalAtF y .fst))
+    --         (cong (λ a → a (intro (UEOToUE (universalAtF x)) (lower α)))
+    --           (sym ((Functor→Prof*-o C D F) .Bif-R×-agree ϕ)))
+    --     ) ∙
+    --     cong (λ a → a (intro (UEOToUE (universalAtF x)) (lower α)))
+    --       ((Functor→Prof*-o C D F) .Bif-R×-agree ϕ)
+    --   )
+    -- )))
     where
     yoneda-trick : F ⟪ ϕ ⟫ ≡
                    intro (UEOToUE (universalAtF y))
                          (R .Bif-homR (F ⟅ x ⟆) ϕ (universalAtF x .fst))
-    yoneda-trick = {!!}
+    yoneda-trick =
+      let yelt = UEOToUE (universalAtF y) in
+      extensionality yelt {!!}
 
-  UniversalElementOnToPshFunctorRepresentation F universalAtF
-    .nIso = {!!}
+  UniversalElementOnToPshFunctorRepresentation F universalAtF .nIso c = {!!}
 
   open isWeakEquivalence
   UniqueFunctorComprehension : isUnivalent D →
@@ -319,32 +350,27 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') (R : C *-[ ℓS ]-o
     F = FunctorComprehension ues .fst
     universalAtF = FunctorComprehension ues .snd
 
-    TODO : (G : Functor C D) →
-           ((c : C .ob) →
-           UniversalElementOn D (appR R c) (G ⟅ c ⟆)) →
-           _
-    TODO G universalAtG =
-      seqNatIso
-        (symNatIso
-          (UniversalElementOnToPshFunctorRepresentation F universalAtF))
-          (UniversalElementOnToPshFunctorRepresentation G universalAtG)
-
     -- Echoing this from Categories.Yoneda but without levels issues
-    yon : {ℓE ℓE' : Level} {E : Category ℓE ℓE'} → (E .ob) → Functor (E ^op) (SET (ℓ-max ℓE' ℓS))
+    yon : {ℓE ℓE' : Level} {E : Category ℓE ℓE'} → (E .ob) →
+          Functor (E ^op) (SET (ℓ-max ℓE' ℓS))
     yon {_}{ℓE'}{E} x .F-ob y .fst = Lift {ℓE'}{ℓS} (E [ y , x ])
     yon {_}{_}{E} x .F-ob y .snd =
       λ x₁ y₁ x₂ y₂ i i₁ →
-        lift (E .isSetHom (lower x₁) (lower y₁) (cong lower x₂) (cong lower y₂) i i₁)
+        lift (E .isSetHom (lower x₁) (lower y₁)
+                (cong lower x₂) (cong lower y₂) i i₁)
     yon {_}{_}{E} x .F-hom f g = lift (f ⋆⟨ E ⟩ (lower g))
     yon {_}{_}{E} x .F-id i f = lift (E .⋆IdL (lower f) i)
     yon {_}{_}{E} x .F-seq f g i h = lift (E. ⋆Assoc g f (lower h) i)
 
-    YON : {ℓE ℓE' : Level} {E : Category ℓE ℓE'} → Functor E (FUNCTOR (E ^op) (SET (ℓ-max ℓE' ℓS)))
+    YON : {ℓE ℓE' : Level} {E : Category ℓE ℓE'} →
+          Functor E (FUNCTOR (E ^op) (SET (ℓ-max ℓE' ℓS)))
     YON {_}{_}{E} .F-ob e = yon {E = E} e
     YON {_}{_}{E} .F-hom f .N-ob z g = lift (lower g ⋆⟨ E ⟩ f)
     YON {_}{_}{E} .F-hom f .N-hom g i h = lift (E .⋆Assoc g (lower h) f i)
-    YON {_}{_}{E} .F-id = makeNatTransPath (λ i _ → λ f → lift (E .⋆IdR (lower f) i) )
-    YON {_}{_}{E} .F-seq f g = makeNatTransPath λ i _ → λ h → lift (E .⋆Assoc (lower h) f g (~ i))
+    YON {_}{_}{E} .F-id =
+      makeNatTransPath (λ i _ → λ f → lift (E .⋆IdR (lower f) i) )
+    YON {_}{_}{E} .F-seq f g =
+      makeNatTransPath λ i _ → λ h → lift (E .⋆Assoc (lower h) f g (~ i))
 
     the-trans : (H : Functor C D) →
                 NatTrans (Prof*-o→Functor C D (compF (LiftF {ℓD'}{ℓS})
@@ -354,11 +380,13 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') (R : C *-[ ℓS ]-o
     the-trans H .N-ob c .N-ob d f = f
     the-trans H .N-ob c .N-hom ϕ =
       (SET _) .⋆IdR _ ∙
-      funExt (λ z i → lift ((cong (λ a → (D ⋆ seq' D ϕ (lower z)) a) (H .F-id)) i)) ∙
+      funExt (λ z i →
+        lift ((cong (λ a → (D ⋆ seq' D ϕ (lower z)) a) (H .F-id)) i)) ∙
       funExt (λ z i → lift (D .⋆IdR (seq' D ϕ (lower z)) i)) ∙
       funExt (λ z i → lift ((SET _) .⋆IdL
         {Hom[ D , _ ] (H .F-ob c) , D .isSetHom}
-        {Hom[ D , _ ] (H .F-ob c) , D .isSetHom} (λ x → ϕ ⋆⟨ D ⟩ x) i (lower z)))
+        {Hom[ D , _ ] (H .F-ob c) , D .isSetHom}
+          (λ x → ϕ ⋆⟨ D ⟩ x) i (lower z)))
     the-trans H .N-hom {c}{c'} ϕ =
       let
         prop-proof : (c : C .ob) → (d : D .ob) →
@@ -386,76 +414,80 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') (R : C *-[ ℓS ]-o
       ))
 
 
-    TODONatIso : (H : Functor C D) →
-                 NatIso (Prof*-o→Functor C D (compF (LiftF {ℓD'}{ℓS})
-                                           (Functor→Prof*-o C D H)))
-                        (YON ∘F H)
-    TODONatIso H .trans = the-trans H
-    TODONatIso H .nIso c =
-      isiso
-        the-inverse the-sec the-ret
-      where
+    -- TODONatIso : (H : Functor C D) →
+    --              NatIso (Prof*-o→Functor C D (compF (LiftF {ℓD'}{ℓS})
+    --                                        (Functor→Prof*-o C D H)))
+    --                     (YON ∘F H)
+    -- TODONatIso H .trans = the-trans H
+    -- TODONatIso H .nIso c =
+    --   isiso
+    --     the-inverse the-sec the-ret
+    --   where
 
-      prop-proof : (c : C .ob) → (d : D .ob) →
-                   (x y : Lift {ℓD'}{ℓS} (Hom[ D , d ] (F-ob H c))) →
-                   isProp (x ≡ y)
-      prop-proof c d x y x₁ y₁ i i₁ =
-        lift (D .isSetHom
-          (lower x)
-          (lower y)
-          (cong lower x₁)
-          (cong lower y₁) i i₁)
+    --   prop-proof : (c : C .ob) → (d : D .ob) →
+    --                (x y : Lift {ℓD'}{ℓS} (Hom[ D , d ] (F-ob H c))) →
+    --                isProp (x ≡ y)
+    --   prop-proof c d x y x₁ y₁ i i₁ =
+    --     lift (D .isSetHom
+    --       (lower x)
+    --       (lower y)
+    --       (cong lower x₁)
+    --       (cong lower y₁) i i₁)
 
-      the-inverse :
-        NatTrans ((YON ∘F H) .F-ob c)
-                 (Prof*-o→Functor C D
-                   (compF LiftF (Functor→Prof*-o C D H)) .F-ob c)
-      the-inverse .N-ob d f = f
-      the-inverse .N-hom {x}{y} ϕ =
-        (SET _) .⋆IdR _ ∙
-        funExt (λ z → sym (cong lift (((cong (λ a → a (lower z)) (sym ((Functor→Prof*-o C D H) .Bif-L×-agree ϕ))))))) ∙
-        sym ((SET _) .⋆IdL
-          {Lift (Hom[ D , _ ] (F-ob H c)) , prop-proof c x}
-          {Lift (Hom[ D , _ ] (H ⟅ c ⟆)) , prop-proof c y}
-        _)
+    --   the-inverse :
+    --     NatTrans ((YON ∘F H) .F-ob c)
+    --              (Prof*-o→Functor C D
+    --                (compF LiftF (Functor→Prof*-o C D H)) .F-ob c)
+    --   the-inverse .N-ob d f = f
+    --   the-inverse .N-hom {x}{y} ϕ =
+    --     (SET _) .⋆IdR _ ∙
+    --     funExt (λ z → sym (cong lift (((cong (λ a → a (lower z))
+    --       (sym ((Functor→Prof*-o C D H) .Bif-L×-agree ϕ))))))) ∙
+    --     sym ((SET _) .⋆IdL
+    --       {Lift (Hom[ D , _ ] (F-ob H c)) , prop-proof c x}
+    --       {Lift (Hom[ D , _ ] (H ⟅ c ⟆)) , prop-proof c y}
+    --     _)
 
-      the-sec : seq' (FUNCTOR (D ^op) (SET (ℓ-max ℓD' ℓS))) the-inverse
-               (N-ob (TODONatIso H .trans) c)
-               ≡ FUNCTOR (D ^op) (SET (ℓ-max ℓD' ℓS)) .id
-      the-sec =
-        makeNatTransPath
-        (funExt (λ d → (SET _) .⋆IdR
-          {Lift (D [ d , H ⟅ c ⟆ ]) , prop-proof c d}
-          {Lift (D [ d , H ⟅ c ⟆ ]) , prop-proof c d}
-        _))
+    --   the-sec : seq' (FUNCTOR (D ^op) (SET (ℓ-max ℓD' ℓS))) the-inverse
+    --            (N-ob (TODONatIso H .trans) c)
+    --            ≡ FUNCTOR (D ^op) (SET (ℓ-max ℓD' ℓS)) .id
+    --   the-sec =
+    --     makeNatTransPath
+    --     (funExt (λ d → (SET _) .⋆IdR
+    --       {Lift (D [ d , H ⟅ c ⟆ ]) , prop-proof c d}
+    --       {Lift (D [ d , H ⟅ c ⟆ ]) , prop-proof c d}
+    --     _))
 
-      the-ret : seq' (FUNCTOR (D ^op) (SET (ℓ-max ℓD' ℓS)))
-               (N-ob (TODONatIso H .trans) c) the-inverse
-               ≡ FUNCTOR (D ^op) (SET (ℓ-max ℓD' ℓS)) .id
-      the-ret =
-        makeNatTransPath
-        (funExt (λ d → (SET _) .⋆IdR
-          {Lift (D [ d , H ⟅ c ⟆ ]) , prop-proof c d}
-          {Lift (D [ d , H ⟅ c ⟆ ]) , prop-proof c d}
-          _
-        ))
+    --   the-ret : seq' (FUNCTOR (D ^op) (SET (ℓ-max ℓD' ℓS)))
+    --            (N-ob (TODONatIso H .trans) c) the-inverse
+    --            ≡ FUNCTOR (D ^op) (SET (ℓ-max ℓD' ℓS)) .id
+    --   the-ret =
+    --     makeNatTransPath
+    --     (funExt (λ d → (SET _) .⋆IdR
+    --       {Lift (D [ d , H ⟅ c ⟆ ]) , prop-proof c d}
+    --       {Lift (D [ d , H ⟅ c ⟆ ]) , prop-proof c d}
+    --       _
+    --     ))
 
-    TODOFunc≅R : (G : Functor C D) →
-           ((c : C .ob) →
-           UniversalElementOn D (appR R c) (G ⟅ c ⟆)) →
-           NatIso (Prof*-o→Functor C D (compF (LiftF {ℓD'}{ℓS}) (Functor→Prof*-o C D G)))
-                  (Prof*-o→Functor C D (LiftF {ℓS}{ℓD'} ∘Fb R))
-    TODOFunc≅R G universalAtG = {!!}
+    -- TODOFunc≅R : (G : Functor C D) →
+    --        ((c : C .ob) →
+    --        UniversalElementOn D (appR R c) (G ⟅ c ⟆)) →
+    --        NatIso
+    --          (Prof*-o→Functor C D
+    --            (compF (LiftF {ℓD'}{ℓS}) (Functor→Prof*-o C D G)))
+    --           (Prof*-o→Functor C D (LiftF {ℓS}{ℓD'} ∘Fb R))
+    -- TODOFunc≅R G universalAtG = {!!}
 
 
-    TODOYonF≅YonG : (G : Functor C D) →
-           ((c : C .ob) →
-           UniversalElementOn D (appR R c) (G ⟅ c ⟆)) →
-           _
-    TODOYonF≅YonG G universalAtG =
-      seqNatIso
-        (symNatIso (TODONatIso F))
-        (seqNatIso (TODO G universalAtG) (TODONatIso G))
+    -- TODOYonF≅YonG : (G : Functor C D) →
+    --        ((c : C .ob) →
+    --        UniversalElementOn D (appR R c) (G ⟅ c ⟆)) →
+    --        _
+    -- TODOYonF≅YonG G universalAtG =
+    --   seqNatIso
+    --     (symNatIso (TODONatIso F))
+    --     (se
+        -- qNatIso (TODO G universalAtG) (TODONatIso G))
 
     yon-yon-yon :
       {ℓE ℓE' : Level} {E : Category ℓE ℓE'}{x : E .ob} →
@@ -467,7 +499,8 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') (R : C *-[ ℓS ]-o
       (H : Functor (E ^op) (SET _)) →
       H .F-ob x .fst → NatTrans (yon x) H
     non-non-non {_} {_} {E} {x} H f .N-ob y ϕ = H .F-hom (lower ϕ) f
-    non-non-non {_} {_} {E} {x} H f .N-hom a = funExt (λ g i → H .F-seq (lower g) a i f)
+    non-non-non {_} {_} {E} {x} H f .N-hom a =
+      funExt (λ g i → H .F-seq (lower g) a i f)
 
     yonIso : {ℓE ℓE' : Level} {E : Category ℓE ℓE'}{x : E .ob} →
       (H : Functor (E ^op) (SET _)) →
@@ -475,9 +508,11 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') (R : C *-[ ℓS ]-o
     yonIso {_} {_} {E} {x} H .Iso.fun = yon-yon-yon H
     yonIso {_} {_} {E} {x} H .Iso.inv = non-non-non H
     yonIso {_} {_} {E} {x} H .Iso.rightInv b i = H .F-id i b
-    yonIso {_} {_} {E} {x} H .Iso.leftInv a = makeNatTransPath (funExt λ _ → funExt λ x₁ i → rem (lower x₁) i)
+    yonIso {_} {_} {E} {x} H .Iso.leftInv a =
+      makeNatTransPath (funExt λ _ → funExt λ x₁ i → rem (lower x₁) i)
       where
-        rem : ∀ {z} (x₁ : E [ z , x ]) → H .F-hom x₁ (yon-yon-yon H a) ≡ (a .N-ob z) (lift x₁)
+        rem : ∀ {z} (x₁ : E [ z , x ]) →
+              H .F-hom x₁ (yon-yon-yon H a) ≡ (a .N-ob z) (lift x₁)
         rem g =
           H .F-hom g (yon-yon-yon H a)
             ≡[ i ]⟨ a .N-hom g (~ i) (lift (E .id)) ⟩
@@ -492,56 +527,67 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') (R : C *-[ ℓS ]-o
     yonEquiv H = isoToEquiv (yonIso H)
 
     isFullYON : {ℓE ℓE' : Level} {E : Category ℓE ℓE'} → isFull (YON {E = E})
-    isFullYON {_}{_}{E} x y F[f] = ∣ lower (yon-yon-yon (F-ob (YON {E = E}) y) F[f]) , yonIso {x = x} (yon y) .Iso.leftInv F[f] ∣₁
+    isFullYON {_}{_}{E} x y F[f] =
+      ∣ lower (yon-yon-yon (F-ob (YON {E = E}) y) F[f]) ,
+        yonIso {x = x} (yon y) .Iso.leftInv F[f] ∣₁
 
-    isFaithfulYON : {ℓE ℓE' : Level} {E : Category ℓE ℓE'} → isFaithful (YON {E = E})
+    isFaithfulYON : {ℓE ℓE' : Level} {E : Category ℓE ℓE'} →
+                    isFaithful (YON {E = E})
     isFaithfulYON {_}{_}{E} x y f g p i =
       hcomp
         (λ j → λ{ (i = i0) → E .⋆IdL f j ; (i = i1) → E .⋆IdL g j })
         (lower (yon-yon-yon _ (p i)))
 
     isFullyFaithfulYON : isFullyFaithful YON
-    isFullyFaithfulYON = isFull+Faithful→isFullyFaithful {F = YON} isFullYON isFaithfulYON
+    isFullyFaithfulYON =
+      isFull+Faithful→isFullyFaithful {F = YON} isFullYON isFaithfulYON
 
     _ :  postcomposeF C YON .F-ob F ≡ YON ∘F F
     _ = refl
 
 
-    the-yoneda-comp-iso : (G : Functor C D) →
-                    ((c : C .ob) →
-                    UniversalElementOn D (appR R c) (G ⟅ c ⟆)) →
-                    _
-    the-yoneda-comp-iso G universalAtG =
-      NatIso→FUNCTORIso C (FUNCTOR (D ^op) (SET (ℓ-max ℓD' ℓS)))
-        {F = YON ∘F F}{G = YON ∘F G} (TODOYonF≅YonG G universalAtG)
+    -- the-yoneda-comp-iso : (G : Functor C D) →
+    --                 ((c : C .ob) →
+    --                 UniversalElementOn D (appR R c) (G ⟅ c ⟆)) →
+    --                 _
+    -- the-yoneda-comp-iso G universalAtG =
+    --   NatIso→FUNCTORIso C (FUNCTOR (D ^op) (SET (ℓ-max ℓD' ℓS)))
+    --     {F = YON ∘F F}{G = YON ∘F G} (TODOYonF≅YonG G universalAtG)
 
-    TODOYonedaIso : (G : Functor C D) →
-                    ((c : C .ob) →
-                    UniversalElementOn D (appR R c) (G ⟅ c ⟆)) →
-                    _
-    TODOYonedaIso G universalAtG =
-      isFullyFaithful→Conservative {F = postcomposeF C (YON {ℓD}{ℓD'}{D})}
-        (isFullyFaithful→isFullyFaithfulPostcomp C (YON {ℓD}{ℓD'}{D}) isFullyFaithfulYON)
-      {!the-yoneda-comp-iso G universalAtG .snd!}
+    -- TODOYonedaIso : (G : Functor C D) →
+    --                 ((c : C .ob) →
+    --                 UniversalElementOn D (appR R c) (G ⟅ c ⟆)) →
+    --                 _
+    -- TODOYonedaIso G universalAtG =
+    --   isFullyFaithful→Conservative {F = postcomposeF C (YON {ℓD}{ℓD'}{D})}
+    --     (isFullyFaithful→isFullyFaithfulPostcomp
+    --       C (YON {ℓD}{ℓD'}{D}) isFullyFaithfulYON)
+    --   {!the-yoneda-comp-iso G universalAtG .snd!}
 
     YONisEmbedding : isEmbedding (YON .F-ob)
-    YONisEmbedding = isFullyFaithful→isEmbd-ob isUnivD (isUnivalentFUNCTOR (D ^op) (SET _) isUnivalentSET) {F = YON} isFullyFaithfulYON
+    YONisEmbedding = isFullyFaithful→isEmbd-ob isUnivD
+      (isUnivalentFUNCTOR (D ^op) (SET _) isUnivalentSET)
+      {F = YON} isFullyFaithfulYON
 
     YONhasPropFibers : hasPropFibers (λ z → YON .F-ob z)
     YONhasPropFibers = isEmbedding→hasPropFibers YONisEmbedding
 
     open Iso
 
-    a : Iso (Σ[ F ∈ Functor C D ] (∀ (c : C .ob) → UniversalElementOn D (appR R c) (F ⟅ c ⟆)))
-            (Σ[ F ∈ Functor C D ] (YON ∘F F ≡ (Prof*-o→Functor C D (LiftF {ℓS}{ℓD'} ∘Fb R))))
+    a : Iso (Σ[ F ∈ Functor C D ]
+                (∀ (c : C .ob) → UniversalElementOn D (appR R c) (F ⟅ c ⟆)))
+            (Σ[ F ∈ Functor C D ]
+              (YON ∘F F ≡ (Prof*-o→Functor C D (LiftF {ℓS}{ℓD'} ∘Fb R))))
     a .fun = {!!}
     a .inv = {!!}
     a .rightInv = {!!}
     a .leftInv = {!!}
 
-
-    b : (c : C .ob) → Iso (Representation D (appR R c)) (UniversalElement D (appR R c))
-    b c = Representation≅UniversalElement D (appR R c)
+    Rep≅UnivElt : (c : C .ob) →
+                  Iso
+                    (Representation D (appR R c))
+                    (UniversalElement D (appR R c))
+    Rep≅UnivElt c = Representation≅UniversalElement D (appR R c)
 
     d : (F : Functor C D) →
         Iso
@@ -550,11 +596,153 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') (R : C *-[ ℓS ]-o
           (NatIso (YON ∘F F) (Prof*-o→Functor C D (LiftF {ℓS}{ℓD'} ∘Fb R)))
     d F = Iso-FUNCTORIso-NatIso C (FUNCTOR (D ^op) (SET (ℓ-max ℓD' ℓS)))
 
-    -- TODO : Get rid of lifts, make a NatIso bw this w/o YON (use YO or smth)
-    --
+    UEOToNatIso : (c : C .ob) → (d : D .ob) →
+      UniversalElementOn D (appR R c) d →
+      NatIso (LiftF {ℓD'}{ℓS} ∘F (D [-, d ])) (LiftF {ℓS}{ℓD'} ∘F (appR R c))
+    UEOToNatIso c d x .trans = yonedaᴾ* (appR R c) d .Iso.inv (x .fst)
+    UEOToNatIso c d x .nIso A .inv ϕ = lift (invIsEq (x .snd A) (ϕ .lower))
+    UEOToNatIso c d x .nIso A .sec =
+      funExt (λ ϕ → cong lift (secIsEq (x .snd A) (ϕ .lower)))
+    UEOToNatIso c d x .nIso A .ret =
+      funExt (λ f → cong lift (retIsEq (x .snd A) (f .lower)))
 
-    e : (c : C .ob) →
+    NatIsoToUEO : (c : C .ob) → (d : D .ob) →
+      NatIso
+        (LiftF {ℓD'}{ℓS} ∘F (D [-, d ]))
+        (LiftF {ℓS}{ℓD'} ∘F (appR R c)) →
+      UniversalElementOn D (appR R c) d
+    NatIsoToUEO c d η .fst = Iso.fun (yonedaᴾ* (appR R c) d) (η .trans)
+    NatIsoToUEO c d η .snd A =
+      transport (λ i → isEquiv (lem i)) (isoToIsEquiv anIso)
+      where
+      lem :
+        Path (D [ A , d ] → _)
+        (λ f → (η .trans ⟦ A ⟧) (lift f) .lower)
+        (λ f → lower (
+          ((Iso.inv (yonedaᴾ* (appR R c) d)
+              (Iso.fun (yonedaᴾ* (appR R c) d) (η .trans))) ⟦ A ⟧) (lift f)))
+      lem = funExt (λ f i →
+        (yonedaᴾ*
+          (appR R c) d .Iso.leftInv (η .trans) (~ i) ⟦ A ⟧) (lift f) .lower)
+
+      anIso : Iso (D [ A , d ]) (fst ((appR R c) .F-ob A))
+      anIso .fun f = (η .trans ⟦ A ⟧) (lift f) .lower
+      anIso .inv p = η .nIso A .inv (lift p) .lower
+      anIso .rightInv b = cong lower (funExt⁻ (η .nIso A .sec) (lift b))
+      anIso .leftInv a = cong lower (funExt⁻ (η .nIso A .ret) (lift a))
+
+    UEO≅Repr : (c : C .ob) → (d : D .ob) →
         Iso
-          (UniversalElementOn D (appR R c) (F ⟅ c ⟆))
-          (NatIso ((YON ∘F F) ⟅ c ⟆) ((Prof*-o→Functor C D (LiftF {ℓS}{ℓD'} ∘Fb R)) ⟅ c ⟆))
-    e = {!!}
+          (UniversalElementOn D (appR R c) d)
+          (NatIso
+            (LiftF {ℓD'}{ℓS} ∘F (D [-, d ]))
+            (LiftF {ℓS}{ℓD'} ∘F (appR R c))
+          )
+    UEO≅Repr c d .fun = UEOToNatIso c d
+    UEO≅Repr c d .inv = NatIsoToUEO c d
+    UEO≅Repr c d .rightInv η =
+      NatIso≡
+        (cong (λ a → a .N-ob)
+        (yonedaᴾ* (appR R c) d .leftInv (η .trans)))
+    UEO≅Repr c d .leftInv x =
+      Σ≡Prop
+        (λ z → isPropIsUniversal D (appR R c) d z)
+        (yonedaᴾ* (appR R c) d .rightInv (x .fst))
+
+    UEOatFunctor≅Repr : (G : Functor C D) → (c : C .ob) →
+      Iso
+        (UniversalElementOn D (appR R c) (G ⟅ c ⟆))
+        (NatIso
+          (LiftF {ℓD'}{ℓS} ∘F (D [-, (G ⟅ c ⟆) ]))
+          (LiftF {ℓS}{ℓD'} ∘F (appR R c))
+        )
+    UEOatFunctor≅Repr G c = UEO≅Repr c (G ⟅ c ⟆)
+
+    the-functor-iso :
+      (x y : Σ[ F ∈ Functor C D ]
+        ((c : C .ob) → (UniversalElementOn D (appR R c) (F ⟅ c ⟆)))) →
+      (∀ (c : C .ob) →
+        NatIso
+          (LiftF {ℓD'}{ℓS} ∘F (D [-, ((x .fst) ⟅ c ⟆) ]))
+          (LiftF {ℓD'}{ℓS} ∘F (D [-, ((y .fst) ⟅ c ⟆) ]))
+      )
+    the-functor-iso (F , universalAtF) (G , universalAtG) c =
+      seqNatIso (UEOatFunctor≅Repr F c .fun (universalAtF c) )
+        (symNatIso (UEOatFunctor≅Repr G c .fun (universalAtG c)))
+
+    translate-to-yoneda :
+      (F : Functor C D) → (c : C .ob) →
+      NatIso
+        (LiftF {ℓD'}{ℓS} ∘F (D [-, (F ⟅ c ⟆) ]))
+        ((YON ∘F F) .F-ob c)
+    translate-to-yoneda F c .trans .N-ob x z = z
+    translate-to-yoneda F c .trans .N-hom ϕ = funExt (λ z → refl)
+    translate-to-yoneda F c .nIso x .inv z = z
+    translate-to-yoneda F c .nIso x .sec = (SET _) .⋆IdL (λ z → z)
+    translate-to-yoneda F c .nIso x .ret = (SET _) .⋆IdL (λ z → z)
+
+    partialAppPath : (c : C .ob) → (Prof*-o→Functor C D (LiftF {ℓS}{ℓD'} ∘Fb R)) .F-ob c ≡ LiftF {ℓS}{ℓD'} ∘F (appR R c)
+    partialAppPath c =
+      Functor≡
+        (λ d → refl)
+        (λ ϕ → sym ((LiftF {ℓS}{ℓD'} ∘Fb R) .Bif-L×-agree ϕ))
+
+    agree-on-obs :
+      (F : Functor C D) →
+      Iso
+        (∀ (c : C .ob) → (UniversalElementOn D (appR R c) (F ⟅ c ⟆)))
+        (∀ (c : C .ob) →
+          NatIso
+            (LiftF {ℓS}{ℓD'} ∘F appR R c)
+            ((YON ∘F F) .F-ob c)
+        )
+    agree-on-obs F .fun x c =
+      seqNatIso
+        (symNatIso (UEOatFunctor≅Repr F c .fun (x c)))
+        (translate-to-yoneda F c)
+    agree-on-obs F .inv x c =
+      UEOatFunctor≅Repr F c .inv
+        (seqNatIso
+          (translate-to-yoneda F c)
+          (symNatIso (x c)))
+    agree-on-obs F .rightInv b =
+      funExt (λ c → 
+        cong
+        (λ a → seqNatIso (symNatIso a) (translate-to-yoneda F c))
+        (UEOatFunctor≅Repr F c .rightInv
+          (seqNatIso (translate-to-yoneda F c) (symNatIso (b c)))) ∙
+        NatIso≡ (funExt
+          (λ _ → refl)
+        )
+      )
+    agree-on-obs F .leftInv b =
+      funExt
+        (λ c →
+          Σ≡Prop
+            (λ ε → isPropIsUniversal D (appR R c) (F ⟅ c ⟆) ε)
+            (cong fst (UEOatFunctor≅Repr F c .leftInv ( b c )))
+        )
+
+    oops : (F : Functor C D) →
+           (∀ (c : C .ob) → NatIso ((Prof*-o→Functor C D (LiftF {ℓS}{ℓD'} ∘Fb R)) .F-ob c) ((YON ∘F F) .F-ob c)) →
+           NatIso (Prof*-o→Functor C D (LiftF {ℓS}{ℓD'} ∘Fb R)) (YON ∘F F)
+    oops F x .trans .N-ob c = x c .trans
+    oops F x .trans .N-hom {c}{c'} ϕ =
+      makeNatTransPath (funExt (λ d →
+        {! (x c .trans .N-hom (F ⟪ ϕ ⟫))!}
+      ))
+    oops F x .nIso = {!!}
+
+    agree :
+      (F : Functor C D) →
+      (universalAtF : (c : C .ob) → UniversalElementOn D (appR R c) (F ⟅ c ⟆)) →
+      (Prof*-o→Functor C D (LiftF {ℓS}{ℓD'} ∘Fb R)) ≡ (YON ∘F F)
+    agree F universalAtF =
+      Functor≡
+        (λ c →
+          NatIsoToPath
+            isUnivalentSET
+            (transport (sym
+              (cong (λ a → NatIso a (YON ⟅ F ⟅ c ⟆ ⟆)) (partialAppPath c)))
+                (agree-on-obs F .fun universalAtF c)))
+        (λ f → {!!})
