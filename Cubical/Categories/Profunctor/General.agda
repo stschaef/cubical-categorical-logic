@@ -401,30 +401,40 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') (R : C *-[ ℓS ]-o
   UniqueFunctorComprehension : isUnivalent D →
     (ues : (∀ (c : C .ob) → UniversalElement D (appR R c)))
     → ∃![ F ∈ Functor C D ] (
-      NatIso
+      ∥ NatIso
         (YON ∘F F)
-        (Prof*-o→Functor C D ((LiftF {ℓS}{ℓD'}) ∘Fb R ))
+        (Prof*-o→Functor C D ((LiftF {ℓS}{ℓD'}) ∘Fb R )) ∥₁
       )
   UniqueFunctorComprehension isUnivD ues =
-    (F , fuck) ,
-      λ (G , η) →
-        ΣPathP (
-          cong (λ a → a .fst)
+    (F , ∣ fuck ∣₁) ,
+      λ (G , |η|) →
+        Σ≡Prop
+          (λ _ → isPropPropTrunc)
+          (elim→Set
+            {!!}
+            ( λ η →
+            cong (λ a → a .fst)
             (YONPostcomposeHasPropFibers isUnivD
               (Prof*-o→Functor C D (compF (LiftF {ℓS}{ℓD'}) R))
                 (F , NatIsoToPath
                      (isUnivalentFUNCTOR _ _ isUnivalentSET) fuck)
                 (G , (NatIsoToPath
-                     (isUnivalentFUNCTOR _ _ isUnivalentSET) η))) ,
-          NatIso≡ (funExt (λ c → {!Functor≡ ? ?!}))
-        )
-    -- (F , universalAtF) ,
-    -- λ (G , universalAtG) →
-    -- ΣPathP (
-    --   {!isFullyFaithful→isFullyFaithfulPostcomp !} ,
-    --   -- UniversalElementOnToPshFunctorRepresentation F universalAtF) ,
-    --   funExt (λ c → {!TODO' G universalAtG .!})
-    --   )
+                     (isUnivalentFUNCTOR _ _ isUnivalentSET) η)))
+          )
+            {!!}
+            |η|
+          )
+        -- ΣPathP (
+        --   cong (λ a → a .fst)
+        --     (YONPostcomposeHasPropFibers isUnivD
+        --       (Prof*-o→Functor C D (compF (LiftF {ℓS}{ℓD'}) R))
+        --         (F , NatIsoToPath
+        --              (isUnivalentFUNCTOR _ _ isUnivalentSET) fuck)
+        --         (G , (NatIsoToPath
+        --              (isUnivalentFUNCTOR _ _ isUnivalentSET) η))) ,
+        --   -- NatIso≡ (funExt (λ c → {!η !}))
+        --   {!!}
+        -- )
     where
     F = FunctorComprehension ues .fst
     universalAtF = FunctorComprehension ues .snd
