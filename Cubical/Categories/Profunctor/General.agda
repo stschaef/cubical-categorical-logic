@@ -397,6 +397,28 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') (R : C *-[ ℓS ]-o
                      hasPropFibers (λ z → YON .F-ob z)
   YONhasPropFibers isUnivE = isEmbedding→hasPropFibers (YONIsEmbedding isUnivE)
 
+
+
+  mereExistenceUnivalentPath :
+    {ℓE ℓE' ℓS ℓG ℓG' : Level} {E G : Category ℓE ℓE'} →
+    isUnivalent E →
+    (F : Functor G E) →
+    (A : Functor G (FUNCTOR (E ^op) (SET _))) →
+    ∥ NatIso (YON ∘F F) A ∥₁ → YON ∘F F ≡ A
+  mereExistenceUnivalentPath {_}{_}{_}{_}{_}{E} isUnivE F A |η| =
+    elim→Set
+      {!!}
+      (λ η → NatIsoToPath (isUnivalentFUNCTOR (E ^op) (SET (ℓ-max _ ℓS)) isUnivalentSET) η)
+      (λ η η' → cong (NatIsoToPath {!!})
+        (NatIso≡ (funExt (λ g → ?))))
+      |η|
+    -- elim→Set
+    --   (λ _ → isGroupoid-ob (isUnivalentFUNCTOR (E ^op) (SET _) {!!}) ? ?)
+    --   (λ η → NatIsoToPath isUnivalentSET η)
+    --   (λ η η' → cong (NatIsoToPath isUnivalentSET)
+    --           (NatIso≡ (funExt (λ x₁ → funExt (λ x₂ → {!!})))))
+    --   |ϕ|
+
   open isWeakEquivalence
   UniqueFunctorComprehension : isUnivalent D →
     (ues : (∀ (c : C .ob) → UniversalElement D (appR R c)))
@@ -410,20 +432,16 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') (R : C *-[ ℓS ]-o
       λ (G , |η|) →
         Σ≡Prop
           (λ _ → isPropPropTrunc)
-          (elim→Set
-            {!!}
-            ( λ η →
-            cong (λ a → a .fst)
-            (YONPostcomposeHasPropFibers isUnivD
+            (cong fst (YONPostcomposeHasPropFibers isUnivD
               (Prof*-o→Functor C D (compF (LiftF {ℓS}{ℓD'}) R))
                 (F , NatIsoToPath
                      (isUnivalentFUNCTOR _ _ isUnivalentSET) fuck)
-                (G , (NatIsoToPath
-                     (isUnivalentFUNCTOR _ _ isUnivalentSET) η)))
-          )
-            {!!}
-            |η|
-          )
+                (G , {!!})))
+
+          -- (cong fst (YONPostcomposeHasPropFibers isUnivD {!!} {!!} {!!}))
+          -- (isUnivalentFUNCTOR C D isUnivD .univ F G .equiv-proof
+            -- {!!} .fst .fst)
+            -- (elim {!!} (λ η → {!!}) (|YF≅YG| (F , ∣ fuck ∣₁) (G , |η|))) .fst .fst)
         -- ΣPathP (
         --   cong (λ a → a .fst)
         --     (YONPostcomposeHasPropFibers isUnivD
@@ -438,6 +456,14 @@ module _ (C : Category ℓC ℓC') (D : Category ℓD ℓD') (R : C *-[ ℓS ]-o
     where
     F = FunctorComprehension ues .fst
     universalAtF = FunctorComprehension ues .snd
+
+    |YF≅YG| : ((F , |ηF|) (G , |ηG|) : Σ (Functor C D) λ a → ∥ NatIso (YON ∘F a) (Prof*-o→Functor C D ((LiftF {ℓS}{ℓD'}) ∘Fb R)) ∥₁) → ∥ NatIso (YON ∘F F) (YON ∘F G) ∥₁
+    |YF≅YG| (F , |ηF|) (G , |ηG|) =
+      elim2
+        (λ x y → isPropPropTrunc)
+        (λ ηF ηG → ∣ seqNatIso ηF (symNatIso ηG) ∣₁)
+        |ηF|
+        |ηG|
 
     fuck :
       NatIso
