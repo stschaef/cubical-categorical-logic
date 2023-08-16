@@ -5,6 +5,7 @@ module Cubical.Categories.Displayed.Base.More where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Transport hiding (pathToIso)
 
 open import Cubical.Categories.Category
 open import Cubical.Categories.Functor
@@ -69,6 +70,7 @@ module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'} where
       (the-sec-path i)
       (the-ret-path i)
     where
+
     the-inv-path : p .inv ≡ q .inv
     the-inv-path =
       p .inv
@@ -76,17 +78,32 @@ module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'} where
       transport
         (the-hom-path (⋆IdL (fIsIso .inv)))
         (idᴰ ⋆ᴰ (p .inv))
-        ≡⟨ (fromPathP {A = λ i → {!Hom[ ? ][ ? , ? ]!}}
-          (toPathP {A = λ i → (Hom[ (fIsIso .sec i) ⋆ fIsIso .inv ][ yᴰ , xᴰ ])}
-            (cong (λ a → a ⋆ᴰ (p .inv))
-              (sym (fromPathP {A = λ i → Hom[ fIsIso .sec i ][ yᴰ , yᴰ ]}(q .sec)))))) ⟩
-      transport (the-hom-path (cong (λ a → a ⋆ fIsIso .inv) (fIsIso .sec) ∙
-                              ⋆IdL (fIsIso .inv)))
-                (((q .inv) ⋆ᴰ fᴰ) ⋆ᴰ (p .inv))
-        ≡⟨ {!!} ⟩
+        ≡⟨ cong
+          (λ a → (transport (the-hom-path (⋆IdL _))) a) 
+          (sym (fromPathP (congP (λ i a → a ⋆ᴰ (p .inv)) (q .sec))))
+          ⟩
+      transport (the-hom-path (⋆IdL _))
+      (transport (the-hom-path (cong (λ a → a ⋆ (fIsIso .inv)) (fIsIso .sec)))
+        ((q .inv ⋆ᴰ fᴰ) ⋆ᴰ p .inv))
+        ≡⟨ sym (
+          transportComposite
+            ((the-hom-path (cong (λ a → a ⋆ (fIsIso .inv)) (fIsIso .sec))))
+            ((the-hom-path (⋆IdL _)))
+            (((q .inv ⋆ᴰ fᴰ) ⋆ᴰ p .inv))) ⟩
+      transport
+        (the-hom-path (λ i → C .Category._⋆_ (fIsIso .sec i) (fIsIso .inv))
+         ∙ the-hom-path (C .Category.⋆IdL (fIsIso .inv)))
+        ((q .inv ⋆ᴰ fᴰ) ⋆ᴰ p .inv)
+        ≡⟨ {! (⋆Assocᴰ (q .inv) fᴰ (p .inv))) !} ⟩
       {!!}
         ≡⟨ {!!} ⟩
+      transport
+        (λ i →
+           Cᴰ .Categoryᴰ.Hom[_][_,_] (C .Category.⋆IdL (fIsIso .inv) i) yᴰ xᴰ)
+        (Cᴰ .Categoryᴰ._⋆ᴰ_ (Cᴰ .Categoryᴰ.idᴰ) (q .inv))
+        ≡⟨ fromPathP (⋆IdLᴰ (q .inv)) ⟩
       q .inv ∎
+      
       -- sym (fromPathP (⋆IdLᴰ (p .inv))) ∙
       -- cong {A = Hom[ id ][ yᴰ , yᴰ ]}
            -- {B = λ _ → Hom[ {!id ⋆⟨ C ⟩ (fIsIso .inv)!} ][ {!!} , {!!} ]}
