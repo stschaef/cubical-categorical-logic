@@ -65,99 +65,50 @@ module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'} where
                 → isProp (isIsoᴰ fIsIso fᴰ)
   isPropIsIsoᴰ {x} {y} {f} {fIsIso} {xᴰ} {yᴰ} fᴰ p q =
     λ i →
-      isisoᴰ
-      (the-inv-path i)
-      (the-sec-path i)
-      (the-ret-path i)
+    isisoᴰ
+      (the-inv-path i) (the-sec-path i) (the-ret-path i)
     where
+
+    the-fIsIsoInv-path : fIsIso .inv ≡ fIsIso .inv
+    the-fIsIsoInv-path =
+      sym (⋆IdL _)
+      ∙ (λ i → fIsIso .sec (~ i) ⋆⟨ C ⟩ fIsIso .inv)
+      ∙ ⋆Assoc _ _ _
+      ∙ (λ i → fIsIso .inv ⋆ fIsIso .ret i)
+      ∙ ⋆IdR _
+
+    the-inv-pathP : PathP (λ i → the-hom-path the-fIsIsoInv-path i) (p .inv) (q .inv)
+    the-inv-pathP =
+      compPathP' {B = the-B} (symP (⋆IdLᴰ (p .inv)))
+        (compPathP' {B = the-B} (symP (congP (λ i a → a ⋆ᴰ p .inv) (q .sec)))
+          (compPathP' {B = the-B} (⋆Assocᴰ (q .inv) fᴰ (p .inv))
+            (compPathP' {B = the-B} (congP (λ i a → q .inv ⋆ᴰ a) (p .ret))
+              (⋆IdRᴰ (q .inv)))))
+      where
+      the-B = Cᴰ [_][ yᴰ , xᴰ ]
+
+    path-is-over-refl : the-hom-path the-fIsIsoInv-path ≡ refl
+    path-is-over-refl =
+      the-hom-path the-fIsIsoInv-path
+        ≡⟨ refl ⟩
+      cong (λ v → Cᴰ [ v ][ yᴰ , xᴰ ]) the-fIsIsoInv-path
+        ≡⟨ cong (λ a → (cong (λ v → Cᴰ [ v ][ yᴰ , xᴰ ]) a))
+          (isSetHom (fIsIso .inv) (fIsIso .inv) the-fIsIsoInv-path refl) ⟩
+      refl ∎
 
     the-inv-path : p .inv ≡ q .inv
     the-inv-path =
-      p .inv
-        ≡⟨ sym (fromPathP (⋆IdLᴰ (p .inv))) ⟩
-      transport
-        (the-hom-path (⋆IdL (fIsIso .inv)))
-        (idᴰ ⋆ᴰ (p .inv))
-        ≡⟨ cong
-          (λ a → (transport (the-hom-path (⋆IdL _))) a) 
-          (sym (fromPathP (congP (λ i a → a ⋆ᴰ (p .inv)) (q .sec))))
-          ⟩
-      transport (the-hom-path (⋆IdL _))
-      (transport (the-hom-path (cong (λ a → a ⋆ (fIsIso .inv)) (fIsIso .sec)))
-        ((q .inv ⋆ᴰ fᴰ) ⋆ᴰ p .inv))
-        ≡⟨ sym (
-          transportComposite
-            ((the-hom-path (cong (λ a → a ⋆ (fIsIso .inv)) (fIsIso .sec))))
-            ((the-hom-path (⋆IdL _)))
-            (((q .inv ⋆ᴰ fᴰ) ⋆ᴰ p .inv))) ⟩
-      transport
-        (the-hom-path (λ i → C .Category._⋆_ (fIsIso .sec i) (fIsIso .inv))
-         ∙ the-hom-path (C .Category.⋆IdL (fIsIso .inv)))
-        ((q .inv ⋆ᴰ fᴰ) ⋆ᴰ p .inv)
-             ≡⟨ cong
-               (λ a → transport
-               (the-hom-path (λ i → C .Category._⋆_ (fIsIso .sec i) (fIsIso .inv))
-               ∙ the-hom-path (C .Category.⋆IdL (fIsIso .inv))) a)
-               (sym (fromPathP (λ i → ⋆Assocᴰ (q .inv) fᴰ (p .inv) (~ i))))
-               ⟩
-      transport
-        (the-hom-path (λ i → C .Category._⋆_ (fIsIso .sec i) (fIsIso .inv))
-         ∙ the-hom-path (C .Category.⋆IdL (fIsIso .inv)))
-        (transport
-         (λ z →
-            Cᴰ .Categoryᴰ.Hom[_][_,_]
-            (C .Category.⋆Assoc (fIsIso .inv) f (fIsIso .inv) (~ z)) yᴰ xᴰ)
-         ((q .inv) ⋆ᴰ (fᴰ ⋆ᴰ (p .inv)))
-         )
-             ≡⟨ sym (
-             transportComposite
-               ( (λ z →
-                 Cᴰ .Categoryᴰ.Hom[_][_,_]
-                 (C .Category.⋆Assoc (fIsIso .inv) f (fIsIso .inv) (~ z)) yᴰ xᴰ))
-               ((the-hom-path (λ i → C .Category._⋆_ (fIsIso .sec i) (fIsIso .inv))
-               ∙ the-hom-path (C .Category.⋆IdL (fIsIso .inv))))
-               (((q .inv) ⋆ᴰ (fᴰ ⋆ᴰ (p .inv))))) ⟩
-      transport
-        ((λ z →
-            Cᴰ .Categoryᴰ.Hom[_][_,_]
-            (C .Category.⋆Assoc (fIsIso .inv) f (fIsIso .inv) (~ z)) yᴰ xᴰ)
-         ∙
-         the-hom-path (λ i → C .Category._⋆_ (fIsIso .sec i) (fIsIso .inv))
-         ∙ the-hom-path (C .Category.⋆IdL (fIsIso .inv)))
-        (q .inv ⋆ᴰ (fᴰ ⋆ᴰ p .inv))
-        ≡⟨ {!!} ⟩
-      {!!}
-        ≡⟨ {!!} ⟩
-      transport
-        (λ i →
-           Cᴰ .Categoryᴰ.Hom[_][_,_] (C .Category.⋆IdL (fIsIso .inv) i) yᴰ xᴰ)
-        (Cᴰ .Categoryᴰ._⋆ᴰ_ (Cᴰ .Categoryᴰ.idᴰ) (q .inv))
-        ≡⟨ fromPathP (⋆IdLᴰ (q .inv)) ⟩
-      q .inv ∎
-      
-      -- sym (fromPathP (⋆IdLᴰ (p .inv))) ∙
-      -- cong {A = Hom[ id ][ yᴰ , yᴰ ]}
-           -- {B = λ _ → Hom[ {!id ⋆⟨ C ⟩ (fIsIso .inv)!} ][ {!!} , {!!} ]}
-        -- (λ a → {!a ⋆ᴰ (p .inv)!}) (sym (fromPathP (q .sec))) ∙
-      -- {!!} ∙
-      -- {!!} ∙
-      -- shiftr (sym (⋆IdL (fIsIso .inv))) (symP (⋆IdLᴰ (p .inv))) ∙
-        -- transport
-        -- (sym
-        -- (the-hom-type-path (λ i → C .Category.⋆IdL (fIsIso .inv) (~ i))))
-        -- (Cᴰ .Categoryᴰ._⋆ᴰ_ (Cᴰ .Categoryᴰ.idᴰ) (p .inv))
-        -- ≡
-      -- cong {B = λ a → Hom[ fIsIso .inv ][ yᴰ , xᴰ ]}
-        -- (λ a → {!a ⋆ᴰ (p .inv)!}) (sym (fromPathP (q .sec))) ∙
-      -- {!fromPathP (q .sec)!}
+      sym (transportRefl (p .inv)) ∙
+      cong (λ a → transport a (p .inv)) (sym path-is-over-refl) ∙
+      fromPathP the-inv-pathP
 
     the-sec-path :
-      PathP (λ i → (the-inv-path i ⋆ᴰ fᴰ) ≡[ fIsIso .sec ] idᴰ)
+      PathP (λ i → ({!!} ⋆ᴰ fᴰ) ≡[ fIsIso .sec ] idᴰ)
         (p .sec) (q .sec)
     the-sec-path = {!!}
 
     the-ret-path :
-      PathP (λ i → (fᴰ ⋆ᴰ the-inv-path i) ≡[ fIsIso .ret ] idᴰ)
+      PathP (λ i → (fᴰ ⋆ᴰ {!!}) ≡[ fIsIso .ret ] idᴰ)
         (p .ret) (q .ret)
     the-ret-path = {!!}
 
