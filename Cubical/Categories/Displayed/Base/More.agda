@@ -50,12 +50,10 @@ module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'} where
     isisoᴰ
       (the-inv-path i) (the-sec-path i) (the-ret-path i)
     where
-
     the-hom-path : {x y : ob} {f g : C [ x , y ]}
       {xᴰ : ob[ x ]}{yᴰ : ob[ y ]} → (f ≡ g) →
       (Cᴰ [ f ][ xᴰ , yᴰ ]) ≡ (Cᴰ [ g ][ xᴰ , yᴰ ])
     the-hom-path p = cong (λ v → Cᴰ [ v ][ _ , _ ]) p
-
 
     the-fIsIsoInv-path : fIsIso .inv ≡ fIsIso .inv
     the-fIsIsoInv-path =
