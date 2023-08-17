@@ -6,6 +6,7 @@ module Cubical.Categories.Displayed.Base.More where
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Transport hiding (pathToIso)
+open import Cubical.Foundations.HLevels
 
 open import Cubical.Categories.Category
 open import Cubical.Categories.Functor
@@ -39,26 +40,7 @@ module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'} where
       sec : inv ⋆ᴰ fᴰ ≡[ fIsIso .sec ] idᴰ
       ret : fᴰ ⋆ᴰ inv ≡[ fIsIso .ret ] idᴰ
 
-  -- TODO: show isProp (isIsoᴰ ___...)
   open isIsoᴰ
-
-  the-hom-path : {x y : ob} {f g : C [ x , y ]}
-    {xᴰ : ob[ x ]}{yᴰ : ob[ y ]} → (f ≡ g) →
-    (Cᴰ [ f ][ xᴰ , yᴰ ]) ≡ (Cᴰ [ g ][ xᴰ , yᴰ ])
-  the-hom-path p = cong (λ v → Cᴰ [ v ][ _ , _ ]) p
-
-
-  -- NOTE this is from the 1lab
-  module _ {x y : ob}{f g : C [ x , y ]}{xᴰ}{yᴰ}
-    {fᴰ : Cᴰ [ f ][ xᴰ , yᴰ ]} {gᴰ : Cᴰ [ g ][ xᴰ , yᴰ ]}(p : f ≡ g)
-    where
-
-    shiftl : fᴰ ≡[ p ] gᴰ → transport (the-hom-path p) fᴰ ≡ gᴰ
-    shiftl = fromPathP
-
-    shiftr : fᴰ ≡[ p ] gᴰ → fᴰ ≡ transport (sym (the-hom-path p)) gᴰ
-    shiftr x =
-      sym (fromPathP {ℓCᴰ'}{λ i → Cᴰ [ p (~ i) ][ xᴰ , yᴰ ]} (symP x))
 
   isPropIsIsoᴰ : ∀ {x y}{f : C [ x , y ]}{fIsIso : isIso C f}
                    {xᴰ yᴰ}(fᴰ : Cᴰ [ f ][ xᴰ , yᴰ ])
@@ -68,6 +50,12 @@ module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'} where
     isisoᴰ
       (the-inv-path i) (the-sec-path i) (the-ret-path i)
     where
+
+    the-hom-path : {x y : ob} {f g : C [ x , y ]}
+      {xᴰ : ob[ x ]}{yᴰ : ob[ y ]} → (f ≡ g) →
+      (Cᴰ [ f ][ xᴰ , yᴰ ]) ≡ (Cᴰ [ g ][ xᴰ , yᴰ ])
+    the-hom-path p = cong (λ v → Cᴰ [ v ][ _ , _ ]) p
+
 
     the-fIsIsoInv-path : fIsIso .inv ≡ fIsIso .inv
     the-fIsIsoInv-path =
@@ -89,12 +77,8 @@ module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'} where
 
     path-is-over-refl : the-hom-path the-fIsIsoInv-path ≡ refl
     path-is-over-refl =
-      the-hom-path the-fIsIsoInv-path
-        ≡⟨ refl ⟩
-      cong (λ v → Cᴰ [ v ][ yᴰ , xᴰ ]) the-fIsIsoInv-path
-        ≡⟨ cong (λ a → (cong (λ v → Cᴰ [ v ][ yᴰ , xᴰ ]) a))
-          (isSetHom (fIsIso .inv) (fIsIso .inv) the-fIsIsoInv-path refl) ⟩
-      refl ∎
+      cong (λ a → (cong (λ v → Cᴰ [ v ][ yᴰ , xᴰ ]) a))
+          (isSetHom (fIsIso .inv) (fIsIso .inv) the-fIsIsoInv-path refl)
 
     the-inv-path : p .inv ≡ q .inv
     the-inv-path =
@@ -103,14 +87,22 @@ module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'} where
       fromPathP the-inv-pathP
 
     the-sec-path :
-      PathP (λ i → ({!!} ⋆ᴰ fᴰ) ≡[ fIsIso .sec ] idᴰ)
+      PathP (λ i → (the-inv-path i ⋆ᴰ fᴰ) ≡[ fIsIso .sec ] idᴰ)
         (p .sec) (q .sec)
-    the-sec-path = {!!}
+    the-sec-path =
+      isProp→PathP
+        (λ i → isOfHLevelPathP' 1 isSetHomᴰ _ _)
+        (p .sec)
+        (q .sec)
 
     the-ret-path :
-      PathP (λ i → (fᴰ ⋆ᴰ {!!}) ≡[ fIsIso .ret ] idᴰ)
+      PathP (λ i → (fᴰ ⋆ᴰ the-inv-path i) ≡[ fIsIso .ret ] idᴰ)
         (p .ret) (q .ret)
-    the-ret-path = {!!}
+    the-ret-path =
+      isProp→PathP
+        (λ i → isOfHLevelPathP' 1 isSetHomᴰ _ _)
+        (p .ret)
+        (q .ret)
 
   CatᴰIso : ∀ {x y}(iso : CatIso C x y)(xᴰ : ob[ x ])(yᴰ : ob[ y ]) → Type ℓCᴰ'
   CatᴰIso iso xᴰ yᴰ = Σ[ fᴰ ∈ Cᴰ [ iso .fst ][ xᴰ , yᴰ ] ] isIsoᴰ (iso .snd) fᴰ
