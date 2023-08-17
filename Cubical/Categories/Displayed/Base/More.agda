@@ -33,7 +33,9 @@ module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'} where
   open Category C
   open Categoryᴰ Cᴰ
   open isIso
-  record isIsoᴰ {x y : ob}{f : C [ x , y ]}(fIsIso : isIso C f) {xᴰ}{yᴰ} (fᴰ : Cᴰ [ f ][ xᴰ , yᴰ ]): Type ℓCᴰ' where
+  record isIsoᴰ {x y : ob}{f : C [ x , y ]}(fIsIso : isIso C f)
+         {xᴰ}{yᴰ} (fᴰ : Cᴰ [ f ][ xᴰ , yᴰ ]): Type ℓCᴰ'
+    where
     constructor isisoᴰ
     field
       inv : Cᴰ [ fIsIso .inv ][ yᴰ , xᴰ ]
@@ -63,7 +65,8 @@ module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'} where
       ∙ (λ i → fIsIso .inv ⋆ fIsIso .ret i)
       ∙ ⋆IdR _
 
-    the-inv-pathP : PathP (λ i → the-hom-path the-fIsIsoInv-path i) (p .inv) (q .inv)
+    the-inv-pathP : PathP (λ i → the-hom-path the-fIsIsoInv-path i)
+                    (p .inv) (q .inv)
     the-inv-pathP =
       compPathP' {B = the-B} (symP (⋆IdLᴰ (p .inv)))
         (compPathP' {B = the-B} (symP (congP (λ i a → a ⋆ᴰ p .inv) (q .sec)))
@@ -121,10 +124,11 @@ module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'} where
               → {p : x ≡ y}
               → PathP (λ i → ob[ p i ]) xᴰ yᴰ
               → CatᴰIso (pathToIso p) xᴰ yᴰ
-  pathᴰToIsoᴰ{xᴰ = xᴰ} {p = p} pᴰ = JDep (λ y p yᴰ q → CatᴰIso (pathToIso p) xᴰ yᴰ)
-    (transport (λ i → CatᴰIso (pathToIso-refl (~ i)) xᴰ xᴰ) idCatᴰIso)
-    p
-    pᴰ
+  pathᴰToIsoᴰ{xᴰ = xᴰ} {p = p} pᴰ =
+    JDep (λ y p yᴰ q → CatᴰIso (pathToIso p) xᴰ yᴰ)
+      (transport (λ i → CatᴰIso (pathToIso-refl (~ i)) xᴰ xᴰ) idCatᴰIso)
+      p
+      pᴰ
 
   -- Note: the 1lab has an alternative definition that they say is
   -- much easier to work with.
