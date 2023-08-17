@@ -94,7 +94,38 @@ module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'} where
         (the-hom-path (λ i → C .Category._⋆_ (fIsIso .sec i) (fIsIso .inv))
          ∙ the-hom-path (C .Category.⋆IdL (fIsIso .inv)))
         ((q .inv ⋆ᴰ fᴰ) ⋆ᴰ p .inv)
-        ≡⟨ {! (⋆Assocᴰ (q .inv) fᴰ (p .inv))) !} ⟩
+             ≡⟨ cong
+               (λ a → transport
+               (the-hom-path (λ i → C .Category._⋆_ (fIsIso .sec i) (fIsIso .inv))
+               ∙ the-hom-path (C .Category.⋆IdL (fIsIso .inv))) a)
+               (sym (fromPathP (λ i → ⋆Assocᴰ (q .inv) fᴰ (p .inv) (~ i))))
+               ⟩
+      transport
+        (the-hom-path (λ i → C .Category._⋆_ (fIsIso .sec i) (fIsIso .inv))
+         ∙ the-hom-path (C .Category.⋆IdL (fIsIso .inv)))
+        (transport
+         (λ z →
+            Cᴰ .Categoryᴰ.Hom[_][_,_]
+            (C .Category.⋆Assoc (fIsIso .inv) f (fIsIso .inv) (~ z)) yᴰ xᴰ)
+         ((q .inv) ⋆ᴰ (fᴰ ⋆ᴰ (p .inv)))
+         )
+             ≡⟨ sym (
+             transportComposite
+               ( (λ z →
+                 Cᴰ .Categoryᴰ.Hom[_][_,_]
+                 (C .Category.⋆Assoc (fIsIso .inv) f (fIsIso .inv) (~ z)) yᴰ xᴰ))
+               ((the-hom-path (λ i → C .Category._⋆_ (fIsIso .sec i) (fIsIso .inv))
+               ∙ the-hom-path (C .Category.⋆IdL (fIsIso .inv))))
+               (((q .inv) ⋆ᴰ (fᴰ ⋆ᴰ (p .inv))))) ⟩
+      transport
+        ((λ z →
+            Cᴰ .Categoryᴰ.Hom[_][_,_]
+            (C .Category.⋆Assoc (fIsIso .inv) f (fIsIso .inv) (~ z)) yᴰ xᴰ)
+         ∙
+         the-hom-path (λ i → C .Category._⋆_ (fIsIso .sec i) (fIsIso .inv))
+         ∙ the-hom-path (C .Category.⋆IdL (fIsIso .inv)))
+        (q .inv ⋆ᴰ (fᴰ ⋆ᴰ p .inv))
+        ≡⟨ {!!} ⟩
       {!!}
         ≡⟨ {!!} ⟩
       transport
