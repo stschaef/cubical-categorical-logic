@@ -64,5 +64,32 @@ module _ {C : Category ℓC ℓC'} (D : Categoryᴰ C ℓD ℓD')
     introᴰ {x}{xᴰ}{p} pᴰ  = invIsEq (universalᴰ xᴰ) pᴰ'
       where pᴰ' = transport (λ i → ⟨ Pᴰ .F-obᴰ xᴰ (β {p = p} (~ i)) ⟩) pᴰ
 
+    βᴰ : ∀ {x xᴰ} {p : ⟨ P .F-ob x ⟩}
+        → {pᴰ : ⟨ Pᴰ .F-obᴰ xᴰ p ⟩}
+        → PathP (λ i → ⟨ Pᴰ .F-obᴰ xᴰ (β {x} {p} i) ⟩) (Pᴰ .F-homᴰ (introᴰ pᴰ) element elementᴰ) pᴰ
+    βᴰ {x}{xᴰ}{p}{pᴰ} =
+      symP (toPathP (sym (
+        secIsEq (universalᴰ xᴰ) (transport (λ i → ⟨ Pᴰ .F-obᴰ xᴰ (β {x} {p} (~ i)) ⟩) pᴰ)))
+      )
+
+    -- ηᴰ : ∀ {c}{cᴰ : ob[ c ]}{f : C [ c , vertex ]} →
+    --      {fᴰ : Hom[ f ][ cᴰ , vertexᴰ ]} →
+    --      fᴰ ≡[ η ] introᴰ (Pᴰ .F-homᴰ fᴰ element elementᴰ)
+    -- ηᴰ {c}{cᴰ}{f}{fᴰ} =
+    --     symP (toPathP
+    --     {A = λ i → Hom[ η (~ i) ][ cᴰ , vertexᴰ ]}
+    --     {x = introᴰ (Pᴰ .F-homᴰ fᴰ element elementᴰ)}{y = fᴰ}
+    --     (
+    --     {!cong fst (
+    --       (universalᴰ cᴰ) .equiv-proof (Pᴰ .F-homᴰ ? ? ?) .snd (fᴰ , ?j))!}
+    --     -- {!!} ∙
+    --     -- retIsEq (universalᴰ cᴰ) fᴰ)
+    --     ))
+    --   where
+    --   the-B = D [_][ cᴰ , vertexᴰ ]
+
     -- weak-ηᴰ : idᴰ {p = vertexᴰ} ≡[ weak-η ] (introᴰ {p = element} elementᴰ)
-    -- weak-ηᴰ = {!!}
+    -- weak-ηᴰ =
+    --   compPathP' {B = the-B} {!!} {!!}
+    --   where
+    --   the-B = D [_][ vertexᴰ , vertexᴰ ]

@@ -47,7 +47,12 @@ module _ {C : Category ℓC ℓC'} {D : Category ℓD ℓD'}
   FunctorComprehensionᴰ .F-obᴰ xᴰ = Fᴰ~-repr xᴰ .vertexᴰ
   FunctorComprehensionᴰ .F-homᴰ {x}{y}{f}{xᴰ}{yᴰ} fᴰ =
     introᴰ (Fᴰ~-repr yᴰ) (Fᴰ~ .F-homᴰ fᴰ .N-obᴰ (Fᴰ~-repr xᴰ .vertexᴰ) _ (Fᴰ~-repr xᴰ .elementᴰ))
-  FunctorComprehensionᴰ .F-idᴰ =
-    {!!}
+  FunctorComprehensionᴰ .F-idᴰ {x}{xᴰ} =
+-- Goal: PathP (λ i → _B_253 (_p_257 i))
+      -- (introᴰ (Fᴰ~-repr xᴰ)
+       -- (Fᴰ~ .F-homᴰ (Cᴰ .Categoryᴰ.idᴰ) .N-obᴰ (Fᴰ~-repr xᴰ .vertexᴰ)
+        -- (element (F~-repr x)) (Fᴰ~-repr xᴰ .elementᴰ)))
+      -- _y'_255
+    (λ i → introᴰ {!!} (FunctorComprehension' F~ F~-repr .F-id i)) ▷ {!!}
     -- (λ i → introᴰ {!Fᴰ~ .F-idᴰ i .N-obᴰ!} (FunctorComprehension' F~ F~-repr .F-id i)) ▷ {!!}
   FunctorComprehensionᴰ .F-seqᴰ = {!!}
