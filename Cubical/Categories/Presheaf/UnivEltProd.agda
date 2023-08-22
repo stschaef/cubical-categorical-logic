@@ -27,6 +27,7 @@ open import Cubical.Categories.NaturalTransformation
 
 
 open import Cubical.Categories.Presheaf.Base
+open import Cubical.Categories.Presheaf.Properties
 open import Cubical.Categories.Presheaf.Representable
 open import Cubical.Categories.Functors.Constant
 open import Cubical.Categories.Instances.Sets
@@ -116,13 +117,50 @@ _×RightAdjointAt'_ {_}{_}{_}{_}{_}{_}{_}{_}{C}{D}{C₁}{D₁}{F}{F₁}{d}{d₁}
       (λ c → refl)
       (λ f → refl)
 
+record catEndo : Typeω  where
+  field
+    the-level-lift : Level → Level
+    the-level-lift' : Level → Level
+    Cat-ob : {ℓ ℓ' : Level} → Category ℓ ℓ' → Category (the-level-lift ℓ) (the-level-lift' ℓ')
+    Cat-hom : {ℓC ℓC' ℓD ℓD' : Level} {C : Category ℓC ℓC'} {D : Category ℓD ℓD'}
+              → (G : Functor C D) → Functor (Cat-ob C) (Cat-ob D)
+    Cat-id : {ℓC ℓC' : Level} {C : Category ℓC ℓC'} → Cat-hom {ℓC}{ℓC'}{ℓC}{ℓC'}{C}{C} Id ≡ Id
+    Cat-seq : {ℓC ℓC' ℓD ℓD' ℓE ℓE' : Level}
+              {C : Category ℓC ℓC'} {D : Category ℓD ℓD'} {E : Category ℓE ℓE'}
+              {F : Functor C D} {G : Functor D E}
+              → Cat-hom (G ∘F F) ≡ Cat-hom G ∘F Cat-hom F
+
+open catEndo
+prodInShape :
+  {ℓC ℓC' ℓD ℓD' : Level}
+  {C : Category ℓC ℓC'} {D : Category ℓD ℓD'}
+  {shape : catEndo}
+  (F : Functor C (shape .Cat-ob C)) (G : Functor D (shape .Cat-ob D))
+  → Functor (C ×C D) (shape .Cat-ob (C ×C D))
+prodInShape {_} {_} {_} {_} {_} {_} {shape} F G .F-ob x = {!!}
+prodInShape {_} {_} {_} {_} {_} {_} {shape} F G .F-hom = {!!}
+prodInShape {_} {_} {_} {_} {_} {_} {shape} F G .F-id = {!!}
+prodInShape {_} {_} {_} {_} {_} {_} {shape} F G .F-seq = {!!}
+
+
+_×RightAdjointAt'Prod_ :
+  {ℓC ℓC' ℓD ℓD' : Level}
+  {C : Category ℓC ℓC'} {D : Category ℓD ℓD'}
+  {shape : {ℓ ℓ' : Level} → Category ℓ ℓ' → Category ℓ ℓ'}
+  {F : Functor C (shape C)} {G : Functor D (shape D)}
+  {cc : (shape C) .ob} {dd : (shape D) .ob} →
+  RightAdjointAt' C (shape C) F cc → RightAdjointAt' D (shape D) G dd →
+  RightAdjointAt' (C ×C D) (shape (C ×C D)) {!!} {!!}
+_×RightAdjointAt'Prod_ = {!!}
+
+
 _×RightAdjoint'_ :
   {ℓC ℓC' ℓD ℓD' ℓC₁ ℓC₁' ℓD₁ ℓD₁' : Level}
   {C : Category ℓC ℓC'} {D : Category ℓD ℓD'}
   {C₁ : Category ℓC₁ ℓC₁'}{D₁ : Category ℓD₁ ℓD₁'}
   {F : Functor C D} {F₁ : Functor C₁ D₁} →
   RightAdjoint' C D F → RightAdjoint' C₁ D₁ F₁ →
-  RightAdjoint' (C ×C C₁) (D ×C D₁) ({!!} F F₁)
+  RightAdjoint' (C ×C C₁) (D ×C D₁) (F ×F F₁)
 _×RightAdjoint'_ {_}{_}{_}{_}{_}{_}{_}{_}{C}{D}{C₁}{D₁}{F}{F₁} x y =
   λ (d , d₁) → x d ×RightAdjointAt' y d₁
 
@@ -190,6 +228,93 @@ module Product (C : Category ℓC ℓC') (D : Category ℓD ℓD') (bpC : BinPro
 
   _ : permute ._≃ᶜ_.func ∘F (Δ C ×F Δ D) ≡ (Δ (C ×C D))
   _ = Functor≡ (λ _ → refl) (λ _ → refl)
+
+  record IsoOfCats
+    {ℓD ℓD' ℓD₁ ℓD₁' : Level}
+    (D : Category ℓD ℓD') (D₁ : Category ℓD₁ ℓD₁') : Type ((ℓ-max (ℓ-max ℓD ℓD') (ℓ-max ℓD₁ ℓD₁'))) where
+    field
+      func : Functor D D₁
+      inv : Functor D₁ D
+      sec : inv ∘F func ≡ Id
+      ret : func ∘F inv ≡ Id
+
+
+  theRightAdjointAt'WhiskFun :
+   {ℓC ℓC' ℓD ℓD' ℓD₁ ℓD₁' : Level}
+   {C : Category ℓC ℓC'} {D : Category ℓD ℓD'} {D₁ : Category ℓD₁ ℓD₁'}
+   {F : Functor C D} {d : D .ob} →
+   (iso-of-cats : IsoOfCats D D₁) →
+    RightAdjointAt' C D F d →
+    RightAdjointAt' C D₁
+      ((iso-of-cats .IsoOfCats.func) ∘F F)
+      ((iso-of-cats .IsoOfCats.func) ⟅ d ⟆)
+  theRightAdjointAt'WhiskFun {_} {_} {_} {_} {_} {_} {C} {D} {D₁} {F} {d} iso-of-cats x =
+    representationToUniversalElement
+      C (funcComp (D₁ [-, iso-of-cats .IsoOfCats.func ⟅ d ⟆ ])
+        (funcComp (iso-of-cats .IsoOfCats.func) F ^opF))
+      ((x .vertex) ,
+      the-psh-iso
+      )
+      where
+      the-x-repr = universalElementToRepresentation C (funcComp (D [-, d ]) (F ^opF)) x
+
+      the-psh-iso : PshIso C (C [-, x .vertex ])
+                      (funcComp (D₁ [-, iso-of-cats .IsoOfCats.func ⟅ d ⟆ ])
+                       (funcComp (iso-of-cats .IsoOfCats.func) F ^opF))
+      the-psh-iso .trans .N-ob c z =
+        lift (iso-of-cats .IsoOfCats.func .F-hom (lower (the-x-repr .snd .trans .N-ob c (lift (lower z)))))
+      the-psh-iso .trans .N-hom f =
+        funExt (λ z →
+          {!!} ∙
+          cong
+          (λ a → lift (iso-of-cats .IsoOfCats.func .F-hom (lower (a (lift (lower z))))))
+          (the-x-repr .snd .trans .N-hom f) ∙
+          {!!}
+        )
+      the-psh-iso .nIso = {!!}
+  -- theRightAdjointAt'WhiskFun {_} {_} {_} {_} {_} {_} {C} {D} {D₁} {F} {d} iso-of-cats x .vertex =
+  --   x .vertex
+  -- theRightAdjointAt'WhiskFun {_} {_} {_} {_} {_} {_} {C} {D} {D₁} {F} {d} iso-of-cats x .element =
+  --   iso-of-cats .IsoOfCats.func ⟪ x .element ⟫
+  -- theRightAdjointAt'WhiskFun {_} {_} {_} {_} {_} {_} {C} {D} {D₁} {F} {d} iso-of-cats x .universal A .equiv-proof y .fst .fst =
+  --   x .universal A .equiv-proof
+  --     (transport (
+  --        cong₂
+  --          (λ a b → D [ a , b ])
+  --          (cong (λ a → (a .F-ob ((F ^opF) .F-ob A))) (iso-of-cats .IsoOfCats.sec))
+  --          (cong (λ a → a .F-ob d) (iso-of-cats .IsoOfCats.sec) )
+  --         )
+  --        (iso-of-cats .IsoOfCats.inv ⟪ y ⟫))
+  --     .fst .fst
+  -- theRightAdjointAt'WhiskFun {_} {_} {_} {_} {_} {_} {C} {D} {D₁} {F} {d} iso-of-cats x .universal A .equiv-proof y .fst .snd =
+  --   {!refl!} ∙
+  --   (cong
+  --   (λ a → iso-of-cats .IsoOfCats.func ⟪ a ⟫)
+  --   (x .universal A .equiv-proof (transport (
+  --        cong₂
+  --          (λ a b → D [ a , b ])
+  --          (cong (λ a → (a .F-ob ((F ^opF) .F-ob A))) (iso-of-cats .IsoOfCats.sec))
+  --          (cong (λ a → a .F-ob d) (iso-of-cats .IsoOfCats.sec) )
+  --         )
+  --        (iso-of-cats .IsoOfCats.inv ⟪ y ⟫)) .fst .snd)) ∙
+  --   {!!}
+
+    -- transport
+    -- (cong₂
+      -- (λ a b → ?)
+      -- (cong (λ a → (a .F-ob ((F ^opF) .F-ob A))) (iso-of-cats .IsoOfCats.sec))
+        -- (cong (λ a → a .F-ob d) (iso-of-cats .IsoOfCats.sec) )
+    -- )
+
+    -- (x .universal A .equiv-proof (transport (
+    --      cong₂
+    --        (λ a b → D [ a , b ])
+    --        (cong (λ a → (a .F-ob ((F ^opF) .F-ob A))) (iso-of-cats .IsoOfCats.sec))
+    --        (cong (λ a → a .F-ob d) (iso-of-cats .IsoOfCats.sec) )
+    --       )
+    --      (iso-of-cats .IsoOfCats.inv ⟪ y ⟫)) .fst .snd)
+         
+  theRightAdjointAt'WhiskFun {_} {_} {_} {_} {_} {_} {C} {D} {D₁} {F} {d} iso-of-cats x .universal A .equiv-proof y .snd = {!!}
 
   bp-prod : RightAdjoint' (C ×C D) ((C ×C C) ×C (D ×C D)) (Δ C ×F Δ D)
   bp-prod = bpC ×RightAdjoint' bpD
