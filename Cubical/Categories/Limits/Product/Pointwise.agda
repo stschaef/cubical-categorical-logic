@@ -1,6 +1,6 @@
 {-
-If a category C and D eacb have products/exponentials, then the
-product category C ×C D has products/exponentials, respectively.
+If a category C and D eacb have products/coproducts/exponentials, then the
+product category C ×C D has products/coproducts/exponentials, respectively.
 
 TODO This can likely be extended to any limit through a more general
 argument, but it is unclear that this construction has nice
@@ -21,6 +21,9 @@ open import Cubical.Categories.Constructions.BinProduct.Redundant.Base hiding (_
 open import Cubical.Categories.Category
 open import Cubical.Categories.Constructions.BinProduct
 open import Cubical.Categories.Limits.BinProduct
+open import Cubical.Categories.Limits.BinCoproduct
+open import Cubical.Categories.Limits.Terminal
+open import Cubical.Categories.Limits.Initial
 open import Cubical.Categories.Exponentials
 
 private
@@ -38,6 +41,25 @@ module _
   open BinProduct
   open Category
   open UniversalElement
+
+
+  productHasTerminal : Terminal C → Terminal D → Terminal the-product
+  productHasTerminal tC tD .fst = (tC .fst) , (tD .fst)
+  productHasTerminal tC tD .snd y .fst = (tC .snd (y .fst) .fst) , (tD .snd (y .snd) .fst)
+  productHasTerminal tC tD .snd y .snd y₁ =
+    ΣPathP (
+      (tC .snd (y .fst) .snd (y₁ .fst)) ,
+      ((tD .snd (y .snd) .snd (y₁ .snd)))
+    )
+
+  productHasInitial : Initial C → Initial D → Initial the-product
+  productHasInitial iC iD .fst = iC .fst , iD .fst
+  productHasInitial iC iD .snd y .fst = iC .snd (y .fst) .fst , iD .snd (y .snd) .fst
+  productHasInitial iC iD .snd y .snd y₁ =
+    ΣPathP (
+      (iC .snd (y .fst) .snd (y₁ .fst)) ,
+      iD .snd (y .snd) .snd (y₁ .snd)
+    )
 
   productHasProducts : BinProducts C →
                        BinProducts D →
@@ -104,3 +126,37 @@ module _
             (cong fst (z .snd))))) ,
         cong fst (dEquivProof .snd ((z .fst .snd) ,
           (cong snd (z .snd))))))
+
+  open BinCoproduct
+
+  productHasCoproducts :
+    BinCoproducts C → BinCoproducts D → BinCoproducts the-product
+  productHasCoproducts cpC cpD x y .binCoprodOb .fst = cpC (x .fst) (y .fst) .binCoprodOb
+  productHasCoproducts cpC cpD x y .binCoprodOb .snd = cpD (x .snd) (y .snd) .binCoprodOb
+  productHasCoproducts cpC cpD x y .binCoprodInj₁ .fst = cpC (x .fst) (y .fst) .binCoprodInj₁
+  productHasCoproducts cpC cpD x y .binCoprodInj₁ .snd = cpD (x .snd) (y .snd) .binCoprodInj₁
+  productHasCoproducts cpC cpD x y .binCoprodInj₂ .fst = cpC (x .fst) (y .fst) .binCoprodInj₂
+  productHasCoproducts cpC cpD x y .binCoprodInj₂ .snd = cpD (x .snd) (y .snd) .binCoprodInj₂
+  productHasCoproducts cpC cpD x y .univProp f₁ f₂ .fst .fst .fst =
+    cpC (x .fst) (y .fst) .univProp (f₁ .fst) (f₂ .fst) .fst .fst
+  productHasCoproducts cpC cpD x y .univProp f₁ f₂ .fst .fst .snd =
+    cpD (x .snd) (y .snd) .univProp (f₁ .snd) (f₂ .snd) .fst .fst
+  productHasCoproducts cpC cpD x y .univProp f₁ f₂ .fst .snd .fst =
+    ΣPathP (
+      (cpC (x .fst) (y .fst) .univProp (f₁ .fst) (f₂ .fst) .fst .snd .fst) ,
+      (cpD (x .snd) (y .snd) .univProp (f₁ .snd) (f₂ .snd) .fst .snd .fst)
+    )
+  productHasCoproducts cpC cpD x y .univProp f₁ f₂ .fst .snd .snd =
+    ΣPathP (
+      (cpC (x .fst) (y .fst) .univProp (f₁ .fst) (f₂ .fst) .fst .snd .snd) ,
+      (cpD (x .snd) (y .snd) .univProp (f₁ .snd) (f₂ .snd) .fst .snd .snd)
+    )
+  productHasCoproducts cpC cpD x y .univProp f₁ f₂ .snd y₁ =
+    Σ≡Prop
+      (λ s a b → isProp× (the-product .isSetHom _ _) (the-product .isSetHom _ _) a b)
+      (ΣPathP (
+          cong fst (cpC (x .fst) (y .fst) .univProp (f₁ .fst) (f₂ .fst) .snd
+            (y₁ .fst .fst , (cong fst (y₁ .snd .fst)) , (cong fst (y₁ .snd .snd)))) ,
+          cong fst (cpD (x .snd) (y .snd) .univProp (f₁ .snd) (f₂ .snd) .snd
+            ((y₁ .fst .snd) , ((cong snd (y₁ .snd .fst)) , (cong snd (y₁ .snd .snd)))))
+      ))
