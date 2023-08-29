@@ -2,7 +2,7 @@
 If a category C and D eacb have products/coproducts/exponentials, then the
 product category C ×C D has products/coproducts/exponentials, respectively.
 
-TODO This can likely be extended to any limit through a more general
+NOTE This can likely be extended to any limit through a more general
 argument, but it is unclear that this construction has nice
 definitional properties.
 -}
@@ -31,7 +31,7 @@ private
   variable
     ℓC ℓC' ℓD ℓD' : Level
 
--- TODO : Limits is a bad term here, as not each of these right
+-- NOTE : Limits is a bad term here, as not each of these right
 -- adjoints does come from a limit, but the naming is in line with
 -- what Cubical upstream currently has
 module productCategoryLimits
