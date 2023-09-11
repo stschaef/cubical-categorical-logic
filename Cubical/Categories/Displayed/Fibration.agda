@@ -50,22 +50,22 @@ module _ ℓ ℓ' where
     isoToIsEquiv
       (iso
         (λ gᴰ → (f ∘f g , λ z → gᴰ z) ,
-          -- {!!}
-          Fst {C = SET ℓ}{Cᴰ = SETS ℓ ℓ'} .F-seq
-            {Y , yᴰ}{X , Dᴰ ∘f f}{D , Dᴰ}
-              (g , gᴰ)
-              (f , λ _ a → a)
-          -- ∙ (λ i z →
-            -- SET ℓ .⋆Assoc ((cod (SETS ℓ ℓ') ^opFᴰ) .F-obᴰ yᴰ .snd)
-            -- (Fst {C = SET ℓ}{Cᴰ = SETS ℓ ℓ'} ⟪ F-homᴰ (cod (SETS ℓ ℓ') ^opFᴰ) gᴰ .fst ⟫)
-            -- (Fst {C = SET ℓ}{Cᴰ = SETS ℓ ℓ'} ⟪ isFibrationSETS ((D , Dᴰ) , f) .elementᴰ .fst ⟫)
-              -- (~ i) z)
-            ∙ funExt λ a → {!!}
+          the-path
         )
-        (λ a → λ x → {!a .fst .fst!})
-        {!!}
+        (λ a → λ y z →
+          transport (cong (λ a → fst (Dᴰ (a))) (funExt⁻ (a .snd) y))
+                    (a .fst .snd y z))
+        (λ b → ΣPathP ((
+          ΣPathP ((
+            sym (b .snd)) ,
+            funExt (λ y → funExt (λ dy → {!!}))
+          )) ,
+          {!!}
+        ))
         {!!}
       )
+      where
+      the-path = {!refl!}
     -- isoToIsEquiv
     --   (iso
     --
