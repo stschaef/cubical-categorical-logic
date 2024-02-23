@@ -9,12 +9,14 @@ open import Cubical.Data.Sigma as Ty hiding (_×_)
 
 open import Cubical.Categories.Category
 open import Cubical.Categories.Constructions.BinProduct
+open import Cubical.Categories.Constructions.Presented
 open import Cubical.Categories.Constructions.BinProduct.More
 import Cubical.Categories.Constructions.Pullback.Redundant.Base as R
 open import Cubical.Categories.Functors.HomFunctor
 open import Cubical.Categories.NaturalTransformation
 open import Cubical.Categories.Functors.Constant
 open import Cubical.Categories.Functor
+open import Cubical.Categories.Presheaf
 open import Cubical.Categories.Profunctor.General
 open import Cubical.Categories.Profunctor.FunctorComprehension
 open import Cubical.Categories.Isomorphism
@@ -27,6 +29,8 @@ open import Cubical.Categories.Bifunctor.Redundant as R
 open import Cubical.Categories.Presheaf.More
 open import Cubical.Categories.Presheaf.Constructions
 open import Cubical.Categories.Yoneda
+open import Cubical.Categories.Constructions.Free.Category.Quiver as Free
+  hiding (rec)
 
 private
   variable
@@ -34,9 +38,7 @@ private
 
 module _ (C : Category ℓ ℓ') where
   open Functor
-  PbPresCat = R.PresCat
-  PullbackProf : Profunctor (PbPresCat C) C ℓ'
-  PullbackProf .F-ob (l , m , r) = {!!}
-  PullbackProf .F-hom = {!!}
-  PullbackProf .F-id = {!!}
-  PullbackProf .F-seq = {!!}
+  open R.RedundantPullback C public
+  PbPresCat = PresCat
+  PullbackProf : Profunctor PbPresCat C ℓ'
+  PullbackProf = {!!}

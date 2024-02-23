@@ -7,15 +7,21 @@
 module Cubical.Categories.Constructions.Pullback.Redundant.Base where
 
 open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.HLevels
 open import Cubical.Categories.Category.Base
 open import Cubical.Categories.Functor.Base hiding (Id)
 open import Cubical.Categories.Instances.Functors
+open import Cubical.Categories.Instances.Cospan
+open import Cubical.Categories.Instances.Finite.Base
 open import Cubical.Categories.NaturalTransformation
 open import Cubical.Data.Graph.Base
 open import Cubical.Data.Sum as Sum hiding (rec)
 open import Cubical.Data.Sigma
 open import Cubical.Data.Quiver.Base
 open import Cubical.Categories.Limits.Pullback
+open import Cubical.Categories.Constructions.Slice.Base
+
+open import Cubical.Tactics.CategorySolver.Reflection
 
 open import Cubical.Categories.Constructions.Free.Category.Quiver as Free
   hiding (rec)
@@ -42,57 +48,121 @@ open Axioms
 --             |
 --             r
 ----}
-module _ (C : Category ℓc ℓc') where
+module RedundantPullback (C : Category ℓc ℓc') where
   private
+    open Cospan
     data PBGenerator : Type ((ℓ-max ℓc ℓc')) where
-      homl : ∀ {l m r l' : C .ob} →
-        C [ l' , l ] → PBGenerator
-      homr : ∀ {l m r r' : C .ob} →
-        C [ r' , r ] → PBGenerator
-      homm : ∀ {l m r m' : C .ob} →
-        C [ m , m' ] → PBGenerator
-      homlm : ∀ {l m r l' m' : C .ob} →
-        C [ l' , l ] → C [ m , m' ] → PBGenerator
-      homrm : ∀ {l m r r' m' : C .ob} →
-        C [ r' , r ] → C [ m , m' ] → PBGenerator
-      homlr : ∀ {l m r l' r' : C .ob} →
-        C [ l' , l ] → C [ r' , r ] → PBGenerator
-      homlmr : ∀ {l m r l' r' m' : C .ob} →
-        C [ l' , l ] → C [ m , m' ] → C [ r' , r ] → PBGenerator
-
+      homl : ∀ (cspn : Cospan C) {l' : C .ob} →
+        C [ l' , cspn .l ] → PBGenerator
+      homr : ∀ (cspn : Cospan C){r' : C .ob} →
+        C [ r' , cspn .r ] → PBGenerator
+      homm : ∀ (cspn : Cospan C){m' : C .ob} →
+        C [ cspn .m , m' ] → PBGenerator
+      homlm : ∀ (cspn : Cospan C){l' m' : C .ob} →
+        C [ l' , cspn .l ] → C [ cspn .m , m' ] → PBGenerator
+      homrm : ∀ (cspn : Cospan C){r' m' : C .ob} →
+        C [ r' , cspn .r ] → C [ cspn .m , m' ] → PBGenerator
+      homlr : ∀ (cspn : Cospan C){l' r' : C .ob} →
+        C [ l' , cspn .l ] → C [ r' , cspn .r ] → PBGenerator
+      homlmr : ∀ (cspn : Cospan C){l' r' m' : C .ob} →
+        C [ l' , cspn .l ] → C [ cspn .m , m' ] → C [ r' , cspn .r ] →
+        PBGenerator
 
     data PBAx : Type (ℓ-max ℓc ℓc') where
-      idPB : ∀ (l m r : C .ob) → PBAx
-      seqPB : ∀ {l m r l' m' r' l'' m'' r'' : C .ob} →
-              C [ l' , l ] → C [ m , m' ] → C [ r' , r ] →
+      idPB : ∀ (cspn : Cospan C) → PBAx
+      seqPB : ∀ (cspn : Cospan C) {l' m' r' l'' m'' r'' : C .ob} →
+              C [ l' , cspn .l ] → C [ cspn .m , m' ] → C [ r' , cspn .r ] →
               C [ l'' , l' ] → C [ m' , m'' ] → C [ r'' , r' ] → PBAx
-      lagree : ∀ {l l' : C .ob} → (m r : C .ob) → C [ l' , l ] → PBAx
-      ragree : ∀ {r r' : C .ob} → (l m : C .ob) → C [ r' , r ] → PBAx
-      magree : ∀ {m m' : C .ob} → (l r : C .ob) → C [ m , m' ] → PBAx
-      lmagree : ∀ {l l' m m' : C .ob} → (r : C .ob) → C [ l' , l ] →
-                C [ m , m' ] → PBAx
-      rmagree : ∀ {r r' m m' : C .ob} → (l : C .ob) → C [ r' , r ] →
-                C [ m , m' ] → PBAx
-      lragree : ∀ {l l' r r' : C .ob} → (m : C .ob) → C [ l' , l ] →
-                C [ r' , r ] → PBAx
+      lagree : ∀ (cspn : Cospan C) → {l' : C .ob} → C [ l' , cspn .l ] → PBAx
+      ragree : ∀ (cspn : Cospan C) → {r' : C .ob} → C [ r' , cspn .r ] → PBAx
+      magree : ∀ (cspn : Cospan C) → {m' : C .ob} → C [ cspn .m , m' ] → PBAx
+      lmagree : ∀ (cspn : Cospan C) {l' m' : C .ob} → C [ l' , cspn .l ] →
+                C [ cspn .m , m' ] → PBAx
+      rmagree : ∀ (cspn : Cospan C) {r' m' : C .ob} → C [ r' , cspn .r ] →
+                C [ cspn .m , m' ] → PBAx
+      lragree : ∀ (cspn : Cospan C){l' r' : C .ob} → C [ l' , cspn .l ] →
+                C [ r' , cspn .r ] → PBAx
 
-    Q : Quiver ℓc (ℓ-max ℓc ℓc')
-    Q .fst = C .ob × C .ob × C .ob
+    data cospanIdxObs : Type₀ where
+      cspnl : cospanIdxObs
+      cspnm : cospanIdxObs
+      cspnr : cospanIdxObs
+
+    data cospanIdxHoms : Type (ℓ-suc ℓ-zero) where
+      cspns₁ : cospanIdxHoms
+      cspns₂ : cospanIdxHoms
+
+    cospanQuiv : Quiver ℓ-zero (ℓ-suc ℓ-zero)
+    cospanQuiv .fst = cospanIdxObs
+    cospanQuiv .snd .mor = cospanIdxHoms
+    cospanQuiv .snd .dom cspns₁ = cspnl
+    cospanQuiv .snd .cod cspns₁ = cspnm
+    cospanQuiv .snd .dom cspns₂ = cspnr
+    cospanQuiv .snd .cod cspns₂ = cspnm
+
+    cospanFunCat : Category
+      (ℓ-max (ℓ-max ℓ-zero (ℓ-suc ℓ-zero)) (ℓ-max ℓc ℓc'))
+      (ℓ-max (ℓ-max ℓ-zero (ℓ-suc ℓ-zero)) ℓc')
+    cospanFunCat = Cᴶ C cospanQuiv
+
+    interp : (Cospan C) → Interp cospanQuiv C
+    interp (cospan l m r s₁ s₂) $g cspnl = l
+    interp (cospan l m r s₁ s₂) $g cspnm = m
+    interp (cospan l m r s₁ s₂) $g cspnr = r
+    interp (cospan l m r s₁ s₂) <$g> cspns₁ = s₁
+    interp (cospan l m r s₁ s₂) <$g> cspns₂ = s₂
+
+    mkCospanFun : (cspn : Cospan C) → (cospanFunCat .ob)
+    mkCospanFun cspn = Free.rec cospanQuiv (interp cspn)
+
+    Q : Quiver (ℓ-max ℓc ℓc') (ℓ-max ℓc ℓc')
+    Q .fst = Cospan C
     Q .snd .mor = PBGenerator
-    Q .snd .dom (homl {l}{m}{r}{l'} f) = l , m , r
-    Q .snd .cod (homl {l}{m}{r}{l'} f) = l' , m , r
-    Q .snd .dom (homr {l}{m}{r}{r'} f) = l , m , r
-    Q .snd .cod (homr {l}{m}{r}{r'} f) = l , m , r'
-    Q .snd .dom (homm {l}{m}{r}{m'} f) = l , m , r
-    Q .snd .cod (homm {l}{m}{r}{m'} f) = l , m' , r
-    Q .snd .dom (homlm {l}{m}{r}{l'}{m'} f g) = l , m , r
-    Q .snd .cod (homlm {l}{m}{r}{l'}{m'} f g) = l' , m' , r
-    Q .snd .dom (homrm {l}{m}{r}{r'}{m'} f g) = l , m , r
-    Q .snd .cod (homrm {l}{m}{r}{r'}{m'} f g) = l , m' , r'
-    Q .snd .dom (homlr {l}{m}{r}{l'}{r'} f g) = l , m , r
-    Q .snd .cod (homlr {l}{m}{r}{l'}{r'} f g) = l' , m , r'
-    Q .snd .dom (homlmr {l}{m}{r}{l'}{r'}{m'} f g h) = l , m , r
-    Q .snd .cod (homlmr {l}{m}{r}{l'}{r'}{m'} f g h) = l' , m' , r'
+    Q .snd .dom (homl (cospan l m r s s') {l'} f) =
+      (cospan l m r s s')
+    Q .snd .cod (homl (cospan l m r s s') {l'} f) =
+      (cospan l' m r (f ⋆⟨ C ⟩ s) s')
+    Q .snd .dom (homr (cospan l m r s s') {r'} f) =
+      (cospan l m r s s')
+    Q .snd .cod (homr (cospan l m r s s') {r'} f) =
+      (cospan l m r' s (f ⋆⟨ C ⟩ s'))
+    Q .snd .dom (homm (cospan l m r s s') {m'} f) =
+      (cospan l m r s s')
+    Q .snd .cod (homm (cospan l m r s s') {m'} f) =
+      (cospan l m' r (s ⋆⟨ C ⟩ f) (s' ⋆⟨ C ⟩ f))
+    Q .snd .dom (homlm (cospan l m r s s') {l'}{m'} f g) =
+      (cospan l m r s s')
+    Q .snd .cod (homlm (cospan l m r s s') {l'}{m'} f g) =
+      (cospan l' m' r (f ⋆⟨ C ⟩ s ⋆⟨ C ⟩ g) (s' ⋆⟨ C ⟩ g))
+    Q .snd .dom (homrm (cospan l m r s s') {r'}{m'} f g) =
+      (cospan l m r s s')
+    Q .snd .cod (homrm (cospan l m r s s') {r'}{m'} f g) =
+      (cospan l m' r' (s ⋆⟨ C ⟩ g) (f ⋆⟨ C ⟩ s' ⋆⟨ C ⟩ g))
+    Q .snd .dom (homlr (cospan l m r s s') {l'}{r'} f g) =
+      (cospan l m r s s')
+    Q .snd .cod (homlr (cospan l m r s s') {l'}{r'} f g) =
+      (cospan l' m r' (f ⋆⟨ C ⟩ s) (g ⋆⟨ C ⟩ s'))
+    Q .snd .dom (homlmr (cospan l m r s s') {l'}{r'}{m'} f g h) =
+      (cospan l m r s s')
+    Q .snd .cod (homlmr (cospan l m r s s') {l'}{r'}{m'} f g h) =
+      (cospan l' m' r' (f ⋆⟨ C ⟩ s ⋆⟨ C ⟩ g) (h ⋆⟨ C ⟩ s' ⋆⟨ C ⟩ g))
+
+    transport-cod-lmr : (cspn cspn' : Cospan C) →
+      (ϕ : C [ cspn' .l , cspn' .m ])(ψ : C [ cspn' .r , cspn' .m ])
+      (p : cspn' .s₁ ≡ ϕ) (q : cspn' .s₂ ≡ ψ) →
+      (FreeCat Q [ cspn , cspn' ]) →
+      (FreeCat Q [ cspn ,
+                   (cospan (cspn' .l) (cspn' .m) (cspn' .r) ϕ ψ) ])
+    transport-cod-lmr cspn cspn' ϕ ψ p q f =
+      transport
+        (cong₂ (λ a b →
+          (FreeCat Q) [
+            cspn ,
+            (cospan (cspn' .l) (cspn' .m) (cspn' .r) a b) ])
+           p
+           q
+        )
+        f
 
     mkAxHelper :
       PBAx →
@@ -100,38 +170,73 @@ module _ (C : Category ℓc ℓc') where
         (λ A →
            Σ-syntax (FreeCat Q .ob)
            (λ B → (FreeCat Q [ A , B ]) × (FreeCat Q [ A , B ])))
-    mkAxHelper (idPB l m r) =
+    mkAxHelper (idPB (cospan l m r s s')) =
       _ , _ ,
-      (η Q <$g> homlmr (C .id {l}) (C .id {m}) (C .id {r})) ,
-      FreeCat Q .id
-    mkAxHelper (seqPB f g h f' g' h') =
+      η Q <$g> homlmr (cospan l m r s s') (C .id) (C .id) (C .id) ,
+      transport-cod-lmr _ _ _ _
+        (sym (C .⋆IdR _ ∙ C .⋆IdL _))
+        (sym (C .⋆IdR _ ∙ C .⋆IdL _))
+        (FreeCat Q .id)
+    mkAxHelper (seqPB cspn {l'}{m'}{r'}{l''}{m''}{r''} f g h f' g' h') =
       _ , _ ,
-      (η Q <$g> homlmr (f' ⋆⟨ C ⟩ f) (g ⋆⟨ C ⟩ g') (h' ⋆⟨ C ⟩ h)) ,
-      η Q <$g> homlmr f g h ⋆⟨ FreeCat Q ⟩ (η Q <$g> homlmr f' g' h')
-    mkAxHelper (lagree m r f) =
+      (η Q <$g> homlmr cspn (f' ⋆⟨ C ⟩ f) (g ⋆⟨ C ⟩ g') (h' ⋆⟨ C ⟩ h)) ,
+      η Q <$g> homlmr cspn f g h
+        ⋆⟨ FreeCat Q ⟩ (
+      transport-cod-lmr
+        _ _ _ _
+        -- TODO : category solver busted?
+        (C .⋆Assoc _ _ _ ∙
+        cong (λ a → f' ⋆⟨ C ⟩ a) (C .⋆Assoc _ _ _) ∙
+        sym (C .⋆Assoc _ _ _) ∙
+        cong (λ a → a ⋆⟨ C ⟩ (g ⋆⟨ C ⟩ g')) (sym (C .⋆Assoc _ _ _)))
+        (C .⋆Assoc _ _ _ ∙
+        cong (λ a → h' ⋆⟨ C ⟩ a) (C .⋆Assoc _ _ _) ∙
+        sym (C .⋆Assoc _ _ _) ∙
+        cong (λ a → a ⋆⟨ C ⟩ (g ⋆⟨ C ⟩ g')) (sym (C .⋆Assoc _ _ _)))
+        (η Q <$g> homlmr (cospan l' m' r' _ _) f' g' h'))
+    mkAxHelper (lagree cspn f) =
       _ , _ ,
-      (η Q <$g> homl f) ,
-      (η Q <$g> homlmr f (C .id {m}) (C .id {r}))
-    mkAxHelper (ragree l m f) =
+      (η Q <$g> homl cspn f) ,
+      transport-cod-lmr
+      _ _ _ _
+      (C .⋆IdR _)
+      (C .⋆IdR _ ∙ C .⋆IdL _)
+      (η Q <$g> homlmr cspn f (C .id) (C .id))
+    mkAxHelper (ragree cspn f) =
       _ , _ ,
-      (η Q <$g> homr f) ,
-      (η Q <$g> homlmr (C .id {l}) (C .id {m}) f)
-    mkAxHelper (magree l r f) =
+      (η Q <$g> homr cspn f) ,
+      transport-cod-lmr _ _ _ _
+      (C .⋆IdR _ ∙ C .⋆IdL _)
+      (C .⋆IdR _)
+      (η Q <$g> homlmr cspn (C .id) (C .id) f)
+    mkAxHelper (magree cspn f) =
       _ , _ ,
-      (η Q <$g> homm f) ,
-      (η Q <$g> homlmr (C .id {l}) f (C .id {r}))
-    mkAxHelper (lmagree r f g) =
+      (η Q <$g> homm cspn f) ,
+      transport-cod-lmr _ _ _ _
+      (C .⋆Assoc _ _ _ ∙ C .⋆IdL _)
+      (C .⋆Assoc _ _ _ ∙ C .⋆IdL _)
+      (η Q <$g> homlmr cspn (C .id) f (C .id))
+    mkAxHelper (lmagree cspn f g) =
       _ , _ ,
-      (η Q <$g> homlm f g) ,
-      (η Q <$g> homlmr f g (C .id {r}))
-    mkAxHelper (rmagree l f g) =
+      (η Q <$g> homlm cspn f g),
+      transport-cod-lmr _ _ _ _
+      refl
+      (C .⋆Assoc _ _ _ ∙ C .⋆IdL _)
+      (η Q <$g> homlmr cspn f g (C .id))
+    mkAxHelper (rmagree cspn f g) =
       _ , _ ,
-      (η Q <$g> homrm f g) ,
-      (η Q <$g> homlmr (C .id {l}) g f)
-    mkAxHelper (lragree m f g) =
+      (η Q <$g> homrm cspn f g),
+      transport-cod-lmr _ _ _ _
+      (C .⋆Assoc _ _ _ ∙ C .⋆IdL _)
+      refl
+      (η Q <$g> homlmr cspn (C .id) g f)
+    mkAxHelper (lragree cspn f g) =
       _ , _ ,
-      (η Q <$g> homlr f g) ,
-      (η Q <$g> homlmr f (C .id {m}) g)
+      (η Q <$g> homlr cspn f g),
+      transport-cod-lmr _ _ _ _
+      (C .⋆IdR _)
+      (C .⋆IdR _)
+      (η Q <$g> homlmr cspn f (C .id) g)
 
     Ax : Axioms (FreeCat Q) (ℓ-max ℓc ℓc')
     Ax = mkAx (FreeCat Q) PBAx mkAxHelper
@@ -139,3 +244,16 @@ module _ (C : Category ℓc ℓc') where
   module PbCat = QuoByAx (FreeCat Q) Ax
   PresCat = PbCat.PresentedCat
 
+  rec : {E : Category ℓ ℓ'} → (Interp Q E) → Functor PresCat E
+  rec {E = E} int = PbCat.rec E (Free.rec Q int) ax-to-path where
+
+    ax-to-path : (eq : Ax .equation) →
+                   Free.rec Q int ⟪ Ax .lhs eq ⟫ ≡ Free.rec Q int ⟪ Ax .rhs eq ⟫
+    ax-to-path (idPB cspn) = ?
+    ax-to-path (seqPB cspn f g h f' g' h') = {!!}
+    ax-to-path (lagree cspn f) = {!!}
+    ax-to-path (ragree cspn f) = {!!}
+    ax-to-path (magree cspn f) = {!!}
+    ax-to-path (lmagree cspn f g) = {!!}
+    ax-to-path (rmagree cspn f g) = {!!}
+    ax-to-path (lragree cspn f g) = {!!}

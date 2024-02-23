@@ -14,6 +14,8 @@ open import Cubical.Categories.Instances.Sets
 open import Cubical.Categories.Presheaf.Base
 open import Cubical.Categories.Presheaf.More
 open import Cubical.Categories.Bifunctor.Redundant
+open import Cubical.Categories.Constructions.Free.Category.Quiver as Free
+  hiding (rec)
 
 private
   variable
