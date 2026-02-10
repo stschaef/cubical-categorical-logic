@@ -317,7 +317,8 @@ module _ {C : Category ℓC ℓC'} {x : C .ob} {Cᴰ : Categoryᴰ C ℓCᴰ ℓ
     -- there are two choices here: we can either eliminate C⋆IdR f ourselves or pass it to Pⱽ to do so.
     yoRecⱽ pⱽ .PshHomEq.N-ob ob/@(Γ , Γᴰ , f) fᴰ = Pⱽ .F-hom (f , fᴰ , C⋆IdR f) pⱽ
     -- opaque reindEq stuck on Eq.refl noooo
-    yoRecⱽ pⱽ .PshHomEq.N-hom Δ3 Γ3 f@(γ , γᴰ , Eq.refl) p' p = {!Pⱽ.⋆Assoc _ _ _!}
+    yoRecⱽ pⱽ .PshHomEq.N-hom Δ3 Γ3 f@(γ , γᴰ , Eq.refl) p' p Eq.refl =
+      Eq.pathToEq (Pⱽ.rectifyOut $ Pⱽ.⟨⟩⋆⟨ sym $ Pⱽ.⋆ᴰ-reind _ ⟩ ∙ (sym $ Pⱽ.⋆Assoc _ _ _) ∙ Pⱽ.⋆ᴰ-reind _)
 
     record UEⱽ : Type (ℓ-max (ℓ-max ℓC ℓC') (ℓ-max (ℓ-max ℓCᴰ ℓCᴰ') ℓPᴰ)) where
       no-eta-equality
@@ -384,7 +385,19 @@ module _ {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ') where
 
           βᴰ : {gfᴰ : Cᴰ [ g C.⋆ f ][ Γᴰ , yᴰ ] }
             → introᴰ gfᴰ Cᴰ.⋆ᴰ πⱽ Cᴰ.∫≡ gfᴰ
-          βᴰ = {!!}
+          βᴰ {gfᴰ} =
+            Cᴰ.reindEq-filler _
+            ∙ Cᴰ.≡in (Eq.eqToPath (cartLifts f yᴰ .snd .PshIsoEq.nat (Γ , Γᴰ , g)
+              (x , cartLifts f yᴰ .fst , C.id)
+              (g , Iso.inv (cartLifts f yᴰ .snd .PshIsoEq.isos (Γ , Γᴰ , g)) gfᴰ , Eq.pathToEq (C.⋆IdR _))
+                     Cᴰ.idᴰ (((Cᴰ [-][-, cartLifts f yᴰ .fst ]) PresheafNotation.⋆
+                               (g ,
+                                Iso.inv (cartLifts f yᴰ .snd .PshIsoEq.isos (Γ , Γᴰ , g)) gfᴰ ,
+                                Eq.pathToEq (C.⋆IdR g)))
+                              Cᴰ.idᴰ) Eq.refl))
+            ∙ Cᴰ.≡in (cong (Iso.fun (cartLifts f yᴰ .snd .PshIsoEq.isos (Γ , Γᴰ , g)))
+                 (Cᴰ.rectifyOut $ Cᴰ.reind-revealed-filler⁻ _ ∙ Cᴰ.reind-revealed-filler⁻ _ ∙ Cᴰ.⋆IdR _))
+            ∙ Cᴰ.≡in (Iso.sec (cartLifts f yᴰ .snd .PshIsoEq.isos (Γ , Γᴰ , g)) gfᴰ)
 
         extensionalityᴰ : ∀ {Γ}{Γᴰ : Cᴰ.ob[ Γ ]}{g g' : C [ Γ , x ]}
           {gᴰ : Cᴰ [ g ][ Γᴰ , f * yᴰ ]}
@@ -392,7 +405,19 @@ module _ {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ') where
           → g ≡ g'
           → gᴰ Cᴰ.⋆ᴰ πⱽ Cᴰ.∫≡ gᴰ' Cᴰ.⋆ᴰ πⱽ
           → gᴰ Cᴰ.∫≡ gᴰ'
-        extensionalityᴰ = {!!}
+        extensionalityᴰ {gᴰ = gᴰ} {gᴰ' = gᴰ'} g≡ gᴰ⋆π≡ =
+          Cᴰ.≡in (sym (Iso.ret isoG gᴰ))
+          ∙ Cᴰ.≡in (λ i → Iso.inv (cartLifts f yᴰ .snd .PshIsoEq.isos (_ , _ , g≡ i)) (mid i))
+          ∙ Cᴰ.≡in (Iso.ret isoG' gᴰ')
+          where
+          isoG = cartLifts f yᴰ .snd .PshIsoEq.isos _
+          isoG' = cartLifts f yᴰ .snd .PshIsoEq.isos _
+          mid = Cᴰ.rectifyOut {e' = cong (λ h → h C.⋆ f) g≡}
+            (sym (βᴰ {gfᴰ = Iso.fun isoG gᴰ})
+            ∙ Cᴰ.≡in (cong (λ z → z Cᴰ.⋆ᴰ πⱽ) (Iso.ret isoG gᴰ))
+            ∙ gᴰ⋆π≡
+            ∙ Cᴰ.≡in (sym (cong (λ z → z Cᴰ.⋆ᴰ πⱽ) (Iso.ret isoG' gᴰ')))
+            ∙ βᴰ {gfᴰ = Iso.fun isoG' gᴰ'})
 
     LRⱽ : {x : C.ob} (xᴰ : Cᴰ.ob[ x ]) → Type _
     LRⱽ {x} xᴰ = ∀ {Γ} (Γᴰ : Cᴰ.ob[ Γ ]) (f : C [ Γ , x ])
@@ -415,10 +440,30 @@ module _ {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ') where
           _,pⱽ_ = xᴰLRⱽ Γᴰ f .snd .PshIsoEq.isos _ .Iso.inv (γᴰ , fᴰ)
 
           β₁ⱽ : _,pⱽ_ Cᴰ.⋆ᴰ π₁ⱽ Cᴰ.∫≡ γᴰ
-          β₁ⱽ = {!!}
+          β₁ⱽ =
+            Cᴰ.reindEq-filler (Eq.pathToEq _)
+            ∙ Cᴰ.≡in (cong fst (Eq.eqToPath (xᴰLRⱽ Γᴰ f .snd .PshIsoEq.nat (Δ , Δᴰ , γ)
+              (Γ , xᴰLRⱽ Γᴰ f .fst , C.id)
+              (γ , _,pⱽ_ , Eq.pathToEq (C.⋆IdR _))
+                     Cᴰ.idᴰ (((Cᴰ [-][-, xᴰLRⱽ Γᴰ f .fst ]) PresheafNotation.⋆
+                               (γ , _,pⱽ_ , Eq.pathToEq (C.⋆IdR γ)))
+                              Cᴰ.idᴰ) Eq.refl)))
+            ∙ Cᴰ.≡in (cong (λ z → Iso.fun (xᴰLRⱽ Γᴰ f .snd .PshIsoEq.isos (Δ , Δᴰ , γ)) z .fst)
+                 (Cᴰ.rectifyOut $ Cᴰ.reind-revealed-filler⁻ _ ∙ Cᴰ.reind-revealed-filler⁻ _ ∙ Cᴰ.⋆IdR _))
+            ∙ Cᴰ.≡in (cong fst (Iso.sec (xᴰLRⱽ Γᴰ f .snd .PshIsoEq.isos (Δ , Δᴰ , γ)) (γᴰ , fᴰ)))
 
           β₂ⱽ : _,pⱽ_ Cᴰ.⋆ᴰ π₂ⱽ Cᴰ.∫≡ fᴰ
-          β₂ⱽ = {!!}
+          β₂ⱽ =
+            Cᴰ.reindEq-filler _
+            ∙ Cᴰ.≡in (cong snd (Eq.eqToPath (xᴰLRⱽ Γᴰ f .snd .PshIsoEq.nat (Δ , Δᴰ , γ)
+              (Γ , xᴰLRⱽ Γᴰ f .fst , C.id)
+              (γ , _,pⱽ_ , Eq.pathToEq (C.⋆IdR _))
+                     Cᴰ.idᴰ (((Cᴰ [-][-, xᴰLRⱽ Γᴰ f .fst ]) PresheafNotation.⋆
+                               (γ , _,pⱽ_ , Eq.pathToEq (C.⋆IdR γ)))
+                              Cᴰ.idᴰ) Eq.refl)))
+            ∙ Cᴰ.≡in (cong (λ z → Iso.fun (xᴰLRⱽ Γᴰ f .snd .PshIsoEq.isos (Δ , Δᴰ , γ)) z .snd)
+                 (Cᴰ.rectifyOut $ Cᴰ.reind-revealed-filler⁻ _ ∙ Cᴰ.reind-revealed-filler⁻ _ ∙ Cᴰ.⋆IdR _))
+            ∙ Cᴰ.≡in (cong snd (Iso.sec (xᴰLRⱽ Γᴰ f .snd .PshIsoEq.isos (Δ , Δᴰ , γ)) (γᴰ , fᴰ)))
 
         module _ {Δ}{Δᴰ : Cᴰ.ob[ Δ ]}{γ γ' : C [ Δ , Γ ]}
           {pᴰ : Cᴰ [ γ ][ Δᴰ , xᴰLRⱽ Γᴰ f .fst ]}
@@ -428,7 +473,29 @@ module _ {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ') where
             : pᴰ Cᴰ.⋆ᴰ π₁ⱽ Cᴰ.∫≡ qᴰ Cᴰ.⋆ᴰ π₁ⱽ
             → pᴰ Cᴰ.⋆ᴰ π₂ⱽ Cᴰ.∫≡ qᴰ Cᴰ.⋆ᴰ π₂ⱽ
             → pᴰ Cᴰ.∫≡ qᴰ
-          extensionalityᴰ = {!!}
+          extensionalityᴰ p⋆π₁≡ p⋆π₂≡ =
+            Cᴰ.≡in (sym (Iso.ret isoP pᴰ))
+            ∙ Cᴰ.≡in (λ i → Iso.inv (xᴰLRⱽ Γᴰ f .snd .PshIsoEq.isos (Δ , Δᴰ , γ≡ i)) (mid₁ i , mid₂ i))
+            ∙ Cᴰ.≡in (Iso.ret isoQ qᴰ)
+            where
+              isoP = xᴰLRⱽ Γᴰ f .snd .PshIsoEq.isos (Δ , Δᴰ , γ)
+              isoQ = xᴰLRⱽ Γᴰ f .snd .PshIsoEq.isos (Δ , Δᴰ , γ')
+              γ≡ : γ ≡ γ'
+              γ≡ = sym (C.⋆IdR γ) ∙ PathPΣ p⋆π₁≡ .fst ∙ C.⋆IdR γ'
+              β₁f : ∀ {h} (rᴰ : Cᴰ [ h ][ Δᴰ , xᴰLRⱽ Γᴰ f .fst ])
+                → Iso.fun (xᴰLRⱽ Γᴰ f .snd .PshIsoEq.isos (Δ , Δᴰ , h)) rᴰ .fst Cᴰ.∫≡ rᴰ Cᴰ.⋆ᴰ π₁ⱽ
+              β₁f rᴰ = sym (β₁ⱽ (Iso.fun (xᴰLRⱽ Γᴰ f .snd .PshIsoEq.isos (Δ , Δᴰ , _)) rᴰ .fst) (Iso.fun (xᴰLRⱽ Γᴰ f .snd .PshIsoEq.isos (Δ , Δᴰ , _)) rᴰ .snd))
+                ∙ Cᴰ.≡in (cong (Cᴰ._⋆ᴰ π₁ⱽ) (Iso.ret (xᴰLRⱽ Γᴰ f .snd .PshIsoEq.isos (Δ , Δᴰ , _)) rᴰ))
+              β₂f : ∀ {h} (rᴰ : Cᴰ [ h ][ Δᴰ , xᴰLRⱽ Γᴰ f .fst ])
+                → Iso.fun (xᴰLRⱽ Γᴰ f .snd .PshIsoEq.isos (Δ , Δᴰ , h)) rᴰ .snd Cᴰ.∫≡ rᴰ Cᴰ.⋆ᴰ π₂ⱽ
+              β₂f rᴰ = sym (β₂ⱽ (Iso.fun (xᴰLRⱽ Γᴰ f .snd .PshIsoEq.isos (Δ , Δᴰ , _)) rᴰ .fst) (Iso.fun (xᴰLRⱽ Γᴰ f .snd .PshIsoEq.isos (Δ , Δᴰ , _)) rᴰ .snd))
+                ∙ Cᴰ.≡in (cong (Cᴰ._⋆ᴰ π₂ⱽ) (Iso.ret (xᴰLRⱽ Γᴰ f .snd .PshIsoEq.isos (Δ , Δᴰ , _)) rᴰ))
+              mid₁ : PathP (λ i → Cᴰ.Hom[ γ≡ i ][ Δᴰ , Γᴰ ])
+                       (Iso.fun isoP pᴰ .fst) (Iso.fun isoQ qᴰ .fst)
+              mid₁ = Cᴰ.rectifyOut (β₁f pᴰ ∙ p⋆π₁≡ ∙ sym (β₁f qᴰ))
+              mid₂ : PathP (λ i → Cᴰ [ γ≡ i C.⋆ f ][ Δᴰ , xᴰ ])
+                       (Iso.fun isoP pᴰ .snd) (Iso.fun isoQ qᴰ .snd)
+              mid₂ = Cᴰ.rectifyOut (β₂f pᴰ ∙ p⋆π₂≡ ∙ sym (β₂f qᴰ))
 
     AllLRⱽ : Type _
     AllLRⱽ = ∀ {x} (xᴰ : Cᴰ.ob[ x ]) → LRⱽ xᴰ
@@ -447,291 +514,301 @@ module _ {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ') where
       LRⱽFⱽ .F-obᴰ ob/@(Γᴰ , f) = (Γᴰ ×ⱽ f *xᴰ) .fst
       LRⱽFⱽ .F-homᴰ {Δ} {Γ} {γ} {(Δᴰ , g)} {Γᴰ , f} (γᴰ , tri) =
         Cᴰ.reindEq (C⋆IdL γ) (LRⱽxᴰ.π₁ⱽ Cᴰ.⋆ᴰ γᴰ) LRⱽxᴰ.,pⱽ (Cᴰ.reindEq (Eq.sym tri) $ Cᴰ.reindEq (C⋆IdL g) LRⱽxᴰ.π₂ⱽ)
-      LRⱽFⱽ .F-idᴰ = {!!}
-      LRⱽFⱽ .F-seqᴰ = {!!}
+      LRⱽFⱽ .F-idᴰ = Cᴰ.rectifyOut $ LRⱽxᴰ.extensionalityᴰ
+        (LRⱽxᴰ.β₁ⱽ _ _ ∙ Cᴰ.reindEq-filler⁻ _ ∙ Cᴰ.⋆IdR _ ∙ sym (Cᴰ.⋆IdL _))
+        (LRⱽxᴰ.β₂ⱽ _ _ ∙ Cᴰ.reindEq-filler⁻ _ ∙ Cᴰ.reindEq-filler⁻ _ ∙ sym (Cᴰ.⋆IdL _))
+      LRⱽFⱽ .F-seqᴰ {f = δ}{g = γ}{xᴰ = Θᴰ , h}{yᴰ = Δᴰ , g}{zᴰ = Γᴰ , f} (γᴰ₁ , tri₁) (γᴰ₂ , tri₂) = Cᴰ.rectifyOut $ LRⱽxᴰ.extensionalityᴰ
+        (LRⱽxᴰ.β₁ⱽ _ _ ∙ Cᴰ.reindEq-filler⁻ _ ∙ sym (Cᴰ.⋆Assoc _ _ _)
+         ∙ Cᴰ.⟨ Cᴰ.reindEq-filler _ ⟩⋆⟨ refl ⟩
+         ∙ Cᴰ.⟨ sym (LRⱽxᴰ.β₁ⱽ _ _) ⟩⋆⟨ refl ⟩
+         ∙ Cᴰ.⋆Assoc _ _ _
+         ∙ Cᴰ.⟨⟩⋆⟨ LRⱽxᴰ.β₁ⱽ _ _ ⟩
+         ∙ Cᴰ.⟨⟩⋆⟨ Cᴰ.reindEq-filler⁻ _ ⟩
+         ∙ sym (Cᴰ.⋆Assoc _ _ _))
+        {!!}
 
-      -- Technically this could be implemented as bp.×aF but I'm not sure if it would be as nice definitionally.
-      -- TODO: experiment and see if we can make bp.×aF compute nicely
-      LRⱽF : Functor (Cᴰ / (C [-, x ])) (Cᴰ / (C [-, x ]))
-      LRⱽF = ∫F {F = Id} (LRⱽFⱽ ,Fⱽ (Sndⱽ Cᴰ (EqElement (C [-, x ]))))
+--       -- Technically this could be implemented as bp.×aF but I'm not sure if it would be as nice definitionally.
+--       -- TODO: experiment and see if we can make bp.×aF compute nicely
+--       LRⱽF : Functor (Cᴰ / (C [-, x ])) (Cᴰ / (C [-, x ]))
+--       LRⱽF = ∫F {F = Id} (LRⱽFⱽ ,Fⱽ (Sndⱽ Cᴰ (EqElement (C [-, x ]))))
 
-      Exponentiatingⱽ : Type _
-      Exponentiatingⱽ = ∀ (yᴰ : Cᴰ.ob[ x ]) → Reprⱽ (reindPsh LRⱽF (Cᴰ [-][-, yᴰ ]))
+--       Exponentiatingⱽ : Type _
+--       Exponentiatingⱽ = ∀ (yᴰ : Cᴰ.ob[ x ]) → Reprⱽ (reindPsh LRⱽF (Cᴰ [-][-, yᴰ ]))
 
-      ExponentiatingⱽUE : (C⋆IdR : EqIdR C)  → Type _
-      ExponentiatingⱽUE C⋆IdR = ∀ (yᴰ : Cᴰ.ob[ x ]) → UEⱽ (reindPsh LRⱽF (Cᴰ [-][-, yᴰ ])) C⋆IdR
-    Exponentialsⱽ : (C⋆IdL : EqIdL C) → AllLRⱽ → Type _
-    Exponentialsⱽ C⋆IdL allLRⱽ = ∀ {x} (xᴰ : Cᴰ.ob[ x ]) → Exponentiatingⱽ C⋆IdL xᴰ (allLRⱽ xᴰ)
-  module _ (C⋆IdL : EqIdL C)(C⋆Assoc : ReprEqAssoc C) (isFib : Fibration C⋆Assoc) x (bp : BinProductsWith C x) where
-    private
-      module bp = BinProductsWithNotation bp
-      module fib = FibrationNotation C⋆Assoc isFib
+--       ExponentiatingⱽUE : (C⋆IdR : EqIdR C)  → Type _
+--       ExponentiatingⱽUE C⋆IdR = ∀ (yᴰ : Cᴰ.ob[ x ]) → UEⱽ (reindPsh LRⱽF (Cᴰ [-][-, yᴰ ])) C⋆IdR
+--     Exponentialsⱽ : (C⋆IdL : EqIdL C) → AllLRⱽ → Type _
+--     Exponentialsⱽ C⋆IdL allLRⱽ = ∀ {x} (xᴰ : Cᴰ.ob[ x ]) → Exponentiatingⱽ C⋆IdL xᴰ (allLRⱽ xᴰ)
+--   module _ (C⋆IdL : EqIdL C)(C⋆Assoc : ReprEqAssoc C) (isFib : Fibration C⋆Assoc) x (bp : BinProductsWith C x) where
+--     private
+--       module bp = BinProductsWithNotation bp
+--       module fib = FibrationNotation C⋆Assoc isFib
 
-    module _ (π₁NatEqC : π₁NatEq bp) where
-      π1*F : Functorᴰ bp.×aF Cᴰ Cᴰ
-      π1*F .F-obᴰ {Γ} Γᴰ = isFib bp.π₁ Γᴰ .fst
---       -- γᴰ : Cᴰ [ γ ][ Δᴰ , Γᴰ ]
---       -- -----------------------
---       -- π1*.π ⋆ γᴰ : Cᴰ [ (π₁ ⋆ γ , π₂) ⋆ π₁ ][ π₁* Δᴰ , Γᴰ ]
---       -- -----------------------
---       -- π₁*-intro : Cᴰ [ (π₁ ⋆ γ , π₂) ][ π₁* Δᴰ , π₁* Γᴰ ]
-      π1*F .F-homᴰ {Δ} {Γ} {γ} {Δᴰ} {Γᴰ} γᴰ =
-        fib.introᴰ (Cᴰ.reindEq (Eq.sym $ π₁NatEqC γ) $ (Cᴰ.reindEq (C⋆IdL (bp.×ue.element .fst)) fib.πⱽ Cᴰ.⋆ᴰ γᴰ))
-      π1*F .F-idᴰ = {!!}
-      π1*F .F-seqᴰ = {!!}
-      module _ (×aF-seqC : ×aF-seq bp) where
-        module _ Γ where
-          wkPshHetEq : PshHetEq bp.×aF (C [-, Γ ]) (C [-, Γ bp.×a ])
-          wkPshHetEq .PshHomEq.N-ob = λ Δ γ → (bp.π₁ C.⋆ γ) bp.,p bp.π₂
-          wkPshHetEq .PshHomEq.N-hom Θ Δ δ γ p Eq.refl = Eq.sym $ ×aF-seqC δ γ
+--     module _ (π₁NatEqC : π₁NatEq bp) where
+--       π1*F : Functorᴰ bp.×aF Cᴰ Cᴰ
+--       π1*F .F-obᴰ {Γ} Γᴰ = isFib bp.π₁ Γᴰ .fst
+-- --       -- γᴰ : Cᴰ [ γ ][ Δᴰ , Γᴰ ]
+-- --       -- -----------------------
+-- --       -- π1*.π ⋆ γᴰ : Cᴰ [ (π₁ ⋆ γ , π₂) ⋆ π₁ ][ π₁* Δᴰ , Γᴰ ]
+-- --       -- -----------------------
+-- --       -- π₁*-intro : Cᴰ [ (π₁ ⋆ γ , π₂) ][ π₁* Δᴰ , π₁* Γᴰ ]
+--       π1*F .F-homᴰ {Δ} {Γ} {γ} {Δᴰ} {Γᴰ} γᴰ =
+--         fib.introᴰ (Cᴰ.reindEq (Eq.sym $ π₁NatEqC γ) $ (Cᴰ.reindEq (C⋆IdL (bp.×ue.element .fst)) fib.πⱽ Cᴰ.⋆ᴰ γᴰ))
+--       π1*F .F-idᴰ = {!!}
+--       π1*F .F-seqᴰ = {!!}
+--       module _ (×aF-seqC : ×aF-seq bp) where
+--         module _ Γ where
+--           wkPshHetEq : PshHetEq bp.×aF (C [-, Γ ]) (C [-, Γ bp.×a ])
+--           wkPshHetEq .PshHomEq.N-ob = λ Δ γ → (bp.π₁ C.⋆ γ) bp.,p bp.π₂
+--           wkPshHetEq .PshHomEq.N-hom Θ Δ δ γ p Eq.refl = Eq.sym $ ×aF-seqC δ γ
 
-          wkF : Functor (Cᴰ / (C [-, Γ ])) (Cᴰ / (C [-, Γ bp.×a ]))
-          wkF = π1*F /Fᴰ wkPshHetEq
+--           wkF : Functor (Cᴰ / (C [-, Γ ])) (Cᴰ / (C [-, Γ bp.×a ]))
+--           wkF = π1*F /Fᴰ wkPshHetEq
 
-        UniversallyQuantifiable : Type _
-        UniversallyQuantifiable = ∀ {Γ} (Γᴰ : Cᴰ.ob[ Γ bp.×a ]) → Reprⱽ (reindPsh (wkF Γ) (Cᴰ [-][-, Γᴰ ]))
-  module _ (C⋆IdL : EqIdL C)(C⋆Assoc : ReprEqAssoc C) (isFib : Fibration C⋆Assoc) (bp : BinProducts C) (π₁NatEqC : Allπ₁NatEq bp)(×aF-F-homC : All×aF-seq bp) where
-    UniversalQuantifiers : Type _
-    UniversalQuantifiers = ∀ x → UniversallyQuantifiable C⋆IdL C⋆Assoc isFib x (λ c → bp (c , x)) (π₁NatEqC x) (×aF-F-homC x)
+--         UniversallyQuantifiable : Type _
+--         UniversallyQuantifiable = ∀ {Γ} (Γᴰ : Cᴰ.ob[ Γ bp.×a ]) → Reprⱽ (reindPsh (wkF Γ) (Cᴰ [-][-, Γᴰ ]))
+--   module _ (C⋆IdL : EqIdL C)(C⋆Assoc : ReprEqAssoc C) (isFib : Fibration C⋆Assoc) (bp : BinProducts C) (π₁NatEqC : Allπ₁NatEq bp)(×aF-F-homC : All×aF-seq bp) where
+--     UniversalQuantifiers : Type _
+--     UniversalQuantifiers = ∀ x → UniversallyQuantifiable C⋆IdL C⋆Assoc isFib x (λ c → bp (c , x)) (π₁NatEqC x) (×aF-F-homC x)
 
-module _ {C : Category ℓC ℓC'} (⋆AssocC : ReprEqAssoc C) (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ') where
-  isCartesianⱽ : Type _
-  isCartesianⱽ = Σ[ termsⱽ ∈ Terminalsⱽ Cᴰ ] Σ[ bpⱽ ∈ BinProductsⱽ Cᴰ ] Fibration Cᴰ ⋆AssocC
+-- module _ {C : Category ℓC ℓC'} (⋆AssocC : ReprEqAssoc C) (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ') where
+--   isCartesianⱽ : Type _
+--   isCartesianⱽ = Σ[ termsⱽ ∈ Terminalsⱽ Cᴰ ] Σ[ bpⱽ ∈ BinProductsⱽ Cᴰ ] Fibration Cᴰ ⋆AssocC
 
-  isCartesianClosedⱽ : (⋆IdLC : EqIdL C) (bp : BinProducts C) (π₁NatEqC : Allπ₁NatEq bp)(×aF-F-homC : All×aF-seq bp) → Type _
-  isCartesianClosedⱽ ⋆IdLC bp π₁NatEqC ×aF-F-homC =
-    Σ[ (termsⱽ , bpⱽ , cartLifts) ∈ isCartesianⱽ ]
-    Exponentialsⱽ Cᴰ ⋆AssocC ⋆IdLC (BPⱽ+Fibration→AllLRⱽ Cᴰ ⋆AssocC bpⱽ cartLifts)
-    × UniversalQuantifiers Cᴰ ⋆IdLC ⋆AssocC cartLifts bp π₁NatEqC ×aF-F-homC
+--   isCartesianClosedⱽ : (⋆IdLC : EqIdL C) (bp : BinProducts C) (π₁NatEqC : Allπ₁NatEq bp)(×aF-F-homC : All×aF-seq bp) → Type _
+--   isCartesianClosedⱽ ⋆IdLC bp π₁NatEqC ×aF-F-homC =
+--     Σ[ (termsⱽ , bpⱽ , cartLifts) ∈ isCartesianⱽ ]
+--     Exponentialsⱽ Cᴰ ⋆AssocC ⋆IdLC (BPⱽ+Fibration→AllLRⱽ Cᴰ ⋆AssocC bpⱽ cartLifts)
+--     × UniversalQuantifiers Cᴰ ⋆IdLC ⋆AssocC cartLifts bp π₁NatEqC ×aF-F-homC
 
-module _ {C : Category ℓC ℓC'}{D : Category ℓD ℓD'}
-  {P : Presheaf C ℓP}
-  {Q : Presheaf D ℓQ}
-  {F : Functor C D}
-  (α : PshHetStrict F P Q)
-  where
-  PshHet→ElementFunctorᴰStrict : Functorᴰ F (EqElement P) (EqElement Q)
-  PshHet→ElementFunctorᴰStrict =
-    mkPropHomsFunctor (hasPropHomsEqElement Q)
-      (λ {x} → α .PshHomStrict.N-ob x)
-      λ {Eq.refl → Eq.pathToEq $ α .PshHomStrict.N-hom _ _ _ _ (P .F-hom _ _) refl}
+-- module _ {C : Category ℓC ℓC'}{D : Category ℓD ℓD'}
+--   {P : Presheaf C ℓP}
+--   {Q : Presheaf D ℓQ}
+--   {F : Functor C D}
+--   (α : PshHetStrict F P Q)
+--   where
+--   PshHet→ElementFunctorᴰStrict : Functorᴰ F (EqElement P) (EqElement Q)
+--   PshHet→ElementFunctorᴰStrict =
+--     mkPropHomsFunctor (hasPropHomsEqElement Q)
+--       (λ {x} → α .PshHomStrict.N-ob x)
+--       λ {Eq.refl → Eq.pathToEq $ α .PshHomStrict.N-hom _ _ _ _ (P .F-hom _ _) refl}
 
-module _ {C : Category ℓC ℓC'}{D : Category ℓD ℓD'}
-  {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}{Dᴰ : Categoryᴰ D ℓDᴰ ℓDᴰ'}
-  {P : Presheaf C ℓP}{Q : Presheaf D ℓQ}
-  {F : Functor C D}
-  where
-  _/FᴰStrict_ : (Fᴰ : Functorᴰ F Cᴰ Dᴰ) → (α : PshHetStrict F P Q) → Functor (Cᴰ / P) (Dᴰ / Q)
-  Fᴰ /FᴰStrict α = ∫F {F = F} (Fᴰ ×ᴰF PshHet→ElementFunctorᴰStrict α)
+-- module _ {C : Category ℓC ℓC'}{D : Category ℓD ℓD'}
+--   {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}{Dᴰ : Categoryᴰ D ℓDᴰ ℓDᴰ'}
+--   {P : Presheaf C ℓP}{Q : Presheaf D ℓQ}
+--   {F : Functor C D}
+--   where
+--   _/FᴰStrict_ : (Fᴰ : Functorᴰ F Cᴰ Dᴰ) → (α : PshHetStrict F P Q) → Functor (Cᴰ / P) (Dᴰ / Q)
+--   Fᴰ /FᴰStrict α = ∫F {F = F} (Fᴰ ×ᴰF PshHet→ElementFunctorᴰStrict α)
 
-module _ {C : Category ℓC ℓC'}
-  {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}{Dᴰ : Categoryᴰ C ℓDᴰ ℓDᴰ'}
-  {P : Presheaf C ℓP}{Q : Presheaf C ℓQ}
-  where
-  module _ (Fᴰ : Functorⱽ Cᴰ Dᴰ) (α : PshHomStrict P Q) where
-    _/FⱽStrict_ :  Functor (Cᴰ / P) (Dᴰ / Q)
-    _/FⱽStrict_ = Fᴰ /FᴰStrict (α ⋆PshHomStrict Q→reindPshIdQ)
+-- module _ {C : Category ℓC ℓC'}
+--   {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}{Dᴰ : Categoryᴰ C ℓDᴰ ℓDᴰ'}
+--   {P : Presheaf C ℓP}{Q : Presheaf C ℓQ}
+--   where
+--   module _ (Fᴰ : Functorⱽ Cᴰ Dᴰ) (α : PshHomStrict P Q) where
+--     _/FⱽStrict_ :  Functor (Cᴰ / P) (Dᴰ / Q)
+--     _/FⱽStrict_ = Fᴰ /FᴰStrict (α ⋆PshHomStrict Q→reindPshIdQ)
 
-open PshHomEq
-module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'} where
+-- open PshHomEq
+-- module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'} where
 
-  module _ {P : Presheaf C ℓP} {Q : Presheaf C ℓQ}
-    (α : PshHomStrict Q P) (Pᴰ : Presheafᴰ P Cᴰ ℓPᴰ)
-    where
-    _*↑_ : Presheafᴰ Q Cᴰ ℓPᴰ
-    _*↑_ = reindPsh (Idᴰ /FⱽStrict α) Pᴰ
+--   module _ {P : Presheaf C ℓP} {Q : Presheaf C ℓQ}
+--     (α : PshHomStrict Q P) (Pᴰ : Presheafᴰ P Cᴰ ℓPᴰ)
+--     where
+--     _*↑_ : Presheafᴰ Q Cᴰ ℓPᴰ
+--     _*↑_ = reindPsh (Idᴰ /FⱽStrict α) Pᴰ
 
-  module _ {P : Presheaf C ℓP} {Q : Presheaf C ℓQ}
-    (α : PshHomStrict P Q)
-    (Pᴰ : Presheafᴰ P Cᴰ ℓPᴰ)
-    (Qᴰ : Presheafᴰ Q Cᴰ ℓQᴰ)
-    where
-    PshHomᴰ : Type _
-    PshHomᴰ = PshHomEq Pᴰ (α *↑ Qᴰ)
+--   module _ {P : Presheaf C ℓP} {Q : Presheaf C ℓQ}
+--     (α : PshHomStrict P Q)
+--     (Pᴰ : Presheafᴰ P Cᴰ ℓPᴰ)
+--     (Qᴰ : Presheafᴰ Q Cᴰ ℓQᴰ)
+--     where
+--     PshHomᴰ : Type _
+--     PshHomᴰ = PshHomEq Pᴰ (α *↑ Qᴰ)
 
-  module _ {P : Presheaf C ℓP} {Q : Presheaf C ℓQ} {Qᴰ : Presheafᴰ Q Cᴰ ℓQᴰ} {Rᴰ : Presheafᴰ Q Cᴰ ℓRᴰ}
-    (α : PshHomStrict P Q) (βᴰ : PshHomEq Qᴰ Rᴰ) where
-    private
-      module Rᴰ = PresheafᴰNotation Rᴰ
+--   module _ {P : Presheaf C ℓP} {Q : Presheaf C ℓQ} {Qᴰ : Presheafᴰ Q Cᴰ ℓQᴰ} {Rᴰ : Presheafᴰ Q Cᴰ ℓRᴰ}
+--     (α : PshHomStrict P Q) (βᴰ : PshHomEq Qᴰ Rᴰ) where
+--     private
+--       module Rᴰ = PresheafᴰNotation Rᴰ
 
-    _*↑F_ : PshHomEq (α *↑ Qᴰ) (α *↑ Rᴰ)
-    _*↑F_ .N-ob = λ c → βᴰ .N-ob (F-ob ((Idᴰ /FⱽStrict α) ^opF) c)
-    _*↑F_ .N-hom _ _ (_ , _ , Eq.refl) _ _ Eq.refl = βᴰ .N-hom _ _ _ _ _ Eq.refl
+--     _*↑F_ : PshHomEq (α *↑ Qᴰ) (α *↑ Rᴰ)
+--     _*↑F_ .N-ob = λ c → βᴰ .N-ob (F-ob ((Idᴰ /FⱽStrict α) ^opF) c)
+--     _*↑F_ .N-hom _ _ (_ , _ , Eq.refl) _ _ Eq.refl = βᴰ .N-hom _ _ _ _ _ Eq.refl
 
-  module _ {P : Presheaf C ℓP} {Pᴰ : Presheafᴰ P Cᴰ ℓPᴰ} where
-    private
-      module Pᴰ = PresheafᴰNotation Pᴰ
-    *↑Id≅ : PshIsoEq Pᴰ (idPshHomStrict *↑ Pᴰ)
-    *↑Id≅ .PshIsoEq.isos (Q , Qᴰ , α) = idIso
-    *↑Id≅ .PshIsoEq.nat _ _ (_ , _ , Eq.refl) _ _ Eq.refl =
-      Eq.pathToEq (Pᴰ.rectifyOut $ sym $ Pᴰ.⋆ᴰ-reind _)
+--   module _ {P : Presheaf C ℓP} {Pᴰ : Presheafᴰ P Cᴰ ℓPᴰ} where
+--     private
+--       module Pᴰ = PresheafᴰNotation Pᴰ
+--     *↑Id≅ : PshIsoEq Pᴰ (idPshHomStrict *↑ Pᴰ)
+--     *↑Id≅ .PshIsoEq.isos (Q , Qᴰ , α) = idIso
+--     *↑Id≅ .PshIsoEq.nat _ _ (_ , _ , Eq.refl) _ _ Eq.refl =
+--       Eq.pathToEq (Pᴰ.rectifyOut $ sym $ Pᴰ.⋆ᴰ-reind _)
 
-    *↑IdIntro : PshHomEq Pᴰ (idPshHomStrict *↑ Pᴰ)
-    *↑IdIntro = PshIsoEq.toPshHomEq *↑Id≅
+--     *↑IdIntro : PshHomEq Pᴰ (idPshHomStrict *↑ Pᴰ)
+--     *↑IdIntro = PshIsoEq.toPshHomEq *↑Id≅
 
-  module _ {P : Presheaf C ℓP} {Q : Presheaf C ℓQ} {R : Presheaf C ℓR}
-    (α : PshHomStrict P Q) (β : PshHomStrict Q R) {Rᴰ : Presheafᴰ R Cᴰ ℓRᴰ} where
+--   module _ {P : Presheaf C ℓP} {Q : Presheaf C ℓQ} {R : Presheaf C ℓR}
+--     (α : PshHomStrict P Q) (β : PshHomStrict Q R) {Rᴰ : Presheafᴰ R Cᴰ ℓRᴰ} where
 
-    private
-      module Rᴰ = PresheafᴰNotation Rᴰ
-    *↑Seq≅ : PshIsoEq (α *↑ (β *↑ Rᴰ)) ((α ⋆PshHomStrict β) *↑ Rᴰ)
-    *↑Seq≅ .PshIsoEq.isos _ = idIso
-    *↑Seq≅ .PshIsoEq.nat _ _ (_ , _ , Eq.refl) _ _ Eq.refl =
-      Eq.pathToEq (Rᴰ.rectifyOut $ (sym $ Rᴰ.⋆ᴰ-reind _) ∙ Rᴰ.⋆ᴰ-reind _)
+--     private
+--       module Rᴰ = PresheafᴰNotation Rᴰ
+--     *↑Seq≅ : PshIsoEq (α *↑ (β *↑ Rᴰ)) ((α ⋆PshHomStrict β) *↑ Rᴰ)
+--     *↑Seq≅ .PshIsoEq.isos _ = idIso
+--     *↑Seq≅ .PshIsoEq.nat _ _ (_ , _ , Eq.refl) _ _ Eq.refl =
+--       Eq.pathToEq (Rᴰ.rectifyOut $ (sym $ Rᴰ.⋆ᴰ-reind _) ∙ Rᴰ.⋆ᴰ-reind _)
 
-    *↑SeqIntro : PshHomEq (α *↑ (β *↑ Rᴰ)) ((α ⋆PshHomStrict β) *↑ Rᴰ)
-    *↑SeqIntro = PshIsoEq.toPshHomEq *↑Seq≅
+--     *↑SeqIntro : PshHomEq (α *↑ (β *↑ Rᴰ)) ((α ⋆PshHomStrict β) *↑ Rᴰ)
+--     *↑SeqIntro = PshIsoEq.toPshHomEq *↑Seq≅
 
-  module _ {P : Presheaf C ℓP} {Q : Presheaf C ℓQ} {R : Presheaf C ℓR}
-    {Pᴰ : Presheafᴰ P Cᴰ ℓPᴰ} {Qᴰ : Presheafᴰ Q Cᴰ ℓQᴰ} {Rᴰ : Presheafᴰ R Cᴰ ℓRᴰ}
-    {α : PshHomStrict P Q} {β : PshHomStrict Q R} where
-    private
-      module Pᴰ = PresheafᴰNotation Pᴰ
-      module Qᴰ = PresheafᴰNotation Qᴰ
-      module Rᴰ = PresheafᴰNotation Rᴰ
+--   module _ {P : Presheaf C ℓP} {Q : Presheaf C ℓQ} {R : Presheaf C ℓR}
+--     {Pᴰ : Presheafᴰ P Cᴰ ℓPᴰ} {Qᴰ : Presheafᴰ Q Cᴰ ℓQᴰ} {Rᴰ : Presheafᴰ R Cᴰ ℓRᴰ}
+--     {α : PshHomStrict P Q} {β : PshHomStrict Q R} where
+--     private
+--       module Pᴰ = PresheafᴰNotation Pᴰ
+--       module Qᴰ = PresheafᴰNotation Qᴰ
+--       module Rᴰ = PresheafᴰNotation Rᴰ
 
-    _⋆PshHomᴰ_ :
-      (αᴰ : PshHomᴰ α Pᴰ Qᴰ)
-      (βᴰ : PshHomᴰ β Qᴰ Rᴰ) →
-      PshHomᴰ (α ⋆PshHomStrict β) Pᴰ Rᴰ
-    αᴰ ⋆PshHomᴰ βᴰ =
-      αᴰ
-      ⋆PshHomEq (α *↑F βᴰ)
-      ⋆PshHomEq *↑SeqIntro α β
+--     _⋆PshHomᴰ_ :
+--       (αᴰ : PshHomᴰ α Pᴰ Qᴰ)
+--       (βᴰ : PshHomᴰ β Qᴰ Rᴰ) →
+--       PshHomᴰ (α ⋆PshHomStrict β) Pᴰ Rᴰ
+--     αᴰ ⋆PshHomᴰ βᴰ =
+--       αᴰ
+--       ⋆PshHomEq (α *↑F βᴰ)
+--       ⋆PshHomEq *↑SeqIntro α β
 
-    infixr 9 _⋆PshHomᴰ_
+--     infixr 9 _⋆PshHomᴰ_
 
--- TODO put somewhere else
-module _ {C : Category ℓC ℓC'} {ℓP} where
-  PSHReprEqAssoc : ReprEqAssoc (PRESHEAF C ℓP)
-  PSHReprEqAssoc _ _ _ _ _ Eq.refl = Eq.refl
+-- -- TODO put somewhere else
+-- module _ {C : Category ℓC ℓC'} {ℓP} where
+--   PSHReprEqAssoc : ReprEqAssoc (PRESHEAF C ℓP)
+--   PSHReprEqAssoc _ _ _ _ _ Eq.refl = Eq.refl
 
-module _ {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ') where
-  open Categoryᴰ
-  module _ (ℓP : Level) (ℓPᴰ : Level) where
-    private
-      PSH = PRESHEAF C ℓP
-      module PSH = Category PSH
-      module Cᴰ = Fibers Cᴰ
-    PRESHEAFᴰ : Categoryᴰ (PRESHEAF C ℓP) _ _
-    PRESHEAFᴰ .ob[_] P = Presheafᴰ P Cᴰ ℓPᴰ
-    PRESHEAFᴰ .Hom[_][_,_] = PshHomᴰ
-    PRESHEAFᴰ .idᴰ = *↑IdIntro
-    PRESHEAFᴰ ._⋆ᴰ_ = _⋆PshHomᴰ_
-    PRESHEAFᴰ .⋆IdLᴰ _ = makePshHomEqPath refl
-    PRESHEAFᴰ .⋆IdRᴰ _ = makePshHomEqPath refl
-    PRESHEAFᴰ .⋆Assocᴰ _ _ _ = makePshHomEqPath refl
-    PRESHEAFᴰ .isSetHomᴰ = isSetPshHomEq _ (_ *↑ _)
+-- module _ {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ') where
+--   open Categoryᴰ
+--   module _ (ℓP : Level) (ℓPᴰ : Level) where
+--     private
+--       PSH = PRESHEAF C ℓP
+--       module PSH = Category PSH
+--       module Cᴰ = Fibers Cᴰ
+--     PRESHEAFᴰ : Categoryᴰ (PRESHEAF C ℓP) _ _
+--     PRESHEAFᴰ .ob[_] P = Presheafᴰ P Cᴰ ℓPᴰ
+--     PRESHEAFᴰ .Hom[_][_,_] = PshHomᴰ
+--     PRESHEAFᴰ .idᴰ = *↑IdIntro
+--     PRESHEAFᴰ ._⋆ᴰ_ = _⋆PshHomᴰ_
+--     PRESHEAFᴰ .⋆IdLᴰ _ = makePshHomEqPath refl
+--     PRESHEAFᴰ .⋆IdRᴰ _ = makePshHomEqPath refl
+--     PRESHEAFᴰ .⋆Assocᴰ _ _ _ = makePshHomEqPath refl
+--     PRESHEAFᴰ .isSetHomᴰ = isSetPshHomEq _ (_ *↑ _)
 
--- TODO put elsewhere
--- Postcomposition with a PshIsoEq gives an iso on PshHomEq sets
-module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
-  {P : Presheaf C ℓP}
-  {Pᴰ : Presheafᴰ P Cᴰ ℓPᴰ}
-  {Qᴰ : Presheafᴰ P Cᴰ ℓQᴰ}
-  {Rᴰ : Presheafᴰ P Cᴰ ℓRᴰ}
-  where
+-- -- TODO put elsewhere
+-- -- Postcomposition with a PshIsoEq gives an iso on PshHomEq sets
+-- module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
+--   {P : Presheaf C ℓP}
+--   {Pᴰ : Presheafᴰ P Cᴰ ℓPᴰ}
+--   {Qᴰ : Presheafᴰ P Cᴰ ℓQᴰ}
+--   {Rᴰ : Presheafᴰ P Cᴰ ℓRᴰ}
+--   where
 
-  postcompPshIsoEq : PshIsoEq Qᴰ Rᴰ → Iso (PshHomEq Pᴰ Qᴰ) (PshHomEq Pᴰ Rᴰ)
-  postcompPshIsoEq ϕ .Iso.fun αᴰ = αᴰ ⋆PshHomEq PshIsoEq.toPshHomEq ϕ
-  postcompPshIsoEq ϕ .Iso.inv βᴰ = βᴰ ⋆PshHomEq PshIsoEq.toPshHomEq (invPshIsoEq ϕ)
-  postcompPshIsoEq ϕ .Iso.sec βᴰ = makePshHomEqPath (funExt₂ λ c p →
-    ϕ .PshIsoEq.isos c .Iso.sec (βᴰ .N-ob c p))
-  postcompPshIsoEq ϕ .Iso.ret αᴰ = makePshHomEqPath (funExt₂ λ c p →
-    ϕ .PshIsoEq.isos c .Iso.ret (αᴰ .N-ob c p))
+--   postcompPshIsoEq : PshIsoEq Qᴰ Rᴰ → Iso (PshHomEq Pᴰ Qᴰ) (PshHomEq Pᴰ Rᴰ)
+--   postcompPshIsoEq ϕ .Iso.fun αᴰ = αᴰ ⋆PshHomEq PshIsoEq.toPshHomEq ϕ
+--   postcompPshIsoEq ϕ .Iso.inv βᴰ = βᴰ ⋆PshHomEq PshIsoEq.toPshHomEq (invPshIsoEq ϕ)
+--   postcompPshIsoEq ϕ .Iso.sec βᴰ = makePshHomEqPath (funExt₂ λ c p →
+--     ϕ .PshIsoEq.isos c .Iso.sec (βᴰ .N-ob c p))
+--   postcompPshIsoEq ϕ .Iso.ret αᴰ = makePshHomEqPath (funExt₂ λ c p →
+--     ϕ .PshIsoEq.isos c .Iso.ret (αᴰ .N-ob c p))
 
-module _ {C : Category ℓC ℓC'}
-  {P : Presheaf C ℓP} {Q : Presheaf C ℓQ} {R : Presheaf C ℓR}
-  (α : PshIsoEq P Q)
-  where
-  open PshIsoEq
+-- module _ {C : Category ℓC ℓC'}
+--   {P : Presheaf C ℓP} {Q : Presheaf C ℓQ} {R : Presheaf C ℓR}
+--   (α : PshIsoEq P Q)
+--   where
+--   open PshIsoEq
 
-  open Iso
-  precompPshIsoEq : Iso (PshHomEq Q R) (PshHomEq P R)
-  precompPshIsoEq .fun β = toPshHomEq α ⋆PshHomEq β
-  precompPshIsoEq .inv γ = toPshHomEq (invPshIsoEq α) ⋆PshHomEq γ
-  precompPshIsoEq .sec γ =
-    makePshHomEqPath (funExt₂ λ c p → cong (γ .N-ob c) (ret (α .isos c) p))
-  precompPshIsoEq .ret β =
-    makePshHomEqPath (funExt₂ λ c p → cong (β .N-ob c) (sec (α .isos c) p))
+--   open Iso
+--   precompPshIsoEq : Iso (PshHomEq Q R) (PshHomEq P R)
+--   precompPshIsoEq .fun β = toPshHomEq α ⋆PshHomEq β
+--   precompPshIsoEq .inv γ = toPshHomEq (invPshIsoEq α) ⋆PshHomEq γ
+--   precompPshIsoEq .sec γ =
+--     makePshHomEqPath (funExt₂ λ c p → cong (γ .N-ob c) (ret (α .isos c) p))
+--   precompPshIsoEq .ret β =
+--     makePshHomEqPath (funExt₂ λ c p → cong (β .N-ob c) (sec (α .isos c) p))
 
--- Naturality: postcompPshIsoEq commutes with precomposition
-module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
-  {P : Presheaf C ℓP}
-  {Pᴰ : Presheafᴰ P Cᴰ ℓPᴰ}
-  {Qᴰ : Presheafᴰ P Cᴰ ℓQᴰ}
-  {Rᴰ : Presheafᴰ P Cᴰ ℓRᴰ}
-  {Sᴰ : Presheafᴰ P Cᴰ ℓPᴰ'}
-  where
+-- -- Naturality: postcompPshIsoEq commutes with precomposition
+-- module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
+--   {P : Presheaf C ℓP}
+--   {Pᴰ : Presheafᴰ P Cᴰ ℓPᴰ}
+--   {Qᴰ : Presheafᴰ P Cᴰ ℓQᴰ}
+--   {Rᴰ : Presheafᴰ P Cᴰ ℓRᴰ}
+--   {Sᴰ : Presheafᴰ P Cᴰ ℓPᴰ'}
+--   where
 
-  postcompPshIsoEq-natural : (iso : PshIsoEq Qᴰ Rᴰ) (αᴰ : PshHomEq Sᴰ Pᴰ) (βᴰ : PshHomEq Pᴰ Qᴰ) →
-    Iso.fun (postcompPshIsoEq iso) (αᴰ ⋆PshHomEq βᴰ) ≡ αᴰ ⋆PshHomEq Iso.fun (postcompPshIsoEq iso) βᴰ
-  postcompPshIsoEq-natural _ αᴰ βᴰ = makePshHomEqPath refl
+--   postcompPshIsoEq-natural : (iso : PshIsoEq Qᴰ Rᴰ) (αᴰ : PshHomEq Sᴰ Pᴰ) (βᴰ : PshHomEq Pᴰ Qᴰ) →
+--     Iso.fun (postcompPshIsoEq iso) (αᴰ ⋆PshHomEq βᴰ) ≡ αᴰ ⋆PshHomEq Iso.fun (postcompPshIsoEq iso) βᴰ
+--   postcompPshIsoEq-natural _ αᴰ βᴰ = makePshHomEqPath refl
 
--- TODO put elsewhere
-module _ {C : Category ℓC ℓC'} where
-  module _ (Q : Presheaf C ℓQ) {ℓP} where
-    PshHomEqPsh : Presheaf (PRESHEAFEQ C ℓP) (ℓC ⊔ℓ ℓC' ⊔ℓ ℓQ ⊔ℓ ℓP)
-    PshHomEqPsh .F-ob P = PshHomEq P Q , isSetPshHomEq P Q
-    PshHomEqPsh .F-hom = _⋆PshHomEq_
-    PshHomEqPsh .F-id = refl
-    PshHomEqPsh .F-seq = λ _ _ → refl
+-- -- TODO put elsewhere
+-- module _ {C : Category ℓC ℓC'} where
+--   module _ (Q : Presheaf C ℓQ) {ℓP} where
+--     PshHomEqPsh : Presheaf (PRESHEAFEQ C ℓP) (ℓC ⊔ℓ ℓC' ⊔ℓ ℓQ ⊔ℓ ℓP)
+--     PshHomEqPsh .F-ob P = PshHomEq P Q , isSetPshHomEq P Q
+--     PshHomEqPsh .F-hom = _⋆PshHomEq_
+--     PshHomEqPsh .F-id = refl
+--     PshHomEqPsh .F-seq = λ _ _ → refl
 
-  open Functor
-  private
-    module C = Category C
+--   open Functor
+--   private
+--     module C = Category C
 
-  YOEq : Functor C (PRESHEAFEQ C ℓC')
-  YOEq .F-ob = C [-,_]
-  YOEq .F-hom f .N-ob c g = g C.⋆ f
-  YOEq .F-hom f .N-hom _ _ _ _ _ Eq.refl = Eq.sym $ Eq.pathToEq $ C.⋆Assoc _ _ _
-  YOEq .F-id = makePshHomEqPath (funExt₂ λ _ _ → C.⋆IdR _)
-  YOEq .F-seq _ _ = makePshHomEqPath (funExt₂ λ _ _ → sym $ C.⋆Assoc _ _ _)
+--   YOEq : Functor C (PRESHEAFEQ C ℓC')
+--   YOEq .F-ob = C [-,_]
+--   YOEq .F-hom f .N-ob c g = g C.⋆ f
+--   YOEq .F-hom f .N-hom _ _ _ _ _ Eq.refl = Eq.sym $ Eq.pathToEq $ C.⋆Assoc _ _ _
+--   YOEq .F-id = makePshHomEqPath (funExt₂ λ _ _ → C.⋆IdR _)
+--   YOEq .F-seq _ _ = makePshHomEqPath (funExt₂ λ _ _ → sym $ C.⋆Assoc _ _ _)
 
-  module _ (P : Presheaf C ℓP) (Q : Presheaf C ℓQ) where
-    _⇒PshLargeEq_ : Presheaf C (ℓC ⊔ℓ ℓC' ⊔ℓ ℓQ ⊔ℓ ℓC' ⊔ℓ ℓP)
-    _⇒PshLargeEq_ = PshHomEqPsh Q ∘F ((-×P ∘F YOEq) ^opF)
-      where
-      -×P : Functor (PRESHEAFEQ C ℓC') (PRESHEAFEQ C (ℓC' ⊔ℓ ℓP))
-      -×P .F-ob R = R ×Psh P
-      -×P .F-hom α = ×PshIntroEq (π₁Eq _ _ ⋆PshHomEq α) (π₂Eq _ _)
-      -×P .F-id = makePshHomEqPath refl
-      -×P .F-seq _ _ = makePshHomEqPath refl
+--   module _ (P : Presheaf C ℓP) (Q : Presheaf C ℓQ) where
+--     _⇒PshLargeEq_ : Presheaf C (ℓC ⊔ℓ ℓC' ⊔ℓ ℓQ ⊔ℓ ℓC' ⊔ℓ ℓP)
+--     _⇒PshLargeEq_ = PshHomEqPsh Q ∘F ((-×P ∘F YOEq) ^opF)
+--       where
+--       -×P : Functor (PRESHEAFEQ C ℓC') (PRESHEAFEQ C (ℓC' ⊔ℓ ℓP))
+--       -×P .F-ob R = R ×Psh P
+--       -×P .F-hom α = ×PshIntroEq (π₁Eq _ _ ⋆PshHomEq α) (π₂Eq _ _)
+--       -×P .F-id = makePshHomEqPath refl
+--       -×P .F-seq _ _ = makePshHomEqPath refl
 
-  module _ (P : Presheaf C ℓP) (Q : Presheaf C ℓQ) where
-    private
-      module P = PresheafNotation P
-      module Q = PresheafNotation Q
+--   module _ (P : Presheaf C ℓP) (Q : Presheaf C ℓQ) where
+--     private
+--       module P = PresheafNotation P
+--       module Q = PresheafNotation Q
 
-    appPshHomEq : PshHomEq ((P ⇒PshLargeEq Q) ×Psh P) Q
-    appPshHomEq .N-ob c (α , p) = α .N-ob c (C.id , p)
-    appPshHomEq .N-hom c c' f (α , p) (β , p') Eq.refl =
-      Eq.pathToEq $
-      Eq.eqToPath (α .N-hom c c' f (C.id , p) (f , f P.⋆ p)
-        (Eq.pathToEq (ΣPathP ((C.⋆IdR _) , refl))))
-      ∙ cong₂ (λ u v → α .N-ob c (u , v)) (sym $ C.⋆IdL _) refl
+--     appPshHomEq : PshHomEq ((P ⇒PshLargeEq Q) ×Psh P) Q
+--     appPshHomEq .N-ob c (α , p) = α .N-ob c (C.id , p)
+--     appPshHomEq .N-hom c c' f (α , p) (β , p') Eq.refl =
+--       Eq.pathToEq $
+--       Eq.eqToPath (α .N-hom c c' f (C.id , p) (f , f P.⋆ p)
+--         (Eq.pathToEq (ΣPathP ((C.⋆IdR _) , refl))))
+--       ∙ cong₂ (λ u v → α .N-ob c (u , v)) (sym $ C.⋆IdL _) refl
 
-    module _ {R : Presheaf C ℓR} where
-      private
-        module R = PresheafNotation R
+--     module _ {R : Presheaf C ℓR} where
+--       private
+--         module R = PresheafNotation R
 
-      λPshHomEq : PshHomEq (R ×Psh P) Q → PshHomEq R (P ⇒PshLargeEq Q)
-      λPshHomEq γ .N-ob c r .N-ob d (f , p) = γ .N-ob d (f R.⋆ r , p)
-      λPshHomEq γ .N-ob c r .N-hom e d g (f' , p') (f , p) Eq.refl =
-         γ .N-hom e d g _ _ (Eq.pathToEq $ ΣPathP ((sym $ R.⋆Assoc _ _ _) , refl))
-      λPshHomEq γ .N-hom d c' h s' s Eq.refl =
-        Eq.pathToEq $ makePshHomEqPath (funExt₂ λ _ _ →
-          cong₂ (λ u v → γ .N-ob _ (u , v)) (R.⋆Assoc _ _ _) refl)
+--       λPshHomEq : PshHomEq (R ×Psh P) Q → PshHomEq R (P ⇒PshLargeEq Q)
+--       λPshHomEq γ .N-ob c r .N-ob d (f , p) = γ .N-ob d (f R.⋆ r , p)
+--       λPshHomEq γ .N-ob c r .N-hom e d g (f' , p') (f , p) Eq.refl =
+--          γ .N-hom e d g _ _ (Eq.pathToEq $ ΣPathP ((sym $ R.⋆Assoc _ _ _) , refl))
+--       λPshHomEq γ .N-hom d c' h s' s Eq.refl =
+--         Eq.pathToEq $ makePshHomEqPath (funExt₂ λ _ _ →
+--           cong₂ (λ u v → γ .N-ob _ (u , v)) (R.⋆Assoc _ _ _) refl)
 
-      ⇒PshLargeEq-UMP : Iso (PshHomEq R (P ⇒PshLargeEq Q))
-                            (PshHomEq (R ×Psh P) Q)
-      ⇒PshLargeEq-UMP .Iso.fun α = (α ×PshHomEq idPshHomEq) ⋆PshHomEq appPshHomEq
-      ⇒PshLargeEq-UMP .Iso.inv = λPshHomEq
-      ⇒PshLargeEq-UMP .Iso.sec α =
-        makePshHomEqPath (funExt₂ λ _ _ → cong (α .N-ob _)
-          (ΣPathP (R.⋆IdL _ , refl)))
-      ⇒PshLargeEq-UMP .Iso.ret α =
-        makePshHomEqPath (funExt₂ λ c r →
-          makePshHomEqPath (funExt₂ λ d (f , p) →
-            sym (cong (λ x → α .N-ob c r .N-ob d (x , p)) (sym (C.⋆IdL f))
-            ∙ funExt⁻ (funExt⁻ (cong N-ob (Eq.eqToPath (α .N-hom d c f r (f R.⋆ r) Eq.refl))) d) (C.id , p))))
+--       ⇒PshLargeEq-UMP : Iso (PshHomEq R (P ⇒PshLargeEq Q))
+--                             (PshHomEq (R ×Psh P) Q)
+--       ⇒PshLargeEq-UMP .Iso.fun α = (α ×PshHomEq idPshHomEq) ⋆PshHomEq appPshHomEq
+--       ⇒PshLargeEq-UMP .Iso.inv = λPshHomEq
+--       ⇒PshLargeEq-UMP .Iso.sec α =
+--         makePshHomEqPath (funExt₂ λ _ _ → cong (α .N-ob _)
+--           (ΣPathP (R.⋆IdL _ , refl)))
+--       ⇒PshLargeEq-UMP .Iso.ret α =
+--         makePshHomEqPath (funExt₂ λ c r →
+--           makePshHomEqPath (funExt₂ λ d (f , p) →
+--             sym (cong (λ x → α .N-ob c r .N-ob d (x , p)) (sym (C.⋆IdL f))
+--             ∙ funExt⁻ (funExt⁻ (cong N-ob (Eq.eqToPath (α .N-hom d c f r (f R.⋆ r) Eq.refl))) d) (C.id , p))))
