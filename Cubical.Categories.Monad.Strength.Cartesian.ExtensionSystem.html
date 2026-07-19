@@ -4,174 +4,167 @@
    i.e., in terms of unit and bind, deriving the rest of the structure
    https://ncatlab.org/nlab/show/extension+system
 -}</a>
-<a id="191" class="Symbol">{-#</a> <a id="195" class="Keyword">OPTIONS</a> <a id="203" class="Pragma">--safe</a> <a id="210" class="Pragma">--lossy-unification</a> <a id="230" class="Symbol">#-}</a>
-<a id="234" class="Keyword">module</a> <a id="241" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html" class="Module">Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem</a> <a id="301" class="Keyword">where</a>
+<a id="191" class="Symbol">{-#</a> <a id="195" class="Keyword">OPTIONS</a> <a id="203" class="Pragma">--lossy-unification</a> <a id="223" class="Symbol">#-}</a>
+<a id="227" class="Keyword">module</a> <a id="234" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html" class="Module">Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem</a> <a id="294" class="Keyword">where</a>
 
-<a id="308" class="Keyword">open</a> <a id="313" class="Keyword">import</a> <a id="320" href="Cubical.Foundations.Prelude.html" class="Module">Cubical.Foundations.Prelude</a>
+<a id="301" class="Keyword">open</a> <a id="306" class="Keyword">import</a> <a id="313" href="Cubical.Foundations.Prelude.html" class="Module">Cubical.Foundations.Prelude</a>
 
-<a id="349" class="Keyword">open</a> <a id="354" class="Keyword">import</a> <a id="361" href="Cubical.Categories.Category.html" class="Module">Cubical.Categories.Category</a>
-<a id="389" class="Keyword">open</a> <a id="394" class="Keyword">import</a> <a id="401" href="Cubical.Categories.Functor.html" class="Module">Cubical.Categories.Functor</a> <a id="428" class="Keyword">renaming</a> <a id="437" class="Symbol">(</a><a id="438" href="Cubical.Categories.Functor.Base.html#4002" class="Function Operator">𝟙⟨_⟩</a> <a id="443" class="Symbol">to</a> <a id="446" class="Function Operator">funcId</a><a id="452" class="Symbol">)</a>
-<a id="454" class="Keyword">open</a> <a id="459" class="Keyword">import</a> <a id="466" href="Cubical.Categories.Limits.BinProduct.More.html" class="Module">Cubical.Categories.Limits.BinProduct.More</a>
-<a id="508" class="Keyword">open</a> <a id="513" class="Keyword">import</a> <a id="520" href="Cubical.Categories.Limits.Terminal.html" class="Module">Cubical.Categories.Limits.Terminal</a>
-<a id="555" class="Keyword">open</a> <a id="560" class="Keyword">import</a> <a id="567" href="Cubical.Categories.Limits.Terminal.More.html" class="Module">Cubical.Categories.Limits.Terminal.More</a>
-<a id="607" class="Keyword">open</a> <a id="612" class="Keyword">import</a> <a id="619" href="Cubical.Categories.Limits.Cartesian.Base.html" class="Module">Cubical.Categories.Limits.Cartesian.Base</a>
-<a id="660" class="Keyword">open</a> <a id="665" class="Keyword">import</a> <a id="672" href="Cubical.Categories.Comonad.Instances.Environment.html" class="Module">Cubical.Categories.Comonad.Instances.Environment</a>
-<a id="721" class="Keyword">open</a> <a id="726" class="Keyword">import</a> <a id="733" href="Cubical.Categories.Monad.ExtensionSystem.html" class="Module">Cubical.Categories.Monad.ExtensionSystem</a> <a id="774" class="Symbol">as</a> <a id="777" class="Module">Monad</a>
+<a id="342" class="Keyword">open</a> <a id="347" class="Keyword">import</a> <a id="354" href="Cubical.Categories.Category.html" class="Module">Cubical.Categories.Category</a>
+<a id="382" class="Keyword">open</a> <a id="387" class="Keyword">import</a> <a id="394" href="Cubical.Categories.Limits.BinProduct.More.html" class="Module">Cubical.Categories.Limits.BinProduct.More</a>
 
-<a id="784" class="Keyword">open</a> <a id="789" class="Keyword">import</a> <a id="796" href="Cubical.Tactics.CategorySolver.Reflection.html" class="Module">Cubical.Tactics.CategorySolver.Reflection</a>
 
-<a id="839" class="Keyword">private</a>
-  <a id="849" class="Keyword">variable</a>
-    <a id="862" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#862" class="Generalizable">ℓ</a> <a id="864" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#864" class="Generalizable">ℓ&#39;</a> <a id="867" class="Symbol">:</a> <a id="869" href="Agda.Primitive.html#742" class="Postulate">Level</a>
+<a id="438" class="Keyword">private</a>
+  <a id="448" class="Keyword">variable</a>
+    <a id="461" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#461" class="Generalizable">ℓ</a> <a id="463" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#463" class="Generalizable">ℓ&#39;</a> <a id="466" class="Symbol">:</a> <a id="468" href="Agda.Primitive.html#742" class="Postulate">Level</a>
 
-<a id="876" class="Keyword">module</a> <a id="883" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#883" class="Module">_</a> <a id="885" class="Symbol">{</a><a id="886" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#886" class="Bound">C</a> <a id="888" class="Symbol">:</a> <a id="890" href="Cubical.Categories.Category.Base.html#311" class="Record">Category</a> <a id="899" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#862" class="Generalizable">ℓ</a> <a id="901" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#864" class="Generalizable">ℓ&#39;</a><a id="903" class="Symbol">}</a> <a id="905" class="Symbol">(</a><a id="906" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#906" class="Bound">bp</a> <a id="909" class="Symbol">:</a> <a id="911" href="Cubical.Categories.Limits.BinProduct.More.html#1445" class="Function">BinProducts</a> <a id="923" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#886" class="Bound">C</a><a id="924" class="Symbol">)</a> <a id="926" class="Keyword">where</a>
-  <a id="934" class="Keyword">open</a> <a id="939" href="Cubical.Categories.Category.Base.html#311" class="Module">Category</a>
-  <a id="950" class="Keyword">open</a> <a id="955" href="Cubical.Categories.Limits.BinProduct.More.html#3354" class="Module">BinProductsNotation</a> <a id="975" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#906" class="Bound">bp</a>
-  <a id="980" class="Comment">-- open EnvNotation bp</a>
+<a id="475" class="Keyword">module</a> <a id="482" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#482" class="Module">_</a> <a id="484" class="Symbol">{</a><a id="485" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#485" class="Bound">C</a> <a id="487" class="Symbol">:</a> <a id="489" href="Cubical.Categories.Category.Base.html#311" class="Record">Category</a> <a id="498" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#461" class="Generalizable">ℓ</a> <a id="500" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#463" class="Generalizable">ℓ&#39;</a><a id="502" class="Symbol">}</a> <a id="504" class="Symbol">(</a><a id="505" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#505" class="Bound">bp</a> <a id="508" class="Symbol">:</a> <a id="510" href="Cubical.Categories.Limits.BinProduct.More.html#1838" class="Function">BinProducts</a> <a id="522" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#485" class="Bound">C</a><a id="523" class="Symbol">)</a> <a id="525" class="Keyword">where</a>
+  <a id="533" class="Keyword">open</a> <a id="538" href="Cubical.Categories.Category.Base.html#311" class="Module">Category</a>
+  <a id="549" class="Keyword">open</a> <a id="554" href="Cubical.Categories.Limits.BinProduct.More.html#4439" class="Module">BinProductsNotation</a> <a id="574" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#505" class="Bound">bp</a>
+  <a id="579" class="Comment">-- open EnvNotation bp</a>
 
-  <a id="1006" class="Keyword">private</a>
-    <a id="1018" class="Keyword">variable</a>
-      <a id="1033" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#1033" class="Generalizable">Γ</a> <a id="1035" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#1035" class="Generalizable">Δ</a> <a id="1037" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#1037" class="Generalizable">a</a> <a id="1039" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#1039" class="Generalizable">b</a> <a id="1041" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#1041" class="Generalizable">c</a> <a id="1043" class="Symbol">:</a> <a id="1045" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#886" class="Bound">C</a> <a id="1047" class="Symbol">.</a><a id="1048" href="Cubical.Categories.Category.Base.html#429" class="Field">ob</a>
-      <a id="1057" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#1057" class="Generalizable">γ</a> <a id="1059" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#1059" class="Generalizable">δ</a> <a id="1061" class="Symbol">:</a> <a id="1063" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#886" class="Bound">C</a> <a id="1065" href="Cubical.Categories.Category.Base.html#1210" class="Function Operator">[</a> <a id="1067" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#1035" class="Generalizable">Δ</a> <a id="1069" href="Cubical.Categories.Category.Base.html#1210" class="Function Operator">,</a> <a id="1071" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#1033" class="Generalizable">Γ</a> <a id="1073" href="Cubical.Categories.Category.Base.html#1210" class="Function Operator">]</a>
-      <a id="1081" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#1081" class="Generalizable">f</a> <a id="1083" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#1083" class="Generalizable">g</a> <a id="1085" class="Symbol">:</a> <a id="1087" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#886" class="Bound">C</a> <a id="1089" href="Cubical.Categories.Category.Base.html#1210" class="Function Operator">[</a> <a id="1091" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#1037" class="Generalizable">a</a> <a id="1093" href="Cubical.Categories.Category.Base.html#1210" class="Function Operator">,</a> <a id="1095" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#1039" class="Generalizable">b</a> <a id="1097" href="Cubical.Categories.Category.Base.html#1210" class="Function Operator">]</a>
-      <a id="1105" class="Comment">-- s t : With Γ [ a , b ]</a>
+  <a id="605" class="Keyword">private</a>
+    <a id="617" class="Keyword">variable</a>
+      <a id="632" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#632" class="Generalizable">Γ</a> <a id="634" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#634" class="Generalizable">Δ</a> <a id="636" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#636" class="Generalizable">a</a> <a id="638" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#638" class="Generalizable">b</a> <a id="640" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#640" class="Generalizable">c</a> <a id="642" class="Symbol">:</a> <a id="644" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#485" class="Bound">C</a> <a id="646" class="Symbol">.</a><a id="647" href="Cubical.Categories.Category.Base.html#437" class="Field">ob</a>
+      <a id="656" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#656" class="Generalizable">γ</a> <a id="658" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#658" class="Generalizable">δ</a> <a id="660" class="Symbol">:</a> <a id="662" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#485" class="Bound">C</a> <a id="664" href="Cubical.Categories.Category.Base.html#1218" class="Function Operator">[</a> <a id="666" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#634" class="Generalizable">Δ</a> <a id="668" href="Cubical.Categories.Category.Base.html#1218" class="Function Operator">,</a> <a id="670" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#632" class="Generalizable">Γ</a> <a id="672" href="Cubical.Categories.Category.Base.html#1218" class="Function Operator">]</a>
+      <a id="680" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#680" class="Generalizable">f</a> <a id="682" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#682" class="Generalizable">g</a> <a id="684" class="Symbol">:</a> <a id="686" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#485" class="Bound">C</a> <a id="688" href="Cubical.Categories.Category.Base.html#1218" class="Function Operator">[</a> <a id="690" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#636" class="Generalizable">a</a> <a id="692" href="Cubical.Categories.Category.Base.html#1218" class="Function Operator">,</a> <a id="694" href="Cubical.Categories.Monad.Strength.Cartesian.ExtensionSystem.html#638" class="Generalizable">b</a> <a id="696" href="Cubical.Categories.Category.Base.html#1218" class="Function Operator">]</a>
+      <a id="704" class="Comment">-- s t : With Γ [ a , b ]</a>
 
-  <a id="1134" class="Comment">-- TODO: reformulate this stuff in terms of Displayed categories.</a>
-  <a id="1202" class="Comment">--</a>
-  <a id="1207" class="Comment">-- This is what Jacobs calls the &quot;simple fibration&quot;</a>
+  <a id="733" class="Comment">-- TODO: reformulate this stuff in terms of Displayed categories.</a>
+  <a id="801" class="Comment">--</a>
+  <a id="806" class="Comment">-- This is what Jacobs calls the &quot;simple fibration&quot;</a>
 
-<a id="1260" class="Comment">--   -- Env [ γ ][ a , b ] is a map Δ × a → b</a>
+<a id="859" class="Comment">--   -- Env [ γ ][ a , b ] is a map Δ × a → b</a>
 
-<a id="1307" class="Comment">--   -- With is a fibered category over C. With : C → Cat</a>
-<a id="1365" class="Comment">--   -- A Strong extension system is a section of this bundle of categories</a>
-<a id="1441" class="Comment">--   open ExtensionSystemFor</a>
-<a id="1470" class="Comment">--   record StrongExtensionSystem : Type (ℓ-max ℓ ℓ&#39;) where</a>
-<a id="1530" class="Comment">--     field</a>
-<a id="1543" class="Comment">--       T : C .ob → C .ob</a>
-<a id="1570" class="Comment">--       systems : ∀ Γ → Monad.ExtensionSystemFor (With Γ) T</a>
-<a id="1631" class="Comment">--       -- η ∘ (γ × id) ≡ η</a>
-<a id="1660" class="Comment">--       η-natural : (γ ^*) ⟪ systems Γ .η {a = a} ⟫ ≡ systems Δ .η</a>
-<a id="1728" class="Comment">--       -- bind f ∘ (γ × id) ≡ bind (f ∘ (γ × id))</a>
-<a id="1780" class="Comment">--       bind-natural :</a>
-<a id="1804" class="Comment">--         (γ ^*) ⟪ systems Γ .bind s ⟫ ≡ systems Δ .bind ((γ ^*) ⟪ s ⟫)</a>
-<a id="1877" class="Comment">--   -- | TODO: resulting η, bind are natural in all arguments</a>
-<a id="1940" class="Comment">--   -- If C further has a terminal object we get an &quot;underlying monad&quot;</a>
-<a id="2012" class="Comment">--   -- on C because Envs 𝟙 ≅ Id</a>
-<a id="2045" class="Comment">--   module _ (term : Terminal C) (SE : StrongExtensionSystem) where</a>
-<a id="2114" class="Comment">--     open StrongExtensionSystem SE</a>
-<a id="2151" class="Comment">--     open TerminalNotation C term</a>
-<a id="2187" class="Comment">--     open CartesianCategoryNotation (C , term , bp)</a>
-<a id="2241" class="Comment">--     open isIso</a>
-<a id="2259" class="Comment">--     -- This follows abstractly from showing (𝟙 ×-) is equivalent to</a>
-<a id="2330" class="Comment">--     -- the identity monad</a>
-<a id="2359" class="Comment">--     -- we&#39;ll just be explicit here</a>
+<a id="906" class="Comment">--   -- With is a fibered category over C. With : C → Cat</a>
+<a id="964" class="Comment">--   -- A Strong extension system is a section of this bundle of categories</a>
+<a id="1040" class="Comment">--   open ExtensionSystemFor</a>
+<a id="1069" class="Comment">--   record StrongExtensionSystem : Type (ℓ-max ℓ ℓ&#39;) where</a>
+<a id="1129" class="Comment">--     field</a>
+<a id="1142" class="Comment">--       T : C .ob → C .ob</a>
+<a id="1169" class="Comment">--       systems : ∀ Γ → Monad.ExtensionSystemFor (With Γ) T</a>
+<a id="1230" class="Comment">--       -- η ∘ (γ × id) ≡ η</a>
+<a id="1259" class="Comment">--       η-natural : (γ ^*) ⟪ systems Γ .η {a = a} ⟫ ≡ systems Δ .η</a>
+<a id="1327" class="Comment">--       -- bind f ∘ (γ × id) ≡ bind (f ∘ (γ × id))</a>
+<a id="1379" class="Comment">--       bind-natural :</a>
+<a id="1403" class="Comment">--         (γ ^*) ⟪ systems Γ .bind s ⟫ ≡ systems Δ .bind ((γ ^*) ⟪ s ⟫)</a>
+<a id="1476" class="Comment">--   -- | TODO: resulting η, bind are natural in all arguments</a>
+<a id="1539" class="Comment">--   -- If C further has a terminal object we get an &quot;underlying monad&quot;</a>
+<a id="1611" class="Comment">--   -- on C because Envs 𝟙 ≅ Id</a>
+<a id="1644" class="Comment">--   module _ (term : Terminal C) (SE : StrongExtensionSystem) where</a>
+<a id="1713" class="Comment">--     open StrongExtensionSystem SE</a>
+<a id="1750" class="Comment">--     open TerminalNotation C term</a>
+<a id="1786" class="Comment">--     open CartesianCategoryNotation (C , term , bp)</a>
+<a id="1840" class="Comment">--     open isIso</a>
+<a id="1858" class="Comment">--     -- This follows abstractly from showing (𝟙 ×-) is equivalent to</a>
+<a id="1929" class="Comment">--     -- the identity monad</a>
+<a id="1958" class="Comment">--     -- we&#39;ll just be explicit here</a>
 
-<a id="2398" class="Comment">--     E1 = systems 𝟙</a>
-<a id="2420" class="Comment">--     -- f ∘ π₂</a>
-<a id="2437" class="Comment">--     toWith1 : C [ a , b ] → With 𝟙 [ a , b ]</a>
-<a id="2485" class="Comment">--     toWith1 = C ._⋆_ (unitor-l .fst)</a>
+<a id="1997" class="Comment">--     E1 = systems 𝟙</a>
+<a id="2019" class="Comment">--     -- f ∘ π₂</a>
+<a id="2036" class="Comment">--     toWith1 : C [ a , b ] → With 𝟙 [ a , b ]</a>
+<a id="2084" class="Comment">--     toWith1 = C ._⋆_ (unitor-l .fst)</a>
 
-<a id="2526" class="Comment">--     -- f ∘ (! , id)</a>
-<a id="2549" class="Comment">--     fromWith1 : With 𝟙 [ a , b ] → C [ a , b ]</a>
-<a id="2599" class="Comment">--     fromWith1 = C ._⋆_ (unitor-l .snd .inv)</a>
+<a id="2125" class="Comment">--     -- f ∘ (! , id)</a>
+<a id="2148" class="Comment">--     fromWith1 : With 𝟙 [ a , b ] → C [ a , b ]</a>
+<a id="2198" class="Comment">--     fromWith1 = C ._⋆_ (unitor-l .snd .inv)</a>
 
-<a id="2647" class="Comment">--     fromTo : fromWith1 (toWith1 f) ≡ f</a>
-<a id="2689" class="Comment">--     fromTo =</a>
-<a id="2705" class="Comment">--       sym (C .⋆Assoc _ _ _) ∙</a>
-<a id="2738" class="Comment">--       cong₂ (comp&#39; C) refl (unitor-l .snd .sec) ∙ C .⋆IdL _</a>
+<a id="2246" class="Comment">--     fromTo : fromWith1 (toWith1 f) ≡ f</a>
+<a id="2288" class="Comment">--     fromTo =</a>
+<a id="2304" class="Comment">--       sym (C .⋆Assoc _ _ _) ∙</a>
+<a id="2337" class="Comment">--       cong₂ (comp&#39; C) refl (unitor-l .snd .sec) ∙ C .⋆IdL _</a>
 
-<a id="2802" class="Comment">--     toFrom : toWith1 (fromWith1 f) ≡ f</a>
-<a id="2844" class="Comment">--     toFrom =</a>
-<a id="2860" class="Comment">--       sym (C .⋆Assoc _ _ _) ∙</a>
-<a id="2893" class="Comment">--       cong₂ (comp&#39; C) refl (unitor-l .snd .ret) ∙ C .⋆IdL _</a>
+<a id="2401" class="Comment">--     toFrom : toWith1 (fromWith1 f) ≡ f</a>
+<a id="2443" class="Comment">--     toFrom =</a>
+<a id="2459" class="Comment">--       sym (C .⋆Assoc _ _ _) ∙</a>
+<a id="2492" class="Comment">--       cong₂ (comp&#39; C) refl (unitor-l .snd .ret) ∙ C .⋆IdL _</a>
 
-<a id="2957" class="Comment">--     -- TODO: recover a monad on the original category</a>
-<a id="3014" class="Comment">--     -- General principle would be that you can transport a monad</a>
-<a id="3082" class="Comment">--     -- along an equivalence of categories...</a>
-<a id="3130" class="Comment">--     global-ESF : Monad.ExtensionSystemFor C T</a>
-<a id="3179" class="Comment">--     global-ESF .η = fromWith1 (E1 .η)</a>
-<a id="3220" class="Comment">--     global-ESF .bind s = fromWith1 (E1 .bind (toWith1 s))</a>
-<a id="3281" class="Comment">--     global-ESF .bind-r =</a>
-<a id="3309" class="Comment">--       cong fromWith1 (cong (E1 .bind) toFrom) ∙</a>
-<a id="3360" class="Comment">--       cong fromWith1 (E1 .bind-r) ∙ ×β₂</a>
-<a id="3403" class="Comment">--     global-ESF .bind-l {f = f} =</a>
-<a id="3439" class="Comment">--       -- (f o π₂)^+ ∘ (!,id) ∘ η ∘ (!, id)</a>
-<a id="3485" class="Comment">--       -- (f o π₂)^+ ∘ (!,η) ∘ η ∘ (!, id)</a>
-<a id="3530" class="Comment">--       ((C .⋆Assoc _ _ _) ∙ cong₂ (seq&#39; C) refl</a>
-<a id="3580" class="Comment">--         (sym (C .⋆Assoc _ _ _) ∙</a>
-<a id="3616" class="Comment">--         cong₂ (seq&#39; C)</a>
-<a id="3642" class="Comment">--               (,p-natural ∙ cong₂ _,p_ (𝟙η&#39; {g = π₁}) (C .⋆IdR _)) refl ∙</a>
-<a id="3719" class="Comment">--               E1 .bind-l {f = (toWith1 f)} ))</a>
-<a id="3768" class="Comment">--       ∙ sym (C .⋆Assoc _ _ _) ∙ cong₂ (comp&#39; C) refl ×β₂ ∙ C .⋆IdL _</a>
-<a id="3840" class="Comment">--     -- ((f ∘ π₂)^+ ∘ (! , id)) ∘ ((g ∘ π₂)^+ ∘ (! , id))</a>
-<a id="3900" class="Comment">--     global-ESF .bind-comp {f = f}{g = g} =</a>
-<a id="3946" class="Comment">--     -- ((f ∘ π₂)^+ ∘ (! , id)) ∘ ((g ∘ π₂)^+ ∘ (! , id))</a>
-<a id="4006" class="Comment">--       lem -- f ∘𝟙 g = f^+</a>
-<a id="4035" class="Comment">--     -- ((f ∘ π₂)^+ ∘ (π₁ , (g ∘ π₂)^+)) ∘ (! , id)</a>
-<a id="4089" class="Comment">--       ∙ cong₂ (seq&#39; C) refl (cong₂ (comp&#39; C) refl</a>
-<a id="4142" class="Comment">--         (,p-natural ∙ cong₂ _,p_ (𝟙η&#39; {g = π₁}) (C .⋆IdR _)) ∙ E1 .bind-comp)</a>
-<a id="4223" class="Comment">--       ∙ cong₂ (seq&#39; C) refl (cong (E1 .bind)</a>
-<a id="4271" class="Comment">--               -- (E1 .bind (toWith1 f)) ∘ (π₁ , (g ∘ π₂))</a>
-<a id="4332" class="Comment">--               -- ≡ (E1 .bind (toWith f) ∘ g ∘ π₂)</a>
-<a id="4385" class="Comment">--               ((cong₂ (comp&#39; C) refl (cong₂ _,p_ 𝟙η&#39; (sym (C .⋆IdR _)) ∙</a>
-<a id="4461" class="Comment">--               sym ,p-natural) ∙ C .⋆Assoc _ _ _) ∙ C .⋆Assoc _ _ _))</a>
-<a id="4533" class="Comment">--     -- (((f ∘ π₂)^+ ∘ (! , id) ∘ g) ∘ π₂)^+ ∘ (! , id)</a>
-<a id="4591" class="Comment">--       where</a>
-<a id="4606" class="Comment">--         lem : comp&#39; C (fromWith1 (E1 .bind (toWith1 f)))</a>
-<a id="4666" class="Comment">--               (fromWith1 (E1 .bind (toWith1 g))) ≡</a>
-<a id="4720" class="Comment">--               ((E1 .bind (toWith1 f)) ∘⟨ C ⟩</a>
-<a id="4768" class="Comment">--                 ((!t ,p C .id) ∘⟨ C ⟩ E1 .bind (toWith1 g))) ∘⟨ C ⟩</a>
-<a id="4839" class="Comment">--                   ((!t ,p C .id))</a>
-<a id="4876" class="Comment">--         lem = solveCat! C</a>
-<a id="4905" class="Comment">--     StrongMonad→Monad : Monad.ExtensionSystem C</a>
-<a id="4956" class="Comment">--     StrongMonad→Monad = T , global-ESF</a>
+<a id="2556" class="Comment">--     -- TODO: recover a monad on the original category</a>
+<a id="2613" class="Comment">--     -- General principle would be that you can transport a monad</a>
+<a id="2681" class="Comment">--     -- along an equivalence of categories...</a>
+<a id="2729" class="Comment">--     global-ESF : Monad.ExtensionSystemFor C T</a>
+<a id="2778" class="Comment">--     global-ESF .η = fromWith1 (E1 .η)</a>
+<a id="2819" class="Comment">--     global-ESF .bind s = fromWith1 (E1 .bind (toWith1 s))</a>
+<a id="2880" class="Comment">--     global-ESF .bind-r =</a>
+<a id="2908" class="Comment">--       cong fromWith1 (cong (E1 .bind) toFrom) ∙</a>
+<a id="2959" class="Comment">--       cong fromWith1 (E1 .bind-r) ∙ ×β₂</a>
+<a id="3002" class="Comment">--     global-ESF .bind-l {f = f} =</a>
+<a id="3038" class="Comment">--       -- (f o π₂)^+ ∘ (!,id) ∘ η ∘ (!, id)</a>
+<a id="3084" class="Comment">--       -- (f o π₂)^+ ∘ (!,η) ∘ η ∘ (!, id)</a>
+<a id="3129" class="Comment">--       ((C .⋆Assoc _ _ _) ∙ cong₂ (seq&#39; C) refl</a>
+<a id="3179" class="Comment">--         (sym (C .⋆Assoc _ _ _) ∙</a>
+<a id="3215" class="Comment">--         cong₂ (seq&#39; C)</a>
+<a id="3241" class="Comment">--               (,p-natural ∙ cong₂ _,p_ (𝟙η&#39; {g = π₁}) (C .⋆IdR _)) refl ∙</a>
+<a id="3318" class="Comment">--               E1 .bind-l {f = (toWith1 f)} ))</a>
+<a id="3367" class="Comment">--       ∙ sym (C .⋆Assoc _ _ _) ∙ cong₂ (comp&#39; C) refl ×β₂ ∙ C .⋆IdL _</a>
+<a id="3439" class="Comment">--     -- ((f ∘ π₂)^+ ∘ (! , id)) ∘ ((g ∘ π₂)^+ ∘ (! , id))</a>
+<a id="3499" class="Comment">--     global-ESF .bind-comp {f = f}{g = g} =</a>
+<a id="3545" class="Comment">--     -- ((f ∘ π₂)^+ ∘ (! , id)) ∘ ((g ∘ π₂)^+ ∘ (! , id))</a>
+<a id="3605" class="Comment">--       lem -- f ∘𝟙 g = f^+</a>
+<a id="3634" class="Comment">--     -- ((f ∘ π₂)^+ ∘ (π₁ , (g ∘ π₂)^+)) ∘ (! , id)</a>
+<a id="3688" class="Comment">--       ∙ cong₂ (seq&#39; C) refl (cong₂ (comp&#39; C) refl</a>
+<a id="3741" class="Comment">--         (,p-natural ∙ cong₂ _,p_ (𝟙η&#39; {g = π₁}) (C .⋆IdR _)) ∙ E1 .bind-comp)</a>
+<a id="3822" class="Comment">--       ∙ cong₂ (seq&#39; C) refl (cong (E1 .bind)</a>
+<a id="3870" class="Comment">--               -- (E1 .bind (toWith1 f)) ∘ (π₁ , (g ∘ π₂))</a>
+<a id="3931" class="Comment">--               -- ≡ (E1 .bind (toWith f) ∘ g ∘ π₂)</a>
+<a id="3984" class="Comment">--               ((cong₂ (comp&#39; C) refl (cong₂ _,p_ 𝟙η&#39; (sym (C .⋆IdR _)) ∙</a>
+<a id="4060" class="Comment">--               sym ,p-natural) ∙ C .⋆Assoc _ _ _) ∙ C .⋆Assoc _ _ _))</a>
+<a id="4132" class="Comment">--     -- (((f ∘ π₂)^+ ∘ (! , id) ∘ g) ∘ π₂)^+ ∘ (! , id)</a>
+<a id="4190" class="Comment">--       where</a>
+<a id="4205" class="Comment">--         lem : comp&#39; C (fromWith1 (E1 .bind (toWith1 f)))</a>
+<a id="4265" class="Comment">--               (fromWith1 (E1 .bind (toWith1 g))) ≡</a>
+<a id="4319" class="Comment">--               ((E1 .bind (toWith1 f)) ∘⟨ C ⟩</a>
+<a id="4367" class="Comment">--                 ((!t ,p C .id) ∘⟨ C ⟩ E1 .bind (toWith1 g))) ∘⟨ C ⟩</a>
+<a id="4438" class="Comment">--                   ((!t ,p C .id))</a>
+<a id="4475" class="Comment">--         lem = solveCat! C</a>
+<a id="4504" class="Comment">--     StrongMonad→Monad : Monad.ExtensionSystem C</a>
+<a id="4555" class="Comment">--     StrongMonad→Monad = T , global-ESF</a>
 
-<a id="4999" class="Comment">--     -- TODO: once we establish that T is a functor,</a>
-<a id="5054" class="Comment">--     -- we can show the following is natural</a>
-<a id="5101" class="Comment">--     σ : C [ Γ × T a , T (Γ × a) ]</a>
-<a id="5138" class="Comment">--     σ {Γ = Γ} = systems Γ .bind (fromWith1 (E1 .η))</a>
-<a id="5193" class="Comment">-- module StrongMonadNotation {C : Category ℓ ℓ&#39;}</a>
-<a id="5243" class="Comment">--   (bp : BinProducts C) (SE : StrongExtensionSystem bp) where</a>
-<a id="5307" class="Comment">--   open Category</a>
-<a id="5326" class="Comment">--   open Notation C bp</a>
-<a id="5350" class="Comment">--   open EnvNotation bp</a>
-<a id="5375" class="Comment">--   open StrongExtensionSystem SE public</a>
-<a id="5417" class="Comment">--   private</a>
-<a id="5430" class="Comment">--     variable</a>
-<a id="5446" class="Comment">--       Γ Δ a b c : C .ob</a>
-<a id="5473" class="Comment">--       γ δ : C [ Δ , Γ ]</a>
-<a id="5500" class="Comment">--       f g : C [ a , b ]</a>
-<a id="5527" class="Comment">--       s t : With Γ [ a , b ]</a>
+<a id="4598" class="Comment">--     -- TODO: once we establish that T is a functor,</a>
+<a id="4653" class="Comment">--     -- we can show the following is natural</a>
+<a id="4700" class="Comment">--     σ : C [ Γ × T a , T (Γ × a) ]</a>
+<a id="4737" class="Comment">--     σ {Γ = Γ} = systems Γ .bind (fromWith1 (E1 .η))</a>
+<a id="4792" class="Comment">-- module StrongMonadNotation {C : Category ℓ ℓ&#39;}</a>
+<a id="4842" class="Comment">--   (bp : BinProducts C) (SE : StrongExtensionSystem bp) where</a>
+<a id="4906" class="Comment">--   open Category</a>
+<a id="4925" class="Comment">--   open Notation C bp</a>
+<a id="4949" class="Comment">--   open EnvNotation bp</a>
+<a id="4974" class="Comment">--   open StrongExtensionSystem SE public</a>
+<a id="5016" class="Comment">--   private</a>
+<a id="5029" class="Comment">--     variable</a>
+<a id="5045" class="Comment">--       Γ Δ a b c : C .ob</a>
+<a id="5072" class="Comment">--       γ δ : C [ Δ , Γ ]</a>
+<a id="5099" class="Comment">--       f g : C [ a , b ]</a>
+<a id="5126" class="Comment">--       s t : With Γ [ a , b ]</a>
 
-<a id="5560" class="Comment">--   open Functor</a>
+<a id="5159" class="Comment">--   open Functor</a>
 
-<a id="5579" class="Comment">--   PKleisli : C .ob → Category _ _</a>
-<a id="5616" class="Comment">--   PKleisli Γ = Monad.Kleisli (With Γ) (T , systems Γ)</a>
+<a id="5178" class="Comment">--   PKleisli : C .ob → Category _ _</a>
+<a id="5215" class="Comment">--   PKleisli Γ = Monad.Kleisli (With Γ) (T , systems Γ)</a>
 
-<a id="5674" class="Comment">--   PG : (Γ : C .ob) → Functor (PKleisli Γ) (With Γ)</a>
-<a id="5728" class="Comment">--   PG Γ = Monad.G ((With Γ)) ((T , systems Γ))</a>
+<a id="5273" class="Comment">--   PG : (Γ : C .ob) → Functor (PKleisli Γ) (With Γ)</a>
+<a id="5327" class="Comment">--   PG Γ = Monad.G ((With Γ)) ((T , systems Γ))</a>
 
-<a id="5778" class="Comment">--   bindP : PKleisli Γ [ a , b ] → With Γ [ T a , T b ]</a>
-<a id="5835" class="Comment">--   bindP {Γ = Γ} = PG Γ .F-hom</a>
+<a id="5377" class="Comment">--   bindP : PKleisli Γ [ a , b ] → With Γ [ T a , T b ]</a>
+<a id="5434" class="Comment">--   bindP {Γ = Γ} = PG Γ .F-hom</a>
 
-<a id="5869" class="Comment">--   retP : PKleisli Γ [ a , a ]</a>
-<a id="5902" class="Comment">--   retP {Γ} = PKleisli Γ .id</a>
+<a id="5468" class="Comment">--   retP : PKleisli Γ [ a , a ]</a>
+<a id="5501" class="Comment">--   retP {Γ} = PKleisli Γ .id</a>
 
-<a id="5934" class="Comment">--   bindP-comp : bindP f ∘⟨ With Γ ⟩ bindP g ≡ bindP (bindP f ∘⟨ With Γ ⟩ g)</a>
-<a id="6012" class="Comment">--   bindP-comp {Γ = Γ} = ExtensionSystemFor.bind-comp (systems Γ)</a>
+<a id="5533" class="Comment">--   bindP-comp : bindP f ∘⟨ With Γ ⟩ bindP g ≡ bindP (bindP f ∘⟨ With Γ ⟩ g)</a>
+<a id="5611" class="Comment">--   bindP-comp {Γ = Γ} = ExtensionSystemFor.bind-comp (systems Γ)</a>
 
-<a id="6080" class="Comment">--   bindP-l : bindP f ∘⟨ With Γ ⟩ retP ≡ f</a>
-<a id="6124" class="Comment">--   bindP-l {Γ = Γ} = ExtensionSystemFor.bind-l (systems Γ)</a>
+<a id="5679" class="Comment">--   bindP-l : bindP f ∘⟨ With Γ ⟩ retP ≡ f</a>
+<a id="5723" class="Comment">--   bindP-l {Γ = Γ} = ExtensionSystemFor.bind-l (systems Γ)</a>
 
-<a id="6186" class="Comment">--   bindP-r : bindP (retP {a = a}) ≡ With Γ .id</a>
-<a id="6235" class="Comment">--   bindP-r {Γ = Γ} = ExtensionSystemFor.bind-r (systems Γ)</a>
+<a id="5785" class="Comment">--   bindP-r : bindP (retP {a = a}) ≡ With Γ .id</a>
+<a id="5834" class="Comment">--   bindP-r {Γ = Γ} = ExtensionSystemFor.bind-r (systems Γ)</a>
 
-<a id="6297" class="Comment">--   open Functor</a>
+<a id="5896" class="Comment">--   open Functor</a>
 
-<a id="6316" class="Comment">--   pull : (γ : C [ Δ , Γ ]) → Functor (PKleisli Γ) (PKleisli Δ)</a>
-<a id="6382" class="Comment">--   pull γ .F-ob = λ z → z</a>
-<a id="6410" class="Comment">--   pull γ .F-hom f = (γ ^*) ⟪ f ⟫</a>
-<a id="6446" class="Comment">--   pull γ .F-id = η-natural</a>
-<a id="6476" class="Comment">--   pull {Δ = Δ} γ .F-seq f g =</a>
-<a id="6509" class="Comment">--     (γ ^*) .F-seq _ _ ∙ cong₂ (seq&#39; (With Δ)) refl bind-natural</a>
+<a id="5915" class="Comment">--   pull : (γ : C [ Δ , Γ ]) → Functor (PKleisli Γ) (PKleisli Δ)</a>
+<a id="5981" class="Comment">--   pull γ .F-ob = λ z → z</a>
+<a id="6009" class="Comment">--   pull γ .F-hom f = (γ ^*) ⟪ f ⟫</a>
+<a id="6045" class="Comment">--   pull γ .F-id = η-natural</a>
+<a id="6075" class="Comment">--   pull {Δ = Δ} γ .F-seq f g =</a>
+<a id="6108" class="Comment">--     (γ ^*) .F-seq _ _ ∙ cong₂ (seq&#39; (With Δ)) refl bind-natural</a>
 </pre></body></html>
