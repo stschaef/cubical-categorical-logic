@@ -66,7 +66,7 @@ Tm = inr tt
 CwFSig : Sig {ℓ-zero} {ℓ-zero}
 CwFSig = Γ₃ ▹ opD Bool
   (λ { true → Con , λ () ; false → Ty , λ _ → true })
-  ⊥ (λ ()) (Con , λ ())
+  ⊥ (λ ()) (λ ()) (λ ()) (Con , λ ())
 
 extOp : OpSym CwFSig
 extOp = inr tt

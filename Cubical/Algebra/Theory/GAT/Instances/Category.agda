@@ -54,11 +54,12 @@ _ = λ _ ()
 
 -- id : (a : Ob) → Hom a a
 Γ₃ : Sig {ℓ-zero} {ℓ-zero}
-Γ₃ = Γ₂ ▹ opD Unit (λ _ → Ob , λ ()) ⊥ (λ ()) (Hom , λ _ → tt)
+Γ₃ = Γ₂ ▹ opD Unit (λ _ → Ob , λ ()) ⊥ (λ ()) (λ ()) (λ ())
+       (Hom , λ _ → tt)
 
 -- _⋆_ : (a b c : Ob) (f : Hom a b) (g : Hom b c) → Hom a c
 Γ₄ : Sig {ℓ-zero} {ℓ-zero}
-Γ₄ = Γ₃ ▹ opD Thr (λ _ → Ob , λ ()) Bool
+Γ₄ = Γ₃ ▹ opD Thr (λ _ → Ob , λ ()) Bool (λ _ → ⊥) (λ _ ())
        (λ { true → Hom , hm A B ; false → Hom , hm B C })
        (Hom , hm A C)
 

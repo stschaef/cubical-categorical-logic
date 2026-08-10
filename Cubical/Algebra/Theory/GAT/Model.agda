@@ -61,7 +61,7 @@ open import Cubical.Algebra.Theory.GAT.Signature
 isSetSortSym : {ℓI ℓA : Level} (Γ : Sig {ℓI} {ℓA}) → isSet (SortSym Γ)
 isSetSortSym ◇ = isProp→isSet isProp⊥
 isSetSortSym (Γ ▹ sortD _ _) = isSet⊎ (isSetSortSym Γ) isSetUnit
-isSetSortSym (Γ ▹ opD _ _ _ _ _) = isSetSortSym Γ
+isSetSortSym (Γ ▹ opD _ _ _ _ _ _ _) = isSetSortSym Γ
 isSetSortSym (Γ ▹ eqnD _ _ _ _ _ _ _) = isSetSortSym Γ
 
 module _ {ℓI ℓA : Level} (Γ : Sig {ℓI} {ℓA}) where
