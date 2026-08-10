@@ -251,3 +251,156 @@ module _ {ℓI ℓA : Level} {Γ : Sig {ℓI} {ℓA}} where
   wfRen : {V W : Type ℓI} (Θ : Tel Γ V) (Ξ : Tel Γ W)
     (ρ : W → V) → Type ℓI
   wfRen {W = W} Θ Ξ ρ = (w : W) → Θ (ρ w) Eq.≡ Ξ w ⟨ ρ ⟩
+
+-- ------------------------------------------------------------------
+-- Weakening of terms, and the declared equations
+-- ------------------------------------------------------------------
+--
+-- `wkSrt` and `wkTel` are relabellings, and `opArgS`/`opRes` of a
+-- weakened operation symbol are *definitionally* the weakenings of the
+-- originals, so `wkTm` is a plain structural recursion with no
+-- transports.
+
+module _ {ℓI ℓA : Level} where
+
+  wkOp : {Γ : Sig {ℓI} {ℓA}} {d : Decl Γ} → OpSym Γ → OpSym (Γ ▹ d)
+  wkOp {d = sortD _ _} o = o
+  wkOp {d = opD _ _ _ _ _} o = inl o
+  wkOp {d = eqnD _ _ _ _ _ _ _} o = o
+
+  -- The `app` node is the only one that needs `d` in constructor form:
+  -- `opVar`, `opIx`, `opArgS` and `opRes` of a weakened operation
+  -- symbol only reduce once the declaration is known.
+  wkApp : {Γ : Sig {ℓI} {ℓA}} {d : Decl Γ} {V : Type ℓI} {Θ : Tel Γ V}
+    {I : Type ℓA} {as : I → Srt Γ V} (o : OpSym Γ)
+    (ρ : opVar {Γ = Γ} o → V)
+    → ((j : opIx {Γ = Γ} o) → Term (Γ ▹ d) (wkTel {Γ = Γ} {d = d} Θ) I
+        (λ j' → wkSrt {Γ = Γ} {d = d} (as j'))
+        (wkSrt {Γ = Γ} {d = d}
+          (opArgS {Γ = Γ} o j .fst , λ i → ρ (opArgS {Γ = Γ} o j .snd i))))
+    → Term (Γ ▹ d) (wkTel {Γ = Γ} {d = d} Θ) I
+        (λ j' → wkSrt {Γ = Γ} {d = d} (as j'))
+        (wkSrt {Γ = Γ} {d = d}
+          (opRes {Γ = Γ} o .fst , λ i → ρ (opRes {Γ = Γ} o .snd i)))
+  wkApp {Γ} {d = sortD V Θ'} o ρ ts = app o ρ ts
+    where open TermsOf (Γ ▹ sortD V Θ')
+  wkApp {Γ} {d = opD V Θ' I' as' r'} o ρ ts = app (inl o) ρ ts
+    where open TermsOf (Γ ▹ opD V Θ' I' as' r')
+  wkApp {Γ} {d = eqnD V Θ' I' as' r' t' u'} o ρ ts = app o ρ ts
+    where open TermsOf (Γ ▹ eqnD V Θ' I' as' r' t' u')
+
+  module _ {Γ : Sig {ℓI} {ℓA}} {d : Decl Γ} where
+    private
+      module S = TermsOf Γ
+      module T = TermsOf (Γ ▹ d)
+
+    wkTm : {V : Type ℓI} {Θ : Tel Γ V} {I : Type ℓA} {as : I → Srt Γ V}
+      {A : Srt Γ V} → Term Γ Θ I as A
+      → Term (Γ ▹ d) (wkTel {Γ = Γ} {d = d} Θ) I
+          (λ j → wkSrt {Γ = Γ} {d = d} (as j)) (wkSrt {Γ = Γ} {d = d} A)
+    wkTm (S.ivar v) = T.ivar v
+    wkTm (S.avar i) = T.avar i
+    wkTm (S.app o ρ ts) = wkApp {Γ = Γ} {d = d} o ρ (λ j → wkTm (ts j))
+
+module _ {ℓI ℓA : Level} where
+
+  EqnSym : Sig {ℓI} {ℓA} → Type
+  EqnSym ◇ = ⊥
+  EqnSym (Γ ▹ sortD _ _) = EqnSym Γ
+  EqnSym (Γ ▹ opD _ _ _ _ _) = EqnSym Γ
+  EqnSym (Γ ▹ eqnD _ _ _ _ _ _ _) = EqnSym Γ ⊎ Unit
+
+  eqnVar : {Γ : Sig {ℓI} {ℓA}} → EqnSym Γ → Type ℓI
+  eqnVar {Γ ▹ sortD _ _} e = eqnVar {Γ = Γ} e
+  eqnVar {Γ ▹ opD _ _ _ _ _} e = eqnVar {Γ = Γ} e
+  eqnVar {Γ ▹ eqnD _ _ _ _ _ _ _} (inl e) = eqnVar {Γ = Γ} e
+  eqnVar {Γ ▹ eqnD V _ _ _ _ _ _} (inr _) = V
+
+  eqnIx : {Γ : Sig {ℓI} {ℓA}} → EqnSym Γ → Type ℓA
+  eqnIx {Γ ▹ sortD _ _} e = eqnIx {Γ = Γ} e
+  eqnIx {Γ ▹ opD _ _ _ _ _} e = eqnIx {Γ = Γ} e
+  eqnIx {Γ ▹ eqnD _ _ _ _ _ _ _} (inl e) = eqnIx {Γ = Γ} e
+  eqnIx {Γ ▹ eqnD _ _ I _ _ _ _} (inr _) = I
+
+  eqnTel : {Γ : Sig {ℓI} {ℓA}} (e : EqnSym Γ) → Tel Γ (eqnVar {Γ = Γ} e)
+  eqnTel {Γ ▹ sortD V Θ} e = wkTel {Γ = Γ} {d = sortD V Θ} (eqnTel {Γ = Γ} e)
+  eqnTel {Γ ▹ opD V Θ I as r} e =
+    wkTel {Γ = Γ} {d = opD V Θ I as r} (eqnTel {Γ = Γ} e)
+  eqnTel {Γ ▹ eqnD V Θ I as r t u} (inl e) =
+    wkTel {Γ = Γ} {d = eqnD V Θ I as r t u} (eqnTel {Γ = Γ} e)
+  eqnTel {Γ ▹ eqnD V Θ I as r t u} (inr _) =
+    wkTel {Γ = Γ} {d = eqnD V Θ I as r t u} Θ
+
+  eqnArgS : {Γ : Sig {ℓI} {ℓA}} (e : EqnSym Γ) → eqnIx {Γ = Γ} e
+    → Srt Γ (eqnVar {Γ = Γ} e)
+  eqnArgS {Γ ▹ sortD V Θ} e j =
+    wkSrt {Γ = Γ} {d = sortD V Θ} (eqnArgS {Γ = Γ} e j)
+  eqnArgS {Γ ▹ opD V Θ I as r} e j =
+    wkSrt {Γ = Γ} {d = opD V Θ I as r} (eqnArgS {Γ = Γ} e j)
+  eqnArgS {Γ ▹ eqnD V Θ I as r t u} (inl e) j =
+    wkSrt {Γ = Γ} {d = eqnD V Θ I as r t u} (eqnArgS {Γ = Γ} e j)
+  eqnArgS {Γ ▹ eqnD V Θ I as r t u} (inr _) j =
+    wkSrt {Γ = Γ} {d = eqnD V Θ I as r t u} (as j)
+
+  eqnRes : {Γ : Sig {ℓI} {ℓA}} (e : EqnSym Γ) → Srt Γ (eqnVar {Γ = Γ} e)
+  eqnRes {Γ ▹ sortD V Θ} e = wkSrt {Γ = Γ} {d = sortD V Θ} (eqnRes {Γ = Γ} e)
+  eqnRes {Γ ▹ opD V Θ I as r} e =
+    wkSrt {Γ = Γ} {d = opD V Θ I as r} (eqnRes {Γ = Γ} e)
+  eqnRes {Γ ▹ eqnD V Θ I as r t u} (inl e) =
+    wkSrt {Γ = Γ} {d = eqnD V Θ I as r t u} (eqnRes {Γ = Γ} e)
+  eqnRes {Γ ▹ eqnD V Θ I as r t u} (inr _) =
+    wkSrt {Γ = Γ} {d = eqnD V Θ I as r t u} r
+
+  eqnLhs eqnRhs : {Γ : Sig {ℓI} {ℓA}} (e : EqnSym Γ)
+    → Term Γ (eqnTel {Γ = Γ} e) (eqnIx {Γ = Γ} e) (eqnArgS {Γ = Γ} e)
+        (eqnRes {Γ = Γ} e)
+  eqnLhs {Γ ▹ sortD V Θ} e = wkTm {Γ = Γ} {d = sortD V Θ} (eqnLhs {Γ = Γ} e)
+  eqnLhs {Γ ▹ opD V Θ I as r} e =
+    wkTm {Γ = Γ} {d = opD V Θ I as r} (eqnLhs {Γ = Γ} e)
+  eqnLhs {Γ ▹ eqnD V Θ I as r t u} (inl e) =
+    wkTm {Γ = Γ} {d = eqnD V Θ I as r t u} (eqnLhs {Γ = Γ} e)
+  eqnLhs {Γ ▹ eqnD V Θ I as r t u} (inr _) =
+    wkTm {Γ = Γ} {d = eqnD V Θ I as r t u} t
+  eqnRhs {Γ ▹ sortD V Θ} e = wkTm {Γ = Γ} {d = sortD V Θ} (eqnRhs {Γ = Γ} e)
+  eqnRhs {Γ ▹ opD V Θ I as r} e =
+    wkTm {Γ = Γ} {d = opD V Θ I as r} (eqnRhs {Γ = Γ} e)
+  eqnRhs {Γ ▹ eqnD V Θ I as r t u} (inl e) =
+    wkTm {Γ = Γ} {d = eqnD V Θ I as r t u} (eqnRhs {Γ = Γ} e)
+  eqnRhs {Γ ▹ eqnD V Θ I as r t u} (inr _) =
+    wkTm {Γ = Γ} {d = eqnD V Θ I as r t u} u
+
+-- ------------------------------------------------------------------
+-- Well-formed terms
+-- ------------------------------------------------------------------
+--
+-- A term's `app` node stores its index spine but not the proof that the
+-- spine is a context morphism, since `wfRen` is not available where
+-- `Term` is declared.  `wfTm` supplies it after the fact.
+
+module _ {ℓI ℓA : Level} {Γ : Sig {ℓI} {ℓA}} where
+
+  private
+    module S = TermsOf Γ
+
+  wfTm : {V : Type ℓI} (Θ : Tel Γ V) {I : Type ℓA} {as : I → Srt Γ V}
+    {A : Srt Γ V} → Term Γ Θ I as A → Type (ℓ-max ℓI ℓA)
+  wfTm Θ (S.ivar v) = Unit*
+  wfTm Θ (S.avar i) = Unit*
+  wfTm Θ (S.app o ρ ts) = wfRen {Γ = Γ} Θ (opTel {Γ = Γ} o) ρ
+    × ((j : opIx {Γ = Γ} o) → wfTm Θ (ts j))
+
+  -- Reindexing, spelled out so that later files can compute with it.
+  reSrt : {V W : Type ℓI} (ρ : W → V) → Srt Γ W → Srt Γ V
+  reSrt ρ B = B .fst , λ k → ρ (B .snd k)
+
+  reSrt≡ : {V W : Type ℓI} (ρ : W → V) {B C : Srt Γ W}
+    → B Eq.≡ C → reSrt ρ B Eq.≡ reSrt ρ C
+  reSrt≡ ρ Eq.refl = Eq.refl
+
+  -- Reindexing a well-formed sort along a context morphism.  The
+  -- `⟨⟩-∘` step is `refl`, which is the whole point of function spines.
+  wfSrt⟨⟩ : {V W : Type ℓI} {Θ : Tel Γ V} {Ξ : Tel Γ W} {A : Srt Γ W}
+    (ρ : W → V) → wfRen {Γ = Γ} Θ Ξ ρ → wfSrt {Γ = Γ} Ξ A
+    → wfSrt {Γ = Γ} Θ (reSrt ρ A)
+  wfSrt⟨⟩ {V} {W} {A = A} ρ wρ wA i =
+    wρ (A .snd i) Eq.∙ reSrt≡ ρ (wA i)

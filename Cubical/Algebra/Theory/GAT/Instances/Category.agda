@@ -91,9 +91,9 @@ private
   -- wrinkle `Sorted.Free.Closing.opCong` exists to paper over.  `Srt`
   -- is a set, so re-typing a term along the pointwise path is
   -- harmless; a layer of smart constructors would insert these.
-  reSrt : {S T : Srt Γ₄ Bool} → S ≡ T
+  retype : {S T : Srt Γ₄ Bool} → S ≡ T
     → Term Γ₄ ΘL Unit Largs S → Term Γ₄ ΘL Unit Largs T
-  reSrt = subst (Term Γ₄ ΘL Unit Largs)
+  retype = subst (Term Γ₄ ΘL Unit Largs)
 
   homPath : {sp sp' : Bool → Bool} → ((i : Bool) → sp i ≡ sp' i)
     → Path (Srt Γ₄ Bool) (Hom , sp) (Hom , sp')
@@ -106,11 +106,11 @@ private
 
   -- `id a`, at the spine `_⋆_` demands of its first argument
   idA : Term Γ₄ ΘL Unit Largs (Hom , λ i → ρL (hm A B i))
-  idA = reSrt (homPath (ptwise refl refl)) (app idOp (λ _ → true) (λ ()))
+  idA = retype (homPath (ptwise refl refl)) (app idOp (λ _ → true) (λ ()))
 
   -- `f`, at the spine `_⋆_` demands of its second argument
   fB : Term Γ₄ ΘL Unit Largs (Hom , λ i → ρL (hm B C i))
-  fB = reSrt (homPath (ptwise refl refl)) (avar tt)
+  fB = retype (homPath (ptwise refl refl)) (avar tt)
 
   -- the sort `Hom a b`, in the form the `_⋆_` node produces
   HomAB : Srt Γ₄ Bool
@@ -121,7 +121,7 @@ private
   idA⋆f = app ⋆Op ρL (λ { true → idA ; false → fB })
 
   fA : Term Γ₄ ΘL Unit Largs HomAB
-  fA = reSrt (homPath (ptwise refl refl)) (avar tt)
+  fA = retype (homPath (ptwise refl refl)) (avar tt)
 
 -- ⋆IdL : (a b : Ob) (f : Hom a b) → id a ⋆ f ≡ f
 CatSig : Sig {ℓ-zero} {ℓ-zero}

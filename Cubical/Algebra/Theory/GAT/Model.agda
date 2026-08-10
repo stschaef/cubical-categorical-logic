@@ -34,7 +34,10 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Structure
 
+open import Cubical.Data.Empty using (isProp⊥)
 open import Cubical.Data.Sigma
+open import Cubical.Data.Sum using (_⊎_; inl; inr)
+open import Cubical.Data.Sum.Properties using (isSet⊎)
 open import Cubical.Data.Unit
 import Cubical.Data.Equality as Eq
 
@@ -45,6 +48,21 @@ open import Cubical.Categories.Displayed.Instances.TotalCategory
 
 open import Cubical.Algebra.Theory.Sorted using (FAM)
 open import Cubical.Algebra.Theory.GAT.Signature
+
+-- ------------------------------------------------------------------
+-- Sort symbols form a set
+-- ------------------------------------------------------------------
+--
+-- Needed because `SrtC` is stated with a transport along a
+-- well-formedness proof: two proofs of the same sort equation must
+-- induce the same transport, or a term could not be re-typed at the
+-- well-formedness proof its context demands.
+
+isSetSortSym : {ℓI ℓA : Level} (Γ : Sig {ℓI} {ℓA}) → isSet (SortSym Γ)
+isSetSortSym ◇ = isProp→isSet isProp⊥
+isSetSortSym (Γ ▹ sortD _ _) = isSet⊎ (isSetSortSym Γ) isSetUnit
+isSetSortSym (Γ ▹ opD _ _ _ _ _) = isSetSortSym Γ
+isSetSortSym (Γ ▹ eqnD _ _ _ _ _ _ _) = isSetSortSym Γ
 
 module _ {ℓI ℓA : Level} (Γ : Sig {ℓI} {ℓA}) where
 
@@ -58,6 +76,11 @@ module _ {ℓI ℓA : Level} (Γ : Sig {ℓI} {ℓA}) where
     OT : (o : OpSym Γ) → Tel Γ (opVar {Γ = Γ} o)
     OT = opTel {Γ = Γ}
 
+    ET : (e : EqnSym Γ) → Tel Γ (eqnVar {Γ = Γ} e)
+    ET = eqnTel {Γ = Γ}
+
+    module S = TermsOf Γ
+
   -- ----------------------------------------------------------------
   -- Well-formedness of a signature
   -- ----------------------------------------------------------------
@@ -70,6 +93,15 @@ module _ {ℓI ℓA : Level} (Γ : Sig {ℓI} {ℓA}) where
         → wfSrt {Γ = Γ} (OT o) (opArgS {Γ = Γ} o j)
       wfOpRes : (o : OpSym Γ)
         → wfSrt {Γ = Γ} (OT o) (opRes {Γ = Γ} o)
+      wfEqnTel : (e : EqnSym Γ) → wfTel {Γ = Γ} (ET e)
+      wfEqnArg : (e : EqnSym Γ) (j : eqnIx {Γ = Γ} e)
+        → wfSrt {Γ = Γ} (ET e) (eqnArgS {Γ = Γ} e j)
+      wfEqnRes : (e : EqnSym Γ)
+        → wfSrt {Γ = Γ} (ET e) (eqnRes {Γ = Γ} e)
+      wfEqnLhs : (e : EqnSym Γ)
+        → wfTm {Γ = Γ} (ET e) (eqnLhs {Γ = Γ} e)
+      wfEqnRhs : (e : EqnSym Γ)
+        → wfTm {Γ = Γ} (ET e) (eqnRhs {Γ = Γ} e)
 
   open Wf
 
@@ -324,3 +356,198 @@ module _ {ℓI ℓA : Level} (Γ : Sig {ℓI} {ℓA}) where
     ALG⋆Assoc : {M N O P : A.ob} (h : A.Hom[ M , N ]) (k : A.Hom[ N , O ])
       (l : A.Hom[ O , P ]) → (h A.⋆ k) A.⋆ l ≡ h A.⋆ (k A.⋆ l)
     ALG⋆Assoc h k l = refl
+
+    -- --------------------------------------------------------------
+    -- Re-typing a compatibility proof
+    -- --------------------------------------------------------------
+
+    private
+      coeSym : (X : Ob*) {S T : SortSym Γ} → S Eq.≡ T → Car X S → Car X T
+      coeSym X p = Eq.transport (λ S → Car X S) p
+
+      coeS-sym : (X : Ob*) {V : Type ℓI} {A B : Srt Γ V} (p : A Eq.≡ B)
+        (z : Car X (A .fst))
+        → coeS X p z ≡ coeSym X (Eq.ap fst p) z
+      coeS-sym X Eq.refl z = refl
+
+      isPropEqSym : {S T : SortSym Γ} → isProp (S Eq.≡ T)
+      isPropEqSym {S} {T} p q =
+        sym (Eq.pathToEq-eqToPath p)
+        ∙ cong Eq.pathToEq
+            (isSetSortSym Γ S T (Eq.eqToPath p) (Eq.eqToPath q))
+        ∙ Eq.pathToEq-eqToPath q
+
+    -- transports along a sort equation do not depend on its proof
+    coeS-irr : (X : Ob*) {V : Type ℓI} {A B : Srt Γ V}
+      (p q : A Eq.≡ B) (z : Car X (A .fst)) → coeS X p z ≡ coeS X q z
+    coeS-irr X p q z = coeS-sym X p z
+      ∙ cong (λ r → coeSym X r z) (isPropEqSym (Eq.ap fst p) (Eq.ap fst q))
+      ∙ sym (coeS-sym X q z)
+
+    reC : (X : Ob*) (pr : Prs X) {V : Type ℓI} (Θ : Tel Γ V)
+      {A : Srt Γ V} (wA wA' : wfSrt {Γ = Γ} Θ A)
+      (γ : (v : V) → Car X (Θ v .fst)) (a : Car X (A .fst))
+      → SrtC X pr Θ A wA γ a → SrtC X pr Θ A wA' γ a
+    reC X pr Θ wA wA' γ a c i = coeS-irr X (wA' i) (wA i) _ ∙ c i
+
+    -- the transport of a compatibility proof along a sort equation
+    coeC : (X : Ob*) (pr : Prs X) {V : Type ℓI} (Θ : Tel Γ V)
+      {A B : Srt Γ V} (p : A Eq.≡ B)
+      (wA : wfSrt {Γ = Γ} Θ A) (wB : wfSrt {Γ = Γ} Θ B)
+      (γ : (v : V) → Car X (Θ v .fst)) (a : Car X (A .fst))
+      → SrtC X pr Θ A wA γ a → SrtC X pr Θ B wB γ (coeS X p a)
+    coeC X pr Θ Eq.refl wA wB γ a c = reC X pr Θ wA wB γ a c
+
+    -- --------------------------------------------------------------
+    -- Change of context along a context morphism
+    -- --------------------------------------------------------------
+
+    private
+      coeS-⟨⟩ : (X : Ob*) {V W : Type ℓI} (ρ : W → V)
+        {B0 : Srt Γ V} {B C : Srt Γ W}
+        (p : B0 Eq.≡ reSrt {Γ = Γ} ρ B) (q : B Eq.≡ C)
+        (z : Car X (B0 .fst))
+        → coeS X (p Eq.∙ reSrt≡ {Γ = Γ} ρ q) z ≡ coeS X q (coeS X p z)
+      coeS-⟨⟩ X ρ Eq.refl Eq.refl z = refl
+
+    module _ (X : Ob*) (pr : Prs X) {V W : Type ℓI}
+      {Θ : Tel Γ V} {Ξ : Tel Γ W} (ρ : W → V)
+      (wρ : wfRen {Γ = Γ} Θ Ξ ρ) {A : Srt Γ W}
+      (wA : wfSrt {Γ = Γ} Ξ A) (γ : (v : V) → Car X (Θ v .fst))
+      (a : Car X (A .fst)) where
+
+      private
+        γ⟨⟩ : (u : W) → Car X (Ξ u .fst)
+        γ⟨⟩ u = coeS X (wρ u) (γ (ρ u))
+
+      transC→ : SrtC X pr Ξ A wA γ⟨⟩ a
+        → SrtC X pr Θ (reSrt {Γ = Γ} ρ A)
+            (wfSrt⟨⟩ {Γ = Γ} {Θ = Θ} {Ξ = Ξ} {A = A} ρ wρ wA) γ a
+      transC→ c i = coeS-⟨⟩ X ρ (wρ (A .snd i)) (wA i) _ ∙ c i
+
+      transC← : SrtC X pr Θ (reSrt {Γ = Γ} ρ A)
+          (wfSrt⟨⟩ {Γ = Γ} {Θ = Θ} {Ξ = Ξ} {A = A} ρ wρ wA) γ a
+        → SrtC X pr Ξ A wA γ⟨⟩ a
+      transC← c i = sym (coeS-⟨⟩ X ρ (wρ (A .snd i)) (wA i) _) ∙ c i
+
+    -- --------------------------------------------------------------
+    -- Evaluation of terms in a model
+    -- --------------------------------------------------------------
+
+    module _ (M : Category.ob ALG) where
+
+      private
+        X : Ob*
+        X = M .fst
+
+        M* : Ob**
+        M* = M .fst , M .snd .fst
+
+        pr : Prs X
+        pr = M .snd .fst .fst
+
+        α : Ops M*
+        α = M .snd .snd .fst
+
+        typed : OpsTyped M* α
+        typed = M .snd .snd .snd
+
+      -- A term evaluates to an element together with a proof that it
+      -- sits at its sort.  Both are needed: the proof is what the next
+      -- operation up demands of its arguments.
+      eval : {V : Type ℓI} (Θ : Tel Γ V) (w : wfTel {Γ = Γ} Θ)
+        {I : Type ℓA} {as : I → Srt Γ V}
+        (was : (j : I) → wfSrt {Γ = Γ} Θ (as j))
+        (γ : (v : V) → Car X (Θ v .fst)) (cγ : EnvC X pr Θ w γ)
+        (x : (j : I) → Car X (as j .fst))
+        (cx : (j : I) → SrtC X pr Θ (as j) (was j) γ (x j))
+        {A : Srt Γ V} (wA : wfSrt {Γ = Γ} Θ A)
+        (t : Term Γ Θ I as A) (wt : wfTm {Γ = Γ} Θ t)
+        → Σ[ a ∈ Car X (A .fst) ] SrtC X pr Θ A wA γ a
+      eval Θ w was γ cγ x cx wA (S.ivar v) wt =
+        γ v , reC X pr Θ (w v) wA γ (γ v) (cγ v)
+      eval Θ w was γ cγ x cx wA (S.avar j) wt =
+        x j , reC X pr Θ (was j) wA γ (x j) (cx j)
+      eval Θ w was γ cγ x cx wA (S.app o ρ ts) (wρ , wts) =
+        α o γ' cγ' vals cvals
+        , reC X pr Θ
+            (wfSrt⟨⟩ {Γ = Γ} {Θ = Θ} {Ξ = OT o} {A = opRes {Γ = Γ} o}
+              ρ wρ (wf .wfOpRes o))
+            wA γ _
+            (transC→ X pr ρ wρ {A = opRes {Γ = Γ} o} (wf .wfOpRes o) γ _
+              (typed o γ' cγ' vals cvals))
+        where
+        γ' : (v : opVar {Γ = Γ} o) → Car X (OT o v .fst)
+        γ' v = coeS X (wρ v) (γ (ρ v))
+
+        cγ' : EnvC X pr (OT o) (wf .wfOpTel o) γ'
+        cγ' v = transC← X pr ρ wρ {A = OT o v} (wf .wfOpTel o v) γ (γ' v)
+          (coeC X pr Θ (wρ v) (w (ρ v))
+            (wfSrt⟨⟩ {Γ = Γ} {Θ = Θ} {Ξ = OT o} {A = OT o v}
+              ρ wρ (wf .wfOpTel o v))
+            γ (γ (ρ v)) (cγ (ρ v)))
+
+        rec : (j : opIx {Γ = Γ} o)
+          → Σ[ a ∈ Car X (opArgS {Γ = Γ} o j .fst) ]
+              SrtC X pr Θ (reSrt {Γ = Γ} ρ (opArgS {Γ = Γ} o j))
+                (wfSrt⟨⟩ {Γ = Γ} {Θ = Θ} {Ξ = OT o}
+                  {A = opArgS {Γ = Γ} o j} ρ wρ (wf .wfOpArg o j)) γ a
+        rec j = eval Θ w was γ cγ x cx _ (ts j) (wts j)
+
+        vals : (j : opIx {Γ = Γ} o) → Car X (opArgS {Γ = Γ} o j .fst)
+        vals j = rec j .fst
+
+        cvals : ArgsC X pr o γ' vals
+        cvals j = transC← X pr ρ wρ {A = opArgS {Γ = Γ} o j}
+          (wf .wfOpArg o j) γ (vals j) (rec j .snd)
+
+    -- --------------------------------------------------------------
+    -- The layer of equations
+    -- --------------------------------------------------------------
+    --
+    -- Homomorphisms carry no data here, exactly as in `Sorted`'s
+    -- `EQNSᴰ`, so this layer cannot disturb the laws.
+
+    Eqns : (M : Category.ob ALG) → Type (ℓ-max (ℓ-max ℓI ℓA) ℓX)
+    Eqns M = (e : EqnSym Γ)
+      (γ : (v : eqnVar {Γ = Γ} e) → Car (M .fst) (ET e v .fst))
+      (cγ : EnvC (M .fst) (M .snd .fst .fst) (ET e) (wf .wfEqnTel e) γ)
+      (x : (j : eqnIx {Γ = Γ} e)
+         → Car (M .fst) (eqnArgS {Γ = Γ} e j .fst))
+      (cx : (j : eqnIx {Γ = Γ} e)
+          → SrtC (M .fst) (M .snd .fst .fst) (ET e)
+              (eqnArgS {Γ = Γ} e j) (wf .wfEqnArg e j) γ (x j))
+      → eval M (ET e) (wf .wfEqnTel e) (wf .wfEqnArg e) γ cγ x cx
+            (wf .wfEqnRes e) (eqnLhs {Γ = Γ} e) (wf .wfEqnLhs e) .fst
+        ≡ eval M (ET e) (wf .wfEqnTel e) (wf .wfEqnArg e) γ cγ x cx
+            (wf .wfEqnRes e) (eqnRhs {Γ = Γ} e) (wf .wfEqnRhs e) .fst
+
+    EQNSᴰ : Categoryᴰ ALG (ℓ-max (ℓ-max ℓI ℓA) ℓX) ℓ-zero
+    EQNSᴰ .Categoryᴰ.ob[_] M = Eqns M
+    EQNSᴰ .Categoryᴰ.Hom[_][_,_] _ _ _ = Unit
+    EQNSᴰ .Categoryᴰ.idᴰ = tt
+    EQNSᴰ .Categoryᴰ._⋆ᴰ_ _ _ = tt
+    EQNSᴰ .Categoryᴰ.⋆IdLᴰ _ = refl
+    EQNSᴰ .Categoryᴰ.⋆IdRᴰ _ = refl
+    EQNSᴰ .Categoryᴰ.⋆Assocᴰ _ _ _ = refl
+    EQNSᴰ .Categoryᴰ.isSetHomᴰ = isProp→isSet (λ _ _ → refl)
+
+    -- the category of models of the theory
+    MODᴰ : Categoryᴰ CAR _ _
+    MODᴰ = ∫Cᴰ (∫Cᴰ PRᴰ ALGᴰ) EQNSᴰ
+
+    MOD : Category _ _
+    MOD = ∫C MODᴰ
+
+    private
+      module Mo = Category MOD
+
+    MOD⋆IdL : {M N : Mo.ob} (h : Mo.Hom[ M , N ]) → Mo.id Mo.⋆ h ≡ h
+    MOD⋆IdL h = refl
+
+    MOD⋆IdR : {M N : Mo.ob} (h : Mo.Hom[ M , N ]) → h Mo.⋆ Mo.id ≡ h
+    MOD⋆IdR h = refl
+
+    MOD⋆Assoc : {M N O P : Mo.ob} (h : Mo.Hom[ M , N ]) (k : Mo.Hom[ N , O ])
+      (l : Mo.Hom[ O , P ]) → (h Mo.⋆ k) Mo.⋆ l ≡ h Mo.⋆ (k Mo.⋆ l)
+    MOD⋆Assoc h k l = refl
