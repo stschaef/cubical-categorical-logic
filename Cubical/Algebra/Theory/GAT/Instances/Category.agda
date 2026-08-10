@@ -7,7 +7,7 @@ module Cubical.Algebra.Theory.GAT.Instances.Category where
 
 open import Cubical.Foundations.Prelude
 
-open import Cubical.Data.Bool using (Bool; true; false)
+open import Cubical.Data.Bool using (Bool; true; false; if_then_else_)
 open import Cubical.Data.Empty using (⊥)
 open import Cubical.Data.Sigma
 open import Cubical.Data.Sum using (_⊎_; inl; inr)
@@ -71,61 +71,52 @@ idOp = inl (inr tt)
 private
   open TermsOf Γ₄ using (ivar; avar; app)
 
-  -- the context of ⋆IdL: two object indices `a = true`, `b = false`,
-  -- and one argument `f : Hom a b`
+  -- Two `Hom` spines that agree at both indices are equal.  Every ford
+  -- below is discharged by `homEq refl refl`: the spine a node computes
+  -- and the spine one writes always agree pointwise, they just do not
+  -- agree definitionally, because neither `Bool` nor `Thr` has eta.
+  homEq : {D : Type} {sp sp' : sortIdx {Γ = Γ₄} Hom → D}
+    → sp true ≡ sp' true → sp false ≡ sp' false
+    → Path (Srt Γ₄ D) (Hom , sp) (Hom , sp')
+  homEq {sp = sp} {sp' = sp'} p q i =
+    Hom , funExt {f = sp} {g = sp'} (λ { true → p ; false → q }) i
+
+  ford : {D : Type} {sp sp' : sortIdx {Γ = Γ₄} Hom → D}
+    → sp true ≡ sp' true → sp false ≡ sp' false
+    → Eq._≡_ {A = Srt Γ₄ D} (Hom , sp) (Hom , sp')
+  ford p q = Eq.pathToEq (homEq p q)
+
+  -- the context of the unit laws: indices `a = true`, `b = false`, and
+  -- one argument `f : Hom a b`
   ΘL : Tel Γ₄ Bool
   ΘL _ = Ob , λ ()
 
   Largs : Unit → Srt Γ₄ Bool
   Largs _ = Hom , λ i → i
 
-  -- the instantiation of `_⋆_` at `a ↦ a`, `b ↦ a`, `c ↦ b`
+-- ⋆IdL : (a b : Ob) (f : Hom a b) → id a ⋆ f ≡ f
+private
+  -- `_⋆_` at `a ↦ a`, `b ↦ a`, `c ↦ b`
   ρL : Thr → Bool
   ρL A = true
   ρL B = true
   ρL C = false
 
-  -- `Bool` and `Thr` have no definitional eta, so the spine a node
-  -- *computes* (`λ i → ρ (sp i)`) is never syntactically the spine one
-  -- *writes*, even when the two agree at every index.  This is the same
-  -- wrinkle `Sorted.Free.Closing.opCong` exists to paper over.  `Srt`
-  -- is a set, so re-typing a term along the pointwise path is
-  -- harmless; a layer of smart constructors would insert these.
-  retype : {S T : Srt Γ₄ Bool} → S ≡ T
-    → Term Γ₄ ΘL Unit Largs S → Term Γ₄ ΘL Unit Largs T
-  retype = subst (Term Γ₄ ΘL Unit Largs)
+  -- `id a : Hom a a`; its result sort is already the one `id` produces,
+  -- so this ford is `Eq.refl`
+  idA : Term Γ₄ ΘL Unit Largs (Hom , λ i → true)
+  idA = app idOp (λ _ → true) (λ ()) (λ ())
+    (Hom , λ i → true) Eq.refl (λ ())
 
-  homPath : {sp sp' : Bool → Bool} → ((i : Bool) → sp i ≡ sp' i)
-    → Path (Srt Γ₄ Bool) (Hom , sp) (Hom , sp')
-  homPath h i = Hom , funExt h i
+  idA⋆f : Term Γ₄ ΘL Unit Largs (Hom , λ i → i)
+  idA⋆f = app ⋆Op ρL
+    (λ { true → Hom , (λ i → true) ; false → Hom , (λ i → i) })
+    (λ { true → ford refl refl ; false → ford refl refl })
+    (Hom , λ i → i) (ford refl refl)
+    (λ { true → idA ; false → avar tt })
 
-  ptwise : {sp sp' : Bool → Bool} → sp true ≡ sp' true → sp false ≡ sp' false
-    → (i : Bool) → sp i ≡ sp' i
-  ptwise p q true = p
-  ptwise p q false = q
-
-  -- `id a`, at the spine `_⋆_` demands of its first argument
-  idA : Term Γ₄ ΘL Unit Largs (Hom , λ i → ρL (hm A B i))
-  idA = retype (homPath (ptwise refl refl)) (app idOp (λ _ → true) (λ ()))
-
-  -- `f`, at the spine `_⋆_` demands of its second argument
-  fB : Term Γ₄ ΘL Unit Largs (Hom , λ i → ρL (hm B C i))
-  fB = retype (homPath (ptwise refl refl)) (avar tt)
-
-  -- the sort `Hom a b`, in the form the `_⋆_` node produces
-  HomAB : Srt Γ₄ Bool
-  HomAB = Hom , λ i → ρL (hm A C i)
-
-  -- `id a ⋆ f : Hom a b`
-  idA⋆f : Term Γ₄ ΘL Unit Largs HomAB
-  idA⋆f = app ⋆Op ρL (λ { true → idA ; false → fB })
-
-  fA : Term Γ₄ ΘL Unit Largs HomAB
-  fA = retype (homPath (ptwise refl refl)) (avar tt)
-
--- ⋆IdL : (a b : Ob) (f : Hom a b) → id a ⋆ f ≡ f
 Γ₅ : Sig {ℓ-zero} {ℓ-zero}
-Γ₅ = Γ₄ ▹ eqnD Bool ΘL Unit Largs HomAB idA⋆f fA
+Γ₅ = Γ₄ ▹ eqnD Bool ΘL Unit Largs (Hom , λ i → i) idA⋆f (avar tt)
 
 -- ⋆IdR : (a b : Ob) (f : Hom a b) → f ⋆ id b ≡ f
 private
@@ -135,26 +126,19 @@ private
   ρR B = false
   ρR C = false
 
-  -- `f`, at the spine `_⋆_` demands of its first argument
-  fA' : Term Γ₄ ΘL Unit Largs (Hom , λ i → ρR (hm A B i))
-  fA' = retype (homPath (ptwise refl refl)) (avar tt)
+  idB : Term Γ₄ ΘL Unit Largs (Hom , λ i → false)
+  idB = app idOp (λ _ → false) (λ ()) (λ ())
+    (Hom , λ i → false) Eq.refl (λ ())
 
-  -- `id b`, at the spine `_⋆_` demands of its second argument
-  idB : Term Γ₄ ΘL Unit Largs (Hom , λ i → ρR (hm B C i))
-  idB = retype (homPath (ptwise refl refl))
-    (app idOp (λ _ → false) (λ ()))
-
-  HomAB' : Srt Γ₄ Bool
-  HomAB' = Hom , λ i → ρR (hm A C i)
-
-  f⋆idB : Term Γ₄ ΘL Unit Largs HomAB'
-  f⋆idB = app ⋆Op ρR (λ { true → fA' ; false → idB })
-
-  fA'' : Term Γ₄ ΘL Unit Largs HomAB'
-  fA'' = retype (homPath (ptwise refl refl)) (avar tt)
+  f⋆idB : Term Γ₄ ΘL Unit Largs (Hom , λ i → i)
+  f⋆idB = app ⋆Op ρR
+    (λ { true → Hom , (λ i → i) ; false → Hom , (λ i → false) })
+    (λ { true → ford refl refl ; false → ford refl refl })
+    (Hom , λ i → i) (ford refl refl)
+    (λ { true → avar tt ; false → idB })
 
 Γ₆ : Sig {ℓ-zero} {ℓ-zero}
-Γ₆ = Γ₅ ▹ eqnD Bool ΘL Unit Largs HomAB' f⋆idB fA''
+Γ₆ = Γ₅ ▹ eqnD Bool ΘL Unit Largs (Hom , λ i → i) f⋆idB (avar tt)
 
 -- ⋆Assoc : (a b c d : Ob) (f : Hom a b) (g : Hom b c) (h : Hom c d)
 --        → (f ⋆ g) ⋆ h ≡ f ⋆ (g ⋆ h)
@@ -175,20 +159,6 @@ private
 
   open TermsOf Γ₆ using () renaming (avar to avarA; app to appA)
 
-  retypeA : {S T : Srt Γ₆ Fou} → S ≡ T
-    → Term Γ₆ ΘA Arg3 Aargs S → Term Γ₆ ΘA Arg3 Aargs T
-  retypeA = subst (Term Γ₆ ΘA Arg3 Aargs)
-
-  homPathA : {sp sp' : Bool → Fou} → ((i : Bool) → sp i ≡ sp' i)
-    → Path (Srt Γ₆ Fou) (Hom , sp) (Hom , sp')
-  homPathA h i = Hom , funExt h i
-
-  ptwiseA : {sp sp' : Bool → Fou}
-    → sp true ≡ sp' true → sp false ≡ sp' false → (i : Bool) → sp i ≡ sp' i
-  ptwiseA p q true = p
-  ptwiseA p q false = q
-
-  -- the four instantiations of `_⋆_`
   ρ₁ ρ₂ ρ₃ ρ₄ : Thr → Fou
   ρ₁ A = a4
   ρ₁ B = b4
@@ -203,30 +173,34 @@ private
   ρ₄ B = b4
   ρ₄ C = d4
 
-  -- (f ⋆ g) ⋆ h
-  f⋆g : Term Γ₆ ΘA Arg3 Aargs (Hom , λ i → ρ₁ (hm A C i))
-  f⋆g = appA ⋆Op ρ₁
-    (λ { true → retypeA (homPathA (ptwiseA refl refl)) (avarA fv)
-       ; false → retypeA (homPathA (ptwiseA refl refl)) (avarA gv) })
-
   AssocSrt : Srt Γ₆ Fou
-  AssocSrt = Hom , λ i → ρ₂ (hm A C i)
+  AssocSrt = Hom , hm a4 d4
+
+  f⋆g : Term Γ₆ ΘA Arg3 Aargs (Hom , hm a4 c4)
+  f⋆g = appA ⋆Op ρ₁ (λ j → Aargs (if j then fv else gv))
+    (λ { true → ford refl refl ; false → ford refl refl })
+    (Hom , hm a4 c4) (ford refl refl)
+    (λ { true → avarA fv ; false → avarA gv })
+
+  g⋆h : Term Γ₆ ΘA Arg3 Aargs (Hom , hm b4 d4)
+  g⋆h = appA ⋆Op ρ₃ (λ j → Aargs (if j then gv else hv))
+    (λ { true → ford refl refl ; false → ford refl refl })
+    (Hom , hm b4 d4) (ford refl refl)
+    (λ { true → avarA gv ; false → avarA hv })
 
   lhsA : Term Γ₆ ΘA Arg3 Aargs AssocSrt
   lhsA = appA ⋆Op ρ₂
-    (λ { true → retypeA (homPathA (ptwiseA refl refl)) f⋆g
-       ; false → retypeA (homPathA (ptwiseA refl refl)) (avarA hv) })
-
-  -- f ⋆ (g ⋆ h)
-  g⋆h : Term Γ₆ ΘA Arg3 Aargs (Hom , λ i → ρ₃ (hm A C i))
-  g⋆h = appA ⋆Op ρ₃
-    (λ { true → retypeA (homPathA (ptwiseA refl refl)) (avarA gv)
-       ; false → retypeA (homPathA (ptwiseA refl refl)) (avarA hv) })
+    (λ { true → Hom , hm a4 c4 ; false → Hom , hm c4 d4 })
+    (λ { true → ford refl refl ; false → ford refl refl })
+    AssocSrt (ford refl refl)
+    (λ { true → f⋆g ; false → avarA hv })
 
   rhsA : Term Γ₆ ΘA Arg3 Aargs AssocSrt
-  rhsA = retypeA (homPathA (ptwiseA refl refl)) (appA ⋆Op ρ₄
-    (λ { true → retypeA (homPathA (ptwiseA refl refl)) (avarA fv)
-       ; false → retypeA (homPathA (ptwiseA refl refl)) g⋆h }))
+  rhsA = appA ⋆Op ρ₄
+    (λ { true → Hom , hm a4 b4 ; false → Hom , hm b4 d4 })
+    (λ { true → ford refl refl ; false → ford refl refl })
+    AssocSrt (ford refl refl)
+    (λ { true → avarA fv ; false → g⋆h })
 
 CatSig : Sig {ℓ-zero} {ℓ-zero}
 CatSig = Γ₆ ▹ eqnD Fou ΘA Arg3 Aargs AssocSrt lhsA rhsA
@@ -235,59 +209,54 @@ CatSig = Γ₆ ▹ eqnD Fou ΘA Arg3 Aargs AssocSrt lhsA rhsA
 -- `CatSig` is well formed
 -- ------------------------------------------------------------------
 --
--- The conditions on `Ob`-sorted variables are indexed by `sortIdx Ob =
--- ⊥`, hence vacuous.  The conditions on `Hom`-sorted variables are NOT
--- `Eq.refl`, though: they compare the spine `λ ()` with the spine
--- `λ k → ρ ((λ ()) k)`, two functions out of `⊥` which agree pointwise
--- but are not definitionally equal, because Agda has no eta for `⊥`.
--- They are discharged by `funExt` instead.  This is harmless -- the
--- resulting transports occur only inside `SrtC`, which is a
--- proposition, and `coeS-irr` says they do not depend on the proof --
--- but it does correct the claim that well-formedness is always
--- `Eq.refl`.
+-- Every obligation is either vacuous -- `sortIdx Ob` is `⊥`, so a
+-- condition about an `Ob`-sorted variable has nothing to say -- or an
+-- equation between two spines out of `⊥`, which agree pointwise but
+-- not definitionally, since Agda has no eta for `⊥`.  So `obFord`, not
+-- `Eq.refl`.  This is harmless: the resulting transports occur only
+-- inside `SrtC`, which is a proposition, and `coeS-irr` says they do
+-- not depend on which proof was supplied.
 
 open import Cubical.Algebra.Theory.GAT.Model
 
--- `Ob`-sorted raw sorts differ only in a spine out of `⊥`
-obSrt≡ : {D : Type} (f g : sortIdx {Γ = CatSig} Ob → D)
-  → Path (Srt CatSig D) (Ob , f) (Ob , g)
-obSrt≡ f g i = Ob , funExt {f = f} {g = g} (λ ()) i
+private
+  obFord : {D : Type} {f g : sortIdx {Γ = CatSig} Ob → D}
+    → Eq._≡_ {A = Srt CatSig D} (Ob , f) (Ob , g)
+  obFord {D} {f} {g} =
+    Eq.pathToEq (λ i → Ob , funExt {f = f} {g = g} (λ ()) i)
 
--- The operation-level obligations, all discharged.
-catWfSortTel : (S : SortSym CatSig)
-  → wfTel {Γ = CatSig} (sortTel {Γ = CatSig} S)
-catWfSortTel (inl (inr tt)) = λ ()
-catWfSortTel (inr tt) = λ _ ()
-
-catWfOpTel : (o : OpSym CatSig) → wfTel {Γ = CatSig} (opTel {Γ = CatSig} o)
-catWfOpTel (inl (inr tt)) = λ _ ()
-catWfOpTel (inr tt) = λ _ ()
-
-catWfOpArg : (o : OpSym CatSig) (j : opIx {Γ = CatSig} o)
-  → wfSrt {Γ = CatSig} (opTel {Γ = CatSig} o) (opArgS {Γ = CatSig} o j)
-catWfOpArg (inl (inr tt)) ()
-catWfOpArg (inr tt) true = λ _ → Eq.pathToEq (obSrt≡ _ _)
-catWfOpArg (inr tt) false = λ _ → Eq.pathToEq (obSrt≡ _ _)
-
-catWfOpRes : (o : OpSym CatSig)
-  → wfSrt {Γ = CatSig} (opTel {Γ = CatSig} o) (opRes {Γ = CatSig} o)
-catWfOpRes (inl (inr tt)) = λ _ → Eq.pathToEq (obSrt≡ _ _)
-catWfOpRes (inr tt) = λ _ → Eq.pathToEq (obSrt≡ _ _)
-
--- NOT YET DISCHARGED: the equation-level obligations, and the blocker
--- is structural rather than incidental.
---
--- `wfTm` is defined by recursion on the term, but the terms above are
--- built with `retype`, i.e. `subst`, to bridge spines that agree
--- pointwise without agreeing definitionally.  A `subst`-wrapped term is
--- a `transp`, not a constructor, so `wfTm` gets stuck on it -- and so
--- would `eval`.  The bridges were forced by the same missing eta that
--- made `catWfOpArg` need `funExt`.
---
--- The fix is to stop deriving well-formedness by recursion and carry it
--- in the syntax: give `RawTerms` the operation telescope as a further
--- parameter, so that `app` can store its own `wfRen` proof.  `wfRen`
--- needs only reindexing, not `sortTel`, so this does not enlarge the
--- mutual block.  `wfTm` then disappears.  `eval` would still be stuck
--- on a substituted term, which is the remaining reason to want spines
--- that compare definitionally.
+CatWf : Wf CatSig
+CatWf .Wf.wfSortTel (inl (inr tt)) = λ ()
+CatWf .Wf.wfSortTel (inr tt) = λ _ ()
+CatWf .Wf.wfOpTel (inl (inr tt)) = λ _ ()
+CatWf .Wf.wfOpTel (inr tt) = λ _ ()
+CatWf .Wf.wfOpArg (inl (inr tt)) ()
+CatWf .Wf.wfOpArg (inr tt) true = λ _ → obFord
+CatWf .Wf.wfOpArg (inr tt) false = λ _ → obFord
+CatWf .Wf.wfOpRes (inl (inr tt)) = λ _ → obFord
+CatWf .Wf.wfOpRes (inr tt) = λ _ → obFord
+CatWf .Wf.wfEqnTel (inl (inl (inr tt))) = λ _ ()
+CatWf .Wf.wfEqnTel (inl (inr tt)) = λ _ ()
+CatWf .Wf.wfEqnTel (inr tt) = λ _ ()
+CatWf .Wf.wfEqnArg (inl (inl (inr tt))) tt = λ _ → obFord
+CatWf .Wf.wfEqnArg (inl (inr tt)) tt = λ _ → obFord
+CatWf .Wf.wfEqnArg (inr tt) fv = λ _ → obFord
+CatWf .Wf.wfEqnArg (inr tt) gv = λ _ → obFord
+CatWf .Wf.wfEqnArg (inr tt) hv = λ _ → obFord
+CatWf .Wf.wfEqnRes (inl (inl (inr tt))) = λ _ → obFord
+CatWf .Wf.wfEqnRes (inl (inr tt)) = λ _ → obFord
+CatWf .Wf.wfEqnRes (inr tt) = λ _ → obFord
+CatWf .Wf.wfEqnLhs (inl (inl (inr tt))) =
+  (λ _ → obFord) , λ { true → (λ _ → obFord) , (λ ()) ; false → tt* }
+CatWf .Wf.wfEqnLhs (inl (inr tt)) =
+  (λ _ → obFord) , λ { true → tt* ; false → (λ _ → obFord) , (λ ()) }
+CatWf .Wf.wfEqnLhs (inr tt) =
+  (λ _ → obFord)
+  , λ { true → (λ _ → obFord) , (λ { true → tt* ; false → tt* })
+      ; false → tt* }
+CatWf .Wf.wfEqnRhs (inl (inl (inr tt))) = tt*
+CatWf .Wf.wfEqnRhs (inl (inr tt)) = tt*
+CatWf .Wf.wfEqnRhs (inr tt) =
+  (λ _ → obFord)
+  , λ { true → tt*
+      ; false → (λ _ → obFord) , (λ { true → tt* ; false → tt* }) }

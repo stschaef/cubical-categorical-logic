@@ -91,9 +91,20 @@ module RawTerms (Sy : Type ℓS) (idx : Sy → Type ℓI)
     : Srt V → Type (ℓ-max (ℓ-max (ℓ-max ℓS ℓO) ℓI) ℓA) where
     ivar : (v : V) → Tm Θ I as (Θ v)
     avar : (i : I) → Tm Θ I as (as i)
+    -- The argument sorts and the result sort are FORDED: they are taken
+    -- freely, together with proofs that they are the sorts the
+    -- operation demands.  Without this a term could not be written at
+    -- all, because the spine a node computes (`λ i → ρ (sp i)`) is
+    -- never syntactically the spine one writes -- see the header.
+    -- Bridging that with `subst` instead would make the term a
+    -- `transp` rather than a constructor, and everything defined by
+    -- recursion on terms (`wfTm`, `eval`) would get stuck on it.
     app : (o : Op) (ρ : opVar o → V)
-      → ((j : opIx o) → Tm Θ I as (opArgS o j ⟨ ρ ⟩))
-      → Tm Θ I as (opRes o ⟨ ρ ⟩)
+      (Bs : opIx o → Srt V)
+      (pB : (j : opIx o) → Bs j Eq.≡ opArgS o j ⟨ ρ ⟩)
+      (A : Srt V) (pA : A Eq.≡ opRes o ⟨ ρ ⟩)
+      → ((j : opIx o) → Tm Θ I as (Bs j))
+      → Tm Θ I as A
 
 -- ------------------------------------------------------------------
 -- Signatures as telescopes of declarations
@@ -263,6 +274,10 @@ module _ {ℓI ℓA : Level} {Γ : Sig {ℓI} {ℓA}} where
 
 module _ {ℓI ℓA : Level} where
 
+  wkSrt≡ : {Γ : Sig {ℓI} {ℓA}} {d : Decl Γ} {V : Type ℓI} {B C : Srt Γ V}
+    → B Eq.≡ C → wkSrt {Γ = Γ} {d = d} B Eq.≡ wkSrt {Γ = Γ} {d = d} C
+  wkSrt≡ Eq.refl = Eq.refl
+
   wkOp : {Γ : Sig {ℓI} {ℓA}} {d : Decl Γ} → OpSym Γ → OpSym (Γ ▹ d)
   wkOp {d = sortD _ _} o = o
   wkOp {d = opD _ _ _ _ _} o = inl o
@@ -273,20 +288,32 @@ module _ {ℓI ℓA : Level} where
   -- symbol only reduce once the declaration is known.
   wkApp : {Γ : Sig {ℓI} {ℓA}} {d : Decl Γ} {V : Type ℓI} {Θ : Tel Γ V}
     {I : Type ℓA} {as : I → Srt Γ V} (o : OpSym Γ)
-    (ρ : opVar {Γ = Γ} o → V)
+    (ρ : opVar {Γ = Γ} o → V) (Bs : opIx {Γ = Γ} o → Srt Γ V)
+    (pB : (j : opIx {Γ = Γ} o)
+        → Bs j Eq.≡ (opArgS {Γ = Γ} o j .fst
+                    , λ i → ρ (opArgS {Γ = Γ} o j .snd i)))
+    (A : Srt Γ V)
+    (pA : A Eq.≡ (opRes {Γ = Γ} o .fst , λ i → ρ (opRes {Γ = Γ} o .snd i)))
     → ((j : opIx {Γ = Γ} o) → Term (Γ ▹ d) (wkTel {Γ = Γ} {d = d} Θ) I
         (λ j' → wkSrt {Γ = Γ} {d = d} (as j'))
-        (wkSrt {Γ = Γ} {d = d}
-          (opArgS {Γ = Γ} o j .fst , λ i → ρ (opArgS {Γ = Γ} o j .snd i))))
+        (wkSrt {Γ = Γ} {d = d} (Bs j)))
     → Term (Γ ▹ d) (wkTel {Γ = Γ} {d = d} Θ) I
         (λ j' → wkSrt {Γ = Γ} {d = d} (as j'))
-        (wkSrt {Γ = Γ} {d = d}
-          (opRes {Γ = Γ} o .fst , λ i → ρ (opRes {Γ = Γ} o .snd i)))
-  wkApp {Γ} {d = sortD V Θ'} o ρ ts = app o ρ ts
+        (wkSrt {Γ = Γ} {d = d} A)
+  wkApp {Γ} {d = d@(sortD V Θ')} o ρ Bs pB A pA ts =
+    app o ρ (λ j → wkSrt {Γ = Γ} {d = d} (Bs j))
+      (λ j → wkSrt≡ {Γ = Γ} {d = d} (pB j))
+      (wkSrt {Γ = Γ} {d = d} A) (wkSrt≡ {Γ = Γ} {d = d} pA) ts
     where open TermsOf (Γ ▹ sortD V Θ')
-  wkApp {Γ} {d = opD V Θ' I' as' r'} o ρ ts = app (inl o) ρ ts
+  wkApp {Γ} {d = d@(opD V Θ' I' as' r')} o ρ Bs pB A pA ts =
+    app (inl o) ρ (λ j → wkSrt {Γ = Γ} {d = d} (Bs j))
+      (λ j → wkSrt≡ {Γ = Γ} {d = d} (pB j))
+      (wkSrt {Γ = Γ} {d = d} A) (wkSrt≡ {Γ = Γ} {d = d} pA) ts
     where open TermsOf (Γ ▹ opD V Θ' I' as' r')
-  wkApp {Γ} {d = eqnD V Θ' I' as' r' t' u'} o ρ ts = app o ρ ts
+  wkApp {Γ} {d = d@(eqnD V Θ' I' as' r' t' u')} o ρ Bs pB A pA ts =
+    app o ρ (λ j → wkSrt {Γ = Γ} {d = d} (Bs j))
+      (λ j → wkSrt≡ {Γ = Γ} {d = d} (pB j))
+      (wkSrt {Γ = Γ} {d = d} A) (wkSrt≡ {Γ = Γ} {d = d} pA) ts
     where open TermsOf (Γ ▹ eqnD V Θ' I' as' r' t' u')
 
   module _ {Γ : Sig {ℓI} {ℓA}} {d : Decl Γ} where
@@ -300,7 +327,8 @@ module _ {ℓI ℓA : Level} where
           (λ j → wkSrt {Γ = Γ} {d = d} (as j)) (wkSrt {Γ = Γ} {d = d} A)
     wkTm (S.ivar v) = T.ivar v
     wkTm (S.avar i) = T.avar i
-    wkTm (S.app o ρ ts) = wkApp {Γ = Γ} {d = d} o ρ (λ j → wkTm (ts j))
+    wkTm (S.app o ρ Bs pB A pA ts) =
+      wkApp {Γ = Γ} {d = d} o ρ Bs pB A pA (λ j → wkTm (ts j))
 
 module _ {ℓI ℓA : Level} where
 
@@ -386,7 +414,7 @@ module _ {ℓI ℓA : Level} {Γ : Sig {ℓI} {ℓA}} where
     {A : Srt Γ V} → Term Γ Θ I as A → Type (ℓ-max ℓI ℓA)
   wfTm Θ (S.ivar v) = Unit*
   wfTm Θ (S.avar i) = Unit*
-  wfTm Θ (S.app o ρ ts) = wfRen {Γ = Γ} Θ (opTel {Γ = Γ} o) ρ
+  wfTm Θ (S.app o ρ Bs pB A pA ts) = wfRen {Γ = Γ} Θ (opTel {Γ = Γ} o) ρ
     × ((j : opIx {Γ = Γ} o) → wfTm Θ (ts j))
 
   -- Reindexing, spelled out so that later files can compute with it.

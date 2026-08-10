@@ -468,13 +468,13 @@ module _ {ℓI ℓA : Level} (Γ : Sig {ℓI} {ℓA}) where
         γ v , reC X pr Θ (w v) wA γ (γ v) (cγ v)
       eval Θ w was γ cγ x cx wA (S.avar j) wt =
         x j , reC X pr Θ (was j) wA γ (x j) (cx j)
-      eval Θ w was γ cγ x cx wA (S.app o ρ ts) (wρ , wts) =
-        α o γ' cγ' vals cvals
-        , reC X pr Θ
+      eval Θ w was γ cγ x cx wA (S.app o ρ Bs pB A pA ts) (wρ , wts) =
+        coeS X (Eq.sym pA) res
+        , coeC X pr Θ (Eq.sym pA)
             (wfSrt⟨⟩ {Γ = Γ} {Θ = Θ} {Ξ = OT o} {A = opRes {Γ = Γ} o}
               ρ wρ (wf .wfOpRes o))
-            wA γ _
-            (transC→ X pr ρ wρ {A = opRes {Γ = Γ} o} (wf .wfOpRes o) γ _
+            wA γ res
+            (transC→ X pr ρ wρ {A = opRes {Γ = Γ} o} (wf .wfOpRes o) γ res
               (typed o γ' cγ' vals cvals))
         where
         γ' : (v : opVar {Γ = Γ} o) → Car X (OT o v .fst)
@@ -487,19 +487,30 @@ module _ {ℓI ℓA : Level} (Γ : Sig {ℓI} {ℓA}) where
               ρ wρ (wf .wfOpTel o v))
             γ (γ (ρ v)) (cγ (ρ v)))
 
+        -- the well-formedness of the forded argument sort, obtained by
+        -- moving the canonical one back along the ford
+        wBs : (j : opIx {Γ = Γ} o) → wfSrt {Γ = Γ} Θ (Bs j)
+        wBs j = Eq.transport (λ B → wfSrt {Γ = Γ} Θ B) (Eq.sym (pB j))
+          (wfSrt⟨⟩ {Γ = Γ} {Θ = Θ} {Ξ = OT o} {A = opArgS {Γ = Γ} o j}
+            ρ wρ (wf .wfOpArg o j))
+
         rec : (j : opIx {Γ = Γ} o)
-          → Σ[ a ∈ Car X (opArgS {Γ = Γ} o j .fst) ]
-              SrtC X pr Θ (reSrt {Γ = Γ} ρ (opArgS {Γ = Γ} o j))
-                (wfSrt⟨⟩ {Γ = Γ} {Θ = Θ} {Ξ = OT o}
-                  {A = opArgS {Γ = Γ} o j} ρ wρ (wf .wfOpArg o j)) γ a
-        rec j = eval Θ w was γ cγ x cx _ (ts j) (wts j)
+          → Σ[ a ∈ Car X (Bs j .fst) ] SrtC X pr Θ (Bs j) (wBs j) γ a
+        rec j = eval Θ w was γ cγ x cx (wBs j) (ts j) (wts j)
 
         vals : (j : opIx {Γ = Γ} o) → Car X (opArgS {Γ = Γ} o j .fst)
-        vals j = rec j .fst
+        vals j = coeS X (pB j) (rec j .fst)
 
         cvals : ArgsC X pr o γ' vals
         cvals j = transC← X pr ρ wρ {A = opArgS {Γ = Γ} o j}
-          (wf .wfOpArg o j) γ (vals j) (rec j .snd)
+          (wf .wfOpArg o j) γ (vals j)
+          (coeC X pr Θ (pB j) (wBs j)
+            (wfSrt⟨⟩ {Γ = Γ} {Θ = Θ} {Ξ = OT o} {A = opArgS {Γ = Γ} o j}
+              ρ wρ (wf .wfOpArg o j))
+            γ (rec j .fst) (rec j .snd))
+
+        res : Car X (opRes {Γ = Γ} o .fst)
+        res = α o γ' cγ' vals cvals
 
     -- --------------------------------------------------------------
     -- The layer of equations
