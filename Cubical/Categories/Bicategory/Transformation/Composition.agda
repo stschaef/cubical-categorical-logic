@@ -160,21 +160,6 @@ module _ (C : Bicategory ℓc ℓc' ℓc'') where
       ≡ (e C.◁w p) C.⋆₂ (e C.◁w q) C.⋆₂ (e C.◁w r)
   ◁3 e p q r = ◁wSeq C e p _ ∙ C.⟨⟩⋆₂⟨ ◁wSeq C e q r ⟩
 
-  -- The inverse right unitor is compatible with 1-cell composition.
-  ρ⁻⋆₁ : {x y z : C.0Cell} (p : C.1Cell x y) (q : C.1Cell y z)
-    →   (p C.◁w C.ρ⁻ q) C.⋆₂ C.α⁻ p q C.id₁
-      ≡ C.ρ⁻ (p C.⋆₁ q)
-  ρ⁻⋆₁ p q = ⋆CancelR (ρI (p C.⋆₁ q))
-    ( C.⋆₂Assoc _ _ _
-    ∙ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ sym (ρ⋆₁ C q p) ⟩ ⟩
-    ∙ C.⟨⟩⋆₂⟨ sym (C.⋆₂Assoc _ _ _) ⟩
-    ∙ C.⟨⟩⋆₂⟨ C.⟨ αI p q C.id₁ .snd .sec ⟩⋆₂⟨⟩ ⟩
-    ∙ C.⟨⟩⋆₂⟨ C.⋆₂IdL _ ⟩
-    ∙ sym (◁wSeq C p _ _)
-    ∙ p C.◁⟨ ρI q .snd .sec ⟩
-    ∙ C.◁wId p
-    ∙ sym (ρI (p C.⋆₁ q) .snd .sec))
-
   -- Rearrangements of the pentagon axiom.
   module _ {x y z w v : C.0Cell}
     (p : C.1Cell x y) (q : C.1Cell y z)
@@ -312,7 +297,7 @@ module _ {B : Bicategory ℓb ℓb' ℓb''} {C : Bicategory ℓc ℓc' ℓc''}
         ∙ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ pushn C (C.triangle _ _ _ a b) _ ⟩ ⟩
         ∙ C.⟨⟩⋆₂⟨ pushn C e7 _ ∙ C.⋆₂IdL _ ⟩
         ∙ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ α⁻natR C a b H.F⁰ ⟩ ⟩
-        ∙ C.⟨⟩⋆₂⟨ pushn C (ρ⁻⋆₁ C a b) _ ⟩
+        ∙ C.⟨⟩⋆₂⟨ pushn C (sym (ρ⁻⋆₁ C a b)) _ ⟩
         where
         a = σ.N-1cell x
         b = τ.N-1cell x

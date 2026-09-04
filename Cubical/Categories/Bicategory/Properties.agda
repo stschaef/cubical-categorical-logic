@@ -203,3 +203,40 @@ module _ (B : Bicategory ℓ ℓ' ℓ'') where
     (  B.λU x x .nIso (tt* , B.id₁) .ret
      ∙ sym (B.ρU x x .nIso (B.id₁ , tt*) .ret)
      ∙ B.⟨ sym λ⁺≡ρ⁺ ⟩⋆₂⟨⟩)
+
+  -- Unitor/associator coherences.  Each of these had been reproved
+  -- privately in two or more downstream files.
+  α⁻ρ▷ : {x y z : B.0Cell} (a : B.1Cell x y) (b : B.1Cell y z)
+    → B.α⁻ a B.id₁ b B.⋆₂ (B.ρ⁺ a B.▷w b) ≡ a B.◁w B.λ⁺ b
+  α⁻ρ▷ {x} {y} {z} a b =
+      B.⟨⟩⋆₂⟨ sym (B.triangle x y z a b) ⟩
+    ∙ sym (B.⋆₂Assoc _ _ _)
+    ∙ B.⟨ B.α x y y z .nIso (a , B.id₁ , b) .sec ⟩⋆₂⟨⟩
+    ∙ B.⋆₂IdL _
+
+  α⁻ρ◁ : {x y z : B.0Cell} (a : B.1Cell x y) (b : B.1Cell y z)
+    → B.α⁻ a b B.id₁ B.⋆₂ B.ρ⁺ (a B.⋆₁ b) ≡ a B.◁w B.ρ⁺ b
+  α⁻ρ◁ {x} {y} {z} a b =
+      B.⟨⟩⋆₂⟨ sym (ρ⋆₁ b a) ⟩
+    ∙ sym (B.⋆₂Assoc _ _ _)
+    ∙ B.⟨ B.α x y z z .nIso (a , b , B.id₁) .sec ⟩⋆₂⟨⟩
+    ∙ B.⋆₂IdL _
+
+  ρ⁻◁ : {u v w : B.0Cell} (f : B.1Cell u v) (g : B.1Cell v w)
+    → (f B.◁w B.ρ⁻ g) ≡ B.ρ⁻ (f B.⋆₁ g) B.⋆₂ B.α⁺ f g B.id₁
+  ρ⁻◁ {u} {v} {w} f g =
+    ⋆InvLMove (_ , B.ρU u w .nIso (f B.⋆₁ g , tt*))
+      ( B.⟨ sym (ρ⋆₁ g f) ⟩⋆₂⟨⟩
+      ∙ B.⋆₂Assoc _ _ _
+      ∙ B.⟨⟩⋆₂⟨ sym (◁wSeq B f (B.ρ⁺ g) (B.ρ⁻ g))
+              ∙ f B.◁⟨ B.ρU v w .nIso (g , tt*) .ret ⟩
+              ∙ B.◁wId f ⟩
+      ∙ B.⋆₂IdR _)
+
+  ρ⁻⋆₁ : {u v w : B.0Cell} (f : B.1Cell u v) (g : B.1Cell v w)
+    → B.ρ⁻ (f B.⋆₁ g) ≡ (f B.◁w B.ρ⁻ g) B.⋆₂ B.α⁻ f g B.id₁
+  ρ⁻⋆₁ {u} {v} {w} f g =
+    sym ( B.⟨ ρ⁻◁ f g ⟩⋆₂⟨⟩
+        ∙ B.⋆₂Assoc _ _ _
+        ∙ B.⟨⟩⋆₂⟨ B.α u v w w .nIso (f , g , B.id₁) .ret ⟩
+        ∙ B.⋆₂IdR _)

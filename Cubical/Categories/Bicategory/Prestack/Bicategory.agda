@@ -60,22 +60,6 @@ module _ (B : Bicategory ℓ ℓ' ℓ'') (ℓp ℓp' : Level) where
     isoα⁺ p q r = C.α _ _ _ _ .nIso (p , q , r)
 
     -- triangle, read with the associator on the other side
-    α⁻ρ▷ : {x y z : C.0Cell} (a : C.1Cell x y) (b : C.1Cell y z)
-      → C.α⁻ a C.id₁ b C.⋆₂ (C.ρ⁺ a C.▷w b) ≡ a C.◁w C.λ⁺ b
-    α⁻ρ▷ {x} {y} {z} a b =
-        C.⟨⟩⋆₂⟨ sym (C.triangle x y z a b) ⟩
-      ∙ sym (C.⋆₂Assoc _ _ _)
-      ∙ C.⟨ C.α x y y z .nIso (a , C.id₁ , b) .sec ⟩⋆₂⟨⟩
-      ∙ C.⋆₂IdL _
-
-    α⁻ρ◁ : {x y z : C.0Cell} (a : C.1Cell x y) (b : C.1Cell y z)
-      → C.α⁻ a b C.id₁ C.⋆₂ C.ρ⁺ (a C.⋆₁ b) ≡ a C.◁w C.ρ⁺ b
-    α⁻ρ◁ {x} {y} {z} a b =
-        C.⟨⟩⋆₂⟨ sym (ρ⋆₁ C b a) ⟩
-      ∙ sym (C.⋆₂Assoc _ _ _)
-      ∙ C.⟨ C.α x y z z .nIso (a , b , C.id₁) .sec ⟩⋆₂⟨⟩
-      ∙ C.⋆₂IdL _
-
     ▷5 : {x y z : C.0Cell} {f₀ f₁ f₂ f₃ f₄ f₅ : C.1Cell x y}
       (p : C.2Cell f₀ f₁) (q : C.2Cell f₁ f₂) (r : C.2Cell f₂ f₃)
       (s : C.2Cell f₃ f₄) (u : C.2Cell f₄ f₅) (h : C.1Cell y z)
@@ -142,7 +126,7 @@ module _ (B : Bicategory ℓ ℓ' ℓ'') (ℓp ℓp' : Level) where
           aR5 C _ _ _ _ _ _
         ∙ C.⟨⟩⋆₂⟨ C.⟨ ▷wSeq C (C.ρ⁺ Pf) (C.λ⁻ Pf) Ay ⟩⋆₂⟨⟩
                 ∙ aR2 C _ _ _ ⟩
-        ∙ pushn C (α⁻ρ▷ Pf Ay) _
+        ∙ pushn C (α⁻ρ▷ C Pf Ay) _
         ∙ C.⟨⟩⋆₂⟨ pushn C (λ⁻⋆₁ C Pf Ay) _ ⟩
         ∙ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ λ⋆₁ C Ax Qf ⟩ ⟩ ⟩
         ∙ C.⟨⟩⋆₂⟨ pushr C (sym (λ⁻-nat C N)) _
@@ -197,13 +181,13 @@ module _ (B : Bicategory ℓ ℓ' ℓ'') (ℓp ℓp' : Level) where
             ∙ aR2 C _ _ _ ⟩ ⟩ ⟩
         ∙ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ pushn C (ρ⋆₁ C Qf Ax) _ ⟩ ⟩
         ∙ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨
-            C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ α⁻ρ▷ Ax Qf ⟩
+            C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ α⁻ρ▷ C Ax Qf ⟩
                   ∙ sym (◁wSeq C Ax (C.λ⁻ Qf) (C.λ⁺ Qf))
                   ∙ Ax C.◁⟨ C.λU _ _ .nIso (tt* , Qf) .sec ⟩
                   ∙ C.◁wId Ax ⟩
             ∙ C.⋆₂IdR _ ⟩ ⟩
         ∙ C.⟨⟩⋆₂⟨ ρ-nat C N ⟩
-        ∙ pushn C (α⁻ρ◁ Pf Ay) _
+        ∙ pushn C (α⁻ρ◁ C Pf Ay) _
         where
         Pf = Pl.F-1cell f
         Qf = Ql.F-1cell f

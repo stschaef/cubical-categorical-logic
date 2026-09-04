@@ -308,22 +308,6 @@ module _ {B : Bicategory ℓ ℓ' ℓ''} (P : Prestack B ℓ' ℓ'') where
       module Ha = Pseudofunctor (Hom B a)
 
       -- The mate of `ρ⋆₁`: ρ⁻ splits along the associator.
-      ρ⁻⋆₁ : {x y : B.0Cell} (h : B.1Cell x a) (k : B.1Cell y x)
-        → B.ρ⁻ (k B.⋆₁ h) ≡ (k B.◁w B.ρ⁻ h) B.⋆₂ B.α⁻ k h B.id₁
-      ρ⁻⋆₁ {x} {y} h k =
-        ⋆CancelL {C = B.Hom[ y , a ]}
-          (B.ρ⁺ (k B.⋆₁ h) , B.ρU y a .nIso (k B.⋆₁ h , tt*))
-          ( B.ρU y a .nIso (k B.⋆₁ h , tt*) .ret
-          ∙ sym ( B.⟨ sym (ρ⋆₁ B h k) ⟩⋆₂⟨⟩
-                ∙ B.⋆₂Assoc _ _ _
-                ∙ B.⟨⟩⋆₂⟨ sym (B.⋆₂Assoc _ _ _)
-                        ∙ B.⟨ sym (◁wSeq B k (B.ρ⁺ h) (B.ρ⁻ h))
-                            ∙ k B.◁⟨ B.ρU x a .nIso (h , tt*) .ret ⟩
-                            ∙ B.◁wId k ⟩⋆₂⟨⟩
-                        ∙ B.⋆₂IdL _ ⟩
-                ∙ B.α y x a a .nIso (k , h , B.id₁) .ret))
-
-      -- A modification's cylinder, read off at id₁.
       MH : {β γ : PrestackPseudoHom (Hom B a) P}
         (Γ : Modification (β .fst) (γ .fst))
         {x : B.0Cell} (h : B.1Cell x a)
@@ -375,7 +359,7 @@ module _ {B : Bicategory ℓ ℓ' ℓ''} (P : Prestack B ℓ' ℓ'') where
             ≡   β .fst .N-hom k .N-ob h
                 ⋆⟨ P⟨ y ⟩ ⟩ reind k .F-hom (Θ x .N-ob h)
         star {x} {y} h k =
-            Pᶜ.⟨ Pᶜ.⟨ cong (β .fst .N-1cell y .F-hom) (ρ⁻⋆₁ h k)
+            Pᶜ.⟨ Pᶜ.⟨ cong (β .fst .N-1cell y .F-hom) (ρ⁻⋆₁ B k h)
                     ∙ β .fst .N-1cell y .F-seq _ _ ⟩⋆⟨⟩ ⟩⋆⟨⟩
           ∙ Pᶜ.⟨ Pᶜ.⋆Assoc _ _ _ ⟩⋆⟨⟩
           ∙ Pᶜ.⟨ Pᶜ.⟨⟩⋆⟨ LS h k ⟩ ⟩⋆⟨⟩
