@@ -11,6 +11,7 @@ open import Cubical.Data.Unit
 open import Cubical.Categories.Category
 open import Cubical.Categories.Functor
 open import Cubical.Categories.Isomorphism
+open import Cubical.Categories.Isomorphism.More
 open import Cubical.Categories.NaturalTransformation
 open import Cubical.Categories.NaturalTransformation.More hiding (α)
 open import Cubical.Categories.Instances.BinProduct
@@ -52,6 +53,19 @@ module _ (B : Bicategory ℓ ℓ' ℓ'') where
   λ-nat {x} {z} {m} {n} u =
       B.⟨ B.⟨ sym (B.id {x} .F-id) ⟩⋆ₕ⟨⟩ ⟩⋆₂⟨⟩
     ∙ B.λU x z .trans .N-hom (refl , u)
+
+  -- Naturality of the left unitor's inverse.
+  λ⁻-nat : {x z : B.0Cell} {m n : B.1Cell x z} (u : B.2Cell m n)
+    → u B.⋆₂ B.λ⁻ n ≡ B.λ⁻ m B.⋆₂ (B.id₁ B.◁w u)
+  λ⁻-nat {x} {z} {m} {n} u =
+    ⋆InvsFlipSq (NatIsoAt (B.λU x z) (tt* , m))
+                (NatIsoAt (B.λU x z) (tt* , n))
+                (sym (λ-nat u))
+
+  -- Left-whiskering λ⁺ by id₁ is λ⁺ at the composite with id₁.
+  ◁λ⁺ : {x z : B.0Cell} (f : B.1Cell x z)
+    → B.id₁ B.◁w B.λ⁺ f ≡ B.λ⁺ (B.id₁ B.⋆₁ f)
+  ◁λ⁺ {x} {z} f = ⋆CancelR (NatIsoAt (B.λU x z) (tt* , f)) (λ-nat (B.λ⁺ f))
 
   -- A 2-cell is recoverable from its left-whiskering by id₁ …
   ◁id₁-reduce : {x z : B.0Cell} {m n : B.1Cell x z} (u : B.2Cell m n)
@@ -150,3 +164,42 @@ module _ (B : Bicategory ℓ ℓ' ℓ'') where
   ◁wIsIso f isI .inv = f B.◁w isI .inv
   ◁wIsIso f isI .sec = sym (◁wSeq B f _ _) ∙ f B.◁⟨ isI .sec ⟩ ∙ B.◁wId f
   ◁wIsIso f isI .ret = sym (◁wSeq B f _ _) ∙ f B.◁⟨ isI .ret ⟩ ∙ B.◁wId f
+
+  -- Naturality of the right unitor, dual to λ-nat.
+  ρ-nat : {x z : B.0Cell} {m n : B.1Cell x z} (u : B.2Cell m n)
+    → (u B.▷w B.id₁) B.⋆₂ B.ρ⁺ n ≡ B.ρ⁺ m B.⋆₂ u
+  ρ-nat {x} {z} u = λ-nat (B ^opᴮ) {z} {x} u
+
+  -- Right-whiskering by id₁ is faithful, dual to ◁id₁-faithful.
+  ▷id₁-faithful : {x z : B.0Cell} {m n : B.1Cell x z} (u v : B.2Cell m n)
+    → (u B.▷w B.id₁) ≡ (v B.▷w B.id₁) → u ≡ v
+  ▷id₁-faithful {x} {z} = ◁id₁-faithful (B ^opᴮ) {z} {x}
+
+  -- λ⋆₁ read on inverses.
+  λ⁻⋆₁ : {x y z : B.0Cell} (f : B.1Cell x y) (g : B.1Cell y z)
+    → (B.λ⁻ f B.▷w g) B.⋆₂ B.α⁺ B.id₁ f g ≡ B.λ⁻ (f B.⋆₁ g)
+  λ⁻⋆₁ {x} {y} {z} f g =
+    ⋆CancelL (NatIsoAt (B.λU x z) (tt* , f B.⋆₁ g))
+      (  B.⟨ sym (λ⋆₁ B f g) ⟩⋆₂⟨⟩
+       ∙ B.⋆₂Assoc _ _ _
+       ∙ B.⟨⟩⋆₂⟨ sym (B.⋆₂Assoc _ _ _) ⟩
+       ∙ B.⟨⟩⋆₂⟨ B.⟨ ▷wIsIso g (B.λU x y .nIso (tt* , f)) .ret ⟩⋆₂⟨⟩ ⟩
+       ∙ B.⟨⟩⋆₂⟨ B.⋆₂IdL _ ⟩
+       ∙ B.α x x y z .nIso (B.id₁ , f , g) .sec
+       ∙ sym (B.λU x z .nIso (tt* , f B.⋆₁ g) .ret))
+
+  -- Kelly: the two unitors agree at an identity 1-cell.
+  λ⁺≡ρ⁺ : {x : B.0Cell} → B.λ⁺ (B.id₁ {x}) ≡ B.ρ⁺ (B.id₁ {x})
+  λ⁺≡ρ⁺ {x} = ▷id₁-faithful _ _
+    (  sym (B.⋆₂IdL _)
+     ∙ B.⟨ sym (B.α x x x x .nIso (B.id₁ , B.id₁ , B.id₁) .ret) ⟩⋆₂⟨⟩
+     ∙ B.⋆₂Assoc _ _ _
+     ∙ B.⟨⟩⋆₂⟨ λ⋆₁ B B.id₁ B.id₁ ⟩
+     ∙ B.⟨⟩⋆₂⟨ sym (◁λ⁺ B B.id₁) ⟩
+     ∙ B.triangle x x x B.id₁ B.id₁)
+
+  λ⁻≡ρ⁻ : {x : B.0Cell} → B.λ⁻ (B.id₁ {x}) ≡ B.ρ⁻ (B.id₁ {x})
+  λ⁻≡ρ⁻ {x} = ⋆CancelL (NatIsoAt (B.λU x x) (tt* , B.id₁))
+    (  B.λU x x .nIso (tt* , B.id₁) .ret
+     ∙ sym (B.ρU x x .nIso (B.id₁ , tt*) .ret)
+     ∙ B.⟨ sym λ⁺≡ρ⁺ ⟩⋆₂⟨⟩)

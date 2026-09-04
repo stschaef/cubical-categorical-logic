@@ -37,6 +37,13 @@ module _ {B : Bicategory ℓb ℓb' ℓb''} {C : Bicategory ℓc ℓc' ℓc''}
     module F = LaxFunctor F
     module G = LaxFunctor G
 
+  -- Pseudonaturality: the naturality cell is invertible.  This is what
+  -- makes componentwise equivalence imply invertibility.
+  isPseudoNatTrans : LaxNatTrans F G → Type (ℓ-max ℓb (ℓ-max ℓb' ℓc''))
+  isPseudoNatTrans α = {x y : B.ob} (f : B.1Cell x y)
+    → Cubical.Categories.Category.isIso
+        C.Hom[ F.F-ob x , G.F-ob y ] (α .N-hom f)
+
   makeModificationPath : {α β : LaxNatTrans F G} {Γ Δ : Modification α β}
     → ((x : B.0Cell) → Γ .M-ob x ≡ Δ .M-ob x)
     → Γ ≡ Δ

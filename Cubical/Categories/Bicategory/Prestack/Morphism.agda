@@ -40,11 +40,8 @@ module _ {B : Bicategory ℓ ℓ' ℓ''} where
       module P = PrestackNotation P
       module Q = PrestackNotation Q
 
-    -- Componentwise equivalence only implies invertibility of a
-    -- transformation when its naturality cell is invertible.
-    isPseudoNat : PrestackHom P Q → Type (ℓ-max ℓ (ℓ-max ℓ' (ℓ-max ℓp ℓp')))
-    isPseudoNat α = {x y : B.0Cell} (k : B.1Cell y x)
-      → isIso (FUNCTOR P.P⟨ x ⟩ Q.P⟨ y ⟩) (α .N-hom k)
+    isPseudoNat : PrestackHom P Q → Type _
+    isPseudoNat = isPseudoNatTrans
 
     PrestackPseudoHom : Type (ℓ-max (ℓ-max ℓ (ℓ-max ℓ' ℓ''))
                                     (ℓ-suc (ℓ-max ℓp ℓp')))

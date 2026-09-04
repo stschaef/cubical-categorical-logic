@@ -76,3 +76,14 @@ module _ {C : Category ℓC ℓC'} where
   c ∎CatIso = idCatIso
 
   infix   3 _∎CatIso
+
+module _ {C : Category ℓC ℓC'} where
+  ⋆IsIso : {x y z : C .ob} {f : C [ x , y ]} {g : C [ y , z ]}
+    → Cubical.Categories.Category.isIso C f
+    → Cubical.Categories.Category.isIso C g
+    → Cubical.Categories.Category.isIso C (f ⋆⟨ C ⟩ g)
+  ⋆IsIso p q = ⋆Iso (_ , p) (_ , q) .snd
+
+  idIsIso : {x : C .ob}
+    → Cubical.Categories.Category.isIso C (C .Category.id {x})
+  idIsIso = idCatIso .snd
