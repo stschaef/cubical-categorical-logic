@@ -299,3 +299,10 @@ module _
     -- K'' K'
     $ (λ x → η  ⟦ F' ⟅ F ⟅ x ⟆ ⟆ ⟧ C'.⋆ K'' ⟪ α ⟦ F ⟅ x ⟆ ⟧ ⟫ C'.⋆ K'' ⟪ K' ⟪ ε ⟦ x ⟧ ⟫ ⟫)
     , funExt λ x → C'.⟨ C'.⋆IdL _ ⟩⋆⟨ C'.⋆IdL _ ∙ cong K''.F-hom (E'.⋆IdL _ ∙ E'.⟨ refl ⟩⋆⟨ E'.⋆IdL _ ∙ E'.⋆IdR _ ⟩) ∙ K''.F-seq _ _ ⟩
+
+-- Component of a path of natural transformations: the eliminator
+-- matching `makeNatTransPath`.
+module _ {C : Category ℓC ℓC'} {D : Category ℓD ℓD'} {F G : Functor C D}
+  {α β : NatTrans F G} where
+  N-obPath : α ≡ β → (c : C .Category.ob) → α .N-ob c ≡ β .N-ob c
+  N-obPath p c = cong (λ γ → γ .N-ob c) p

@@ -93,3 +93,19 @@ open NatTrans
 
 ,F-natural : (F ,F G) ∘F H ≡ (F ∘F H ,F G ∘F H)
 ,F-natural = Functor≡ (λ _ → refl) (λ _ → refl)
+
+open isIso
+module _ {C : Category ℓC ℓC'} {D : Category ℓD ℓD'} where
+  CatIsoFst : {x y : C .ob} {x' y' : D .ob}
+    → CatIso (C ×C D) (x , x') (y , y') → CatIso C x y
+  CatIsoFst φ .fst = φ .fst .fst
+  CatIsoFst φ .snd .inv = φ .snd .inv .fst
+  CatIsoFst φ .snd .sec = cong fst (φ .snd .sec)
+  CatIsoFst φ .snd .ret = cong fst (φ .snd .ret)
+
+  CatIsoSnd : {x y : C .ob} {x' y' : D .ob}
+    → CatIso (C ×C D) (x , x') (y , y') → CatIso D x' y'
+  CatIsoSnd φ .fst = φ .fst .snd
+  CatIsoSnd φ .snd .inv = φ .snd .inv .snd
+  CatIsoSnd φ .snd .sec = cong snd (φ .snd .sec)
+  CatIsoSnd φ .snd .ret = cong snd (φ .snd .ret)
