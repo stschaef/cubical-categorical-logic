@@ -204,6 +204,38 @@ module _ (C : Bicategory ℓ ℓ' ℓ'') where
   LaxFunctorIsoMonad .Iso.sec = fromLaxFunctor∘toLaxFunctor
   LaxFunctorIsoMonad .Iso.ret = toLaxFunctor∘fromLaxFunctor
 
+{- Notation for a formal monad: the whiskered unit and multiplication
+   that its laws are stated in. -}
+module MonadNotation {C : Bicategory ℓ ℓ' ℓ''} (M : Monad C) where
+  private
+    module C = Bicategory C
+  open Monad M public
+
+  t² : C.1Cell a a
+  t² = t C.⋆₁ t
+
+  ηt : C.2Cell (C.id₁ C.⋆₁ t) t²
+  ηt = η C.▷w t
+
+  tη : C.2Cell (t C.⋆₁ C.id₁) t²
+  tη = t C.◁w η
+
+  μt : C.2Cell (t² C.⋆₁ t) t²
+  μt = μ C.▷w t
+
+  tμ : C.2Cell (t C.⋆₁ t²) t²
+  tμ = t C.◁w μ
+
+  -- The laws, in that notation.
+  idL' : (ηt C.⋆₂ μ) ≡ C.λ⁺ t
+  idL' = idL
+
+  idR' : (tη C.⋆₂ μ) ≡ C.ρ⁺ t
+  idR' = idR
+
+  μAssoc' : (C.α⁺ t t t C.⋆₂ (tμ C.⋆₂ μ)) ≡ (μt C.⋆₂ μ)
+  μAssoc' = μAssoc
+
 -- `_^coᴮ` reverses the 2-cells, which is where a formal monad's unit
 -- and multiplication live, so it is the monad/comonad duality here.
 -- (For `TwoMonad`, whose unit and multiplication are 1-cells of
