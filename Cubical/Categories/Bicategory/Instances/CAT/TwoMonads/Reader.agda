@@ -19,6 +19,7 @@ module Cubical.Categories.Bicategory.Instances.CAT.TwoMonads.Reader where
 open import Cubical.Foundations.Prelude
 
 open import Cubical.Categories.Category
+open import Cubical.Categories.Category.More
 open import Cubical.Categories.Functor
 open import Cubical.Categories.NaturalTransformation
 open import Cubical.Categories.Instances.Functors
@@ -111,24 +112,6 @@ module _ {ℓ : Level} (A : Category ℓ ℓ) where
   ιSeq⁻ {E = E} F G .N-hom β =
     makeNatTransPath (funExt λ a → E .⋆IdR _ ∙ sym (E .⋆IdL _))
 
-  private
-    cong⋆ : (P : Category ℓ ℓ) {u v w : P .ob}
-      {a a' : P [ u , v ]} {b b' : P [ v , w ]}
-      → a ≡ a' → b ≡ b' → a ⋆⟨ P ⟩ b ≡ a' ⋆⟨ P ⟩ b'
-    cong⋆ P p q = cong₂ (λ m n → m ⋆⟨ P ⟩ n) p q
-
-    collapseL : (P : Category ℓ ℓ) {u v : P .ob}
-      {a : P [ u , u ]} {b : P [ u , v ]}
-      → a ≡ P .id → a ⋆⟨ P ⟩ b ≡ b
-    collapseL P {b = b} p = cong (λ m → m ⋆⟨ P ⟩ b) p ∙ P .⋆IdL b
-
-    collapse : (P : Category ℓ ℓ) {u : P .ob} {a b : P [ u , u ]}
-      → a ≡ P .id → b ≡ P .id → a ⋆⟨ P ⟩ b ≡ P .id
-    collapse P p q = cong₂ (λ m n → m ⋆⟨ P ⟩ n) p q ∙ P .⋆IdL (P .id)
-
-    four : (P : Category ℓ ℓ) {u : P .ob}
-      → (P .id {u} ⋆⟨ P ⟩ P .id) ⋆⟨ P ⟩ (P .id ⋆⟨ P ⟩ P .id) ≡ P .id
-    four P = collapse P (P .⋆IdL (P .id)) (P .⋆IdL (P .id))
 
   RdLax : LaxFunctor (CAT {ℓ} {ℓ}) (CAT {ℓ} {ℓ})
   RdLax .LaxFunctor.F-ob C = FUNCTOR A C
@@ -213,18 +196,6 @@ module _ {ℓ : Level} (A : Category ℓ ℓ) where
                 (collapse E refl (collapse E pd
                   (collapse E refl pe)))))))
 
-  private
-    exch : (P : Category ℓ ℓ) {u v v' t t' s : P .ob}
-      (w : P [ u , v ]) {x : P [ v , v' ]} {y : P [ v' , s ]}
-      {q : P [ v , t ]} {r : P [ t , s ]} (z : P [ s , t' ])
-      → x ⋆⟨ P ⟩ y ≡ q ⋆⟨ P ⟩ r
-      → (w ⋆⟨ P ⟩ x) ⋆⟨ P ⟩ (y ⋆⟨ P ⟩ z)
-        ≡ (w ⋆⟨ P ⟩ q) ⋆⟨ P ⟩ (r ⋆⟨ P ⟩ z)
-    exch P w {x = x} {y = y} {q = q} {r = r} z n =
-        P .⋆Assoc w x _
-      ∙ cong (λ m → w ⋆⟨ P ⟩ m) (sym (P .⋆Assoc x y z)
-          ∙ cong (λ m → m ⋆⟨ P ⟩ z) n ∙ P .⋆Assoc q r z)
-      ∙ sym (P .⋆Assoc w q _)
 
   μF : (C : Category ℓ ℓ)
     → Functor (FUNCTOR A (FUNCTOR A C)) (FUNCTOR A C)

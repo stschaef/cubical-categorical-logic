@@ -16,6 +16,7 @@ open import Cubical.Data.Sigma
 open import Cubical.Data.Unit
 
 open import Cubical.Categories.Category
+open import Cubical.Categories.Category.More
 open import Cubical.Categories.Functor
 open import Cubical.Categories.NaturalTransformation
 open import Cubical.Categories.NaturalTransformation.Properties
@@ -88,32 +89,6 @@ module _ {ℓ ℓ' : Level} (M : MonoidalCategory ℓ ℓ') where
   ιSeq {C} {D} {E} F G .N-hom f =
     (M.C ×C E) .⋆IdR _ ∙ sym ((M.C ×C E) .⋆IdL _)
 
-  private
-    four : (P : Category ℓ ℓ') {u : P .ob}
-      → (P .id {u} ⋆⟨ P ⟩ P .id) ⋆⟨ P ⟩ (P .id ⋆⟨ P ⟩ P .id) ≡ P .id
-    four P = cong (λ m → m ⋆⟨ P ⟩ (P .id ⋆⟨ P ⟩ P .id)) (P .⋆IdL (P .id))
-           ∙ P .⋆IdL (P .id ⋆⟨ P ⟩ P .id) ∙ P .⋆IdL (P .id)
-
-    four' : (P : Category ℓ ℓ') {u : P .ob}
-      → P .id {u} ⋆⟨ P ⟩ ((P .id ⋆⟨ P ⟩ P .id) ⋆⟨ P ⟩ P .id) ≡ P .id
-    cong⋆ : (P : Category ℓ ℓ') {u v w : P .ob}
-      {a a' : P [ u , v ]} {b b' : P [ v , w ]}
-      → a ≡ a' → b ≡ b' → a ⋆⟨ P ⟩ b ≡ a' ⋆⟨ P ⟩ b'
-    cong⋆ P p q = cong₂ (λ m n → m ⋆⟨ P ⟩ n) p q
-
-    collapseL : (P : Category ℓ ℓ') {u v : P .ob}
-      {a : P [ u , u ]} {b : P [ u , v ]}
-      → a ≡ P .id → a ⋆⟨ P ⟩ b ≡ b
-    collapseL P {b = b} p =
-      cong (λ m → m ⋆⟨ P ⟩ b) p ∙ P .⋆IdL b
-
-    collapse : (P : Category ℓ ℓ') {u : P .ob} {a b : P [ u , u ]}
-      → a ≡ P .id → b ≡ P .id → a ⋆⟨ P ⟩ b ≡ P .id
-    collapse P p q = cong₂ (λ m n → m ⋆⟨ P ⟩ n) p q ∙ P .⋆IdL (P .id)
-
-    four' P = P .⋆IdL ((P .id ⋆⟨ P ⟩ P .id) ⋆⟨ P ⟩ P .id)
-            ∙ cong (λ m → m ⋆⟨ P ⟩ P .id) (P .⋆IdL (P .id))
-            ∙ P .⋆IdL (P .id)
 
   MonLax : LaxFunctor (CAT {ℓ} {ℓ'}) (CAT {ℓ} {ℓ'})
   MonLax .LaxFunctor.F-ob C = M.C ×C C
