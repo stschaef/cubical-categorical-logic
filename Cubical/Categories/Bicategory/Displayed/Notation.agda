@@ -65,7 +65,7 @@ module BicatᴰNotation
     {xᴰ : Bᴰ.ob[ x ]} {yᴰ : Bᴰ.ob[ y ]}
     (fᴰ : Bᴰ.1Cellᴰ xᴰ yᴰ f) (gᴰ : Bᴰ.1Cellᴰ xᴰ yᴰ g) =
     hSetReasoning
-      (B.2Cell f g , B.Hom[ x , y ] .Category.isSetHom)
+      (B.2Cell f g , B.isSet2Cell)
       (Bᴰ.2Cellᴰ fᴰ gᴰ)
 
   -- The six reindexing actions, as thin aliases.

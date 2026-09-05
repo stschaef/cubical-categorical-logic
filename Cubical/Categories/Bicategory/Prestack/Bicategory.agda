@@ -19,6 +19,7 @@ open import Cubical.Categories.Instances.FullSubcategory
 
 open import Cubical.Categories.Bicategory.Base
 open import Cubical.Categories.Bicategory.Properties
+open import Cubical.Categories.Bicategory.Properties.Coherence
 open import Cubical.Categories.Bicategory.Constructions.Op
 open import Cubical.Categories.Bicategory.Instances.CAT
 open import Cubical.Categories.Bicategory.Functor.Lax
@@ -58,28 +59,6 @@ module _ (B : Bicategory ℓ ℓ' ℓ'') (ℓp ℓp' : Level) where
       (p : C.1Cell w x) (q : C.1Cell x y) (r : C.1Cell y z)
       → isIso C.Hom[ w , z ] (C.α⁺ p q r)
     isoα⁺ p q r = C.α _ _ _ _ .nIso (p , q , r)
-
-    -- triangle, read with the associator on the other side
-    ▷5 : {x y z : C.0Cell} {f₀ f₁ f₂ f₃ f₄ f₅ : C.1Cell x y}
-      (p : C.2Cell f₀ f₁) (q : C.2Cell f₁ f₂) (r : C.2Cell f₂ f₃)
-      (s : C.2Cell f₃ f₄) (u : C.2Cell f₄ f₅) (h : C.1Cell y z)
-      →   ((p C.⋆₂ q C.⋆₂ r C.⋆₂ s C.⋆₂ u) C.▷w h)
-        ≡ (p C.▷w h) C.⋆₂ (q C.▷w h) C.⋆₂ (r C.▷w h)
-            C.⋆₂ (s C.▷w h) C.⋆₂ (u C.▷w h)
-    ▷5 p q r s u h =
-        ▷wSeq C p _ h
-      ∙ C.⟨⟩⋆₂⟨ ▷wSeq C q _ h ∙ C.⟨⟩⋆₂⟨ ▷3 C r s u h ⟩ ⟩
-
-    ◁5 : {x y z : C.0Cell} (e : C.1Cell x y)
-      {f₀ f₁ f₂ f₃ f₄ f₅ : C.1Cell y z}
-      (p : C.2Cell f₀ f₁) (q : C.2Cell f₁ f₂) (r : C.2Cell f₂ f₃)
-      (s : C.2Cell f₃ f₄) (u : C.2Cell f₄ f₅)
-      →   (e C.◁w (p C.⋆₂ q C.⋆₂ r C.⋆₂ s C.⋆₂ u))
-        ≡ (e C.◁w p) C.⋆₂ (e C.◁w q) C.⋆₂ (e C.◁w r)
-            C.⋆₂ (e C.◁w s) C.⋆₂ (e C.◁w u)
-    ◁5 e p q r s u =
-        ◁wSeq C e p _
-      ∙ C.⟨⟩⋆₂⟨ ◁wSeq C e q _ ∙ C.⟨⟩⋆₂⟨ ◁3 C e r s u ⟩ ⟩
 
   -- Step 1: the composite of two pseudonatural transformations is
   -- pseudonatural.
@@ -266,7 +245,7 @@ module _ (B : Bicategory ℓ ℓ' ℓ'') (ℓp ℓp' : Level) where
               C.⋆₂ seqLaxNatTrans α (seqLaxNatTrans β γ) .N-hom f
         assocHom =
             aR5 C _ _ _ _ _ _
-          ∙ C.⟨⟩⋆₂⟨ C.⟨ ▷5 _ _ _ _ _ cy ⟩⋆₂⟨⟩ ∙ aR5 C _ _ _ _ _ _ ⟩
+          ∙ C.⟨⟩⋆₂⟨ C.⟨ ▷5 C _ _ _ _ _ cy ⟩⋆₂⟨⟩ ∙ aR5 C _ _ _ _ _ _ ⟩
           ∙ sym (aR3 C _ _ _ _) ∙ C.⟨ claimA ⟩⋆₂⟨⟩ ∙ aR4 C _ _ _ _ _
           ∙ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨
               sym (aR2 C _ _ _)
@@ -289,7 +268,7 @@ module _ (B : Bicategory ℓ ℓ' ℓ'') (ℓp ℓp' : Level) where
                                  ∙ C.▷wId fS ⟩
                         ∙ C.⋆₂IdR _ ⟩ ⟩ ⟩ ⟩ ⟩ ⟩ ⟩ ⟩ ⟩
           ∙ sym ( C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨
-                    C.⟨ ◁5 ax _ _ _ _ _ ⟩⋆₂⟨⟩
+                    C.⟨ ◁5 C ax _ _ _ _ _ ⟩⋆₂⟨⟩
                     ∙ aR5 C _ _ _ _ _ _ ⟩ ⟩ ⟩ ⟩ )
 
     assocMod : Modification (seqLaxNatTrans (seqLaxNatTrans α β) γ)

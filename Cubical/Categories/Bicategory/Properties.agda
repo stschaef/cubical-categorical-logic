@@ -170,6 +170,11 @@ module _ (B : Bicategory ℓ ℓ' ℓ'') where
     → (u B.▷w B.id₁) B.⋆₂ B.ρ⁺ n ≡ B.ρ⁺ m B.⋆₂ u
   ρ-nat {x} {z} u = λ-nat (B ^opᴮ) {z} {x} u
 
+  -- Naturality of the right unitor's inverse, dual to λ⁻-nat.
+  ρ⁻-nat : {x z : B.0Cell} {m n : B.1Cell x z} (u : B.2Cell m n)
+    → u B.⋆₂ B.ρ⁻ n ≡ B.ρ⁻ m B.⋆₂ (u B.▷w B.id₁)
+  ρ⁻-nat {x} {z} u = λ⁻-nat (B ^opᴮ) {z} {x} u
+
   -- Right-whiskering by id₁ is faithful, dual to ◁id₁-faithful.
   ▷id₁-faithful : {x z : B.0Cell} {m n : B.1Cell x z} (u v : B.2Cell m n)
     → (u B.▷w B.id₁) ≡ (v B.▷w B.id₁) → u ≡ v
@@ -240,3 +245,21 @@ module _ (B : Bicategory ℓ ℓ' ℓ'') where
         ∙ B.⋆₂Assoc _ _ _
         ∙ B.⟨⟩⋆₂⟨ B.α u v w w .nIso (f , g , B.id₁) .ret ⟩
         ∙ B.⋆₂IdR _)
+
+  -- Whiskering preserves identity morphisms.  Both implicits must be
+  -- pinned: `Category` is no-eta, so `_C .Category.id` does not unify.
+  ▷wIsIdHomᴮ : {x y z : B.0Cell} {f g : B.1Cell x y} {u : B.2Cell f g}
+    (h : B.1Cell y z) → isIdHom {C = B.Hom[ x , y ]} u
+    → isIdHom {C = B.Hom[ x , z ]} (u B.▷w h)
+  ▷wIsIdHomᴮ {x} {y} {z} h s =
+    F-isIdHom (B.seq x y z)
+      (pairIsIdHom {C = B.Hom[ x , y ]} {D = B.Hom[ y , z ]} s
+        (idIsIdHom {C = B.Hom[ y , z ]}))
+
+  ◁wIsIdHomᴮ : {x y z : B.0Cell} (f : B.1Cell x y) {g h : B.1Cell y z}
+    {u : B.2Cell g h} → isIdHom {C = B.Hom[ y , z ]} u
+    → isIdHom {C = B.Hom[ x , z ]} (f B.◁w u)
+  ◁wIsIdHomᴮ {x} {y} {z} f s =
+    F-isIdHom (B.seq x y z)
+      (pairIsIdHom {C = B.Hom[ x , y ]} {D = B.Hom[ y , z ]}
+        (idIsIdHom {C = B.Hom[ x , y ]}) s)

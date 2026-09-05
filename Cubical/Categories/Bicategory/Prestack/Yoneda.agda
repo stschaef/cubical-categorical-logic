@@ -221,20 +221,13 @@ module _ {B : Bicategory ℓ ℓ' ℓ''} (P : Prestack B ℓ' ℓ'') where
            , FUNCTORIso' B.Hom[ a , a ] P⟨ x ⟩
                (β .fst .N-hom h) (β .snd h) B.id₁)
 
-    private
-      ρnat : {x : B.0Cell} {h h' : B.1Cell x a} (α : B.2Cell h h')
-        → α B.⋆₂ B.ρ⁻ h' ≡ B.ρ⁻ h B.⋆₂ (α B.▷w B.id₁)
-      ρnat {x} α =
-          symNatIso (B.ρU x a) .trans .N-hom (α , _)
-        ∙ B.⟨⟩⋆₂⟨ B.⟨⟩⋆ₕ⟨ B.id {a} .F-id ⟩ ⟩
-
     yoRecηᴮ-trans : (x : B.0Cell)
       → NatTrans (β .fst .N-1cell x) (yoRecᴮ yoRecηᴮ-vertex .N-1cell x)
     yoRecηᴮ-trans x .N-ob h = yoRecηᴮ-elt h .fst
     yoRecηᴮ-trans x .N-hom {h} {h'} α =
         sym (Pᶜ.⋆Assoc _ _ _)
       ∙ Pᶜ.⟨ sym (β .fst .N-1cell x .F-seq α (B.ρ⁻ h'))
-             ∙ cong (β .fst .N-1cell x .F-hom) (ρnat α)
+             ∙ cong (β .fst .N-1cell x .F-hom) (ρ⁻-nat B α)
              ∙ β .fst .N-1cell x .F-seq (B.ρ⁻ h) (α B.▷w B.id₁) ⟩⋆⟨⟩
       ∙ Pᶜ.⋆Assoc _ _ _
       ∙ Pᶜ.⟨⟩⋆⟨ Pᶜ.⟨ sym (Pᶜ.⋆IdR _) ⟩⋆⟨⟩

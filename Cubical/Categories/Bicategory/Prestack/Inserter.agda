@@ -19,6 +19,7 @@ open import Cubical.Categories.Instances.BinProduct
 
 open import Cubical.Categories.Bicategory.Base
 open import Cubical.Categories.Bicategory.Properties
+open import Cubical.Categories.Bicategory.Properties.Coherence
 open import Cubical.Categories.Bicategory.Constructions.Op
 open import Cubical.Categories.Bicategory.Instances.CAT
 open import Cubical.Categories.Bicategory.Functor.Lax
@@ -53,7 +54,7 @@ module InserterPre {B : Bicategory ℓ ℓ' ℓ''} {a b : Bicategory.0Cell B}
 
   isPropInsCond : {x : B.0Cell} {h h' : B.1Cell x a}
     (θ : Ins2 h) (θ' : Ins2 h') (α : B.2Cell h h') → isProp (InsCond θ θ' α)
-  isPropInsCond {x} θ θ' α = B.Hom[ x , b ] .isSetHom _ _
+  isPropInsCond {x} θ θ' α = B.isSet2Cell _ _
 
   InsOb : B.0Cell → Type (ℓ-max ℓ' ℓ'')
   InsOb x = Σ[ h ∈ B.1Cell x a ] Ins2 h
@@ -92,19 +93,8 @@ module InserterPre {B : Bicategory ℓ ℓ' ℓ''} {a b : Bicategory.0Cell B}
   InsCat x .⋆IdR _ = InsHom≡ (B.⋆₂IdR _)
   InsCat x .⋆Assoc _ _ _ = InsHom≡ (B.⋆₂Assoc _ _ _)
   InsCat x .isSetHom {_ , θ} {_ , θ'} =
-    isSetΣ (B.Hom[ x , a ] .isSetHom)
+    isSetΣ B.isSet2Cell
            (λ α → isProp→isSet (isPropInsCond θ θ' α))
-
-  -- Interchange, in the form used to move a whiskered 2-cell past
-  -- another.  (`Transformation/Composition` has this only privately.)
-  ▷◁exch : {x y z : B.0Cell} {k k' : B.1Cell x y} (σ : B.2Cell k k')
-    {m n : B.1Cell y z} (θ : B.2Cell m n)
-    → (σ B.▷w m) B.⋆₂ (k' B.◁w θ) ≡ (k B.◁w θ) B.⋆₂ (σ B.▷w n)
-  ▷◁exch σ θ =
-      sym (B.⋆ₕSeq σ B.id₂ B.id₂ θ)
-    ∙ B.⟨ B.⋆₂IdR σ ⟩⋆ₕ⟨ B.⋆₂IdL θ ⟩
-    ∙ B.⟨ sym (B.⋆₂IdL σ) ⟩⋆ₕ⟨ sym (B.⋆₂IdR θ) ⟩
-    ∙ B.⋆ₕSeq B.id₂ σ θ B.id₂
 
   reindθ : {x y : B.0Cell} (k : B.1Cell y x) {h : B.1Cell x a}
     → Ins2 h → Ins2 (k B.⋆₁ h)
@@ -137,10 +127,10 @@ module InserterPre {B : Bicategory ℓ ℓ' ℓ''} {a b : Bicategory.0Cell B}
     cond : InsCond (reindθ k θ) (reindθ k' θ) (σ B.▷w h)
     cond =
         pushr B (α⁺natL B σ h f) _
-      ∙ B.⟨⟩⋆₂⟨ pushr B (▷◁exch σ θ) _ ⟩
+      ∙ B.⟨⟩⋆₂⟨ pushr B (▷◁exch B σ θ) _ ⟩
       ∙ B.⟨⟩⋆₂⟨ B.⟨⟩⋆₂⟨ α⁻natL B σ h g ⟩ ⟩
       ∙ sym (aR3 B _ _ _ _)
-  insReind₂ σ .N-hom (α , _) = InsHom≡ (sym (▷◁exch σ α))
+  insReind₂ σ .N-hom (α , _) = InsHom≡ (sym (▷◁exch B σ α))
 
   insCondInv : {x : B.0Cell} {h h' : B.1Cell x a}
     {θ : Ins2 h} {θ' : Ins2 h'} {α : B.2Cell h h'}

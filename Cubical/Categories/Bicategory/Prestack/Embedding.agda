@@ -17,6 +17,7 @@ open import Cubical.Categories.Instances.Functors
 
 open import Cubical.Categories.Bicategory.Base
 open import Cubical.Categories.Bicategory.Properties
+open import Cubical.Categories.Bicategory.Properties.Coherence
 open import Cubical.Categories.Bicategory.Constructions.Op
 open import Cubical.Categories.Bicategory.Instances.CAT
 open import Cubical.Categories.Bicategory.Functor.Lax
@@ -47,7 +48,6 @@ module _ (B : Bicategory ℓ ℓ' ℓ'') where
   private
     module B = Bicategory B
 
-    -- The mate of ρ⋆₁: ρ⁻ splits along the associator.
   module _ {a b : B.0Cell} (k : B.1Cell a b) where
     private
       module Pa = PrestackNotation (Hom B a)
@@ -65,17 +65,7 @@ module _ (B : Bicategory ℓ ℓ' ℓ'') where
           ≡   B.α⁺ g (f B.⋆₁ h) k
             B.⋆₂ (g B.◁w B.α⁺ f h k)
             B.⋆₂ B.α⁻ g f (h B.⋆₁ k)
-      core {x} {y} {z} f g h =
-        sym ( sym (B.⋆₂Assoc _ _ _)
-            ∙ B.⟨ Yeq ⟩⋆₂⟨⟩
-            ∙ B.⋆₂Assoc _ _ _
-            ∙ B.⟨⟩⋆₂⟨ B.⋆₂Assoc _ _ _
-                    ∙ B.⟨⟩⋆₂⟨ B.α z y x b .nIso (g , f , h B.⋆₁ k) .ret ⟩
-                    ∙ B.⋆₂IdR _ ⟩)
-        where
-        Yeq = ⋆InvLMove
-                (_ , ▷wIsIso B k (B.α z y x a .nIso (g , f , h)))
-                (B.pentagon z y x a b g f h k)
+      core f g h = sym (pentP4 B g f h k)
 
     yo1 : PrestackHom (Hom B a) (Hom B b)
     yo1 .N-1cell x = B.postcomp k
@@ -115,11 +105,7 @@ module _ (B : Bicategory ℓ ℓ' ℓ'') where
       mo : (x : B.0Cell)
         → NatTrans (B.postcomp {x} k) (B.postcomp {x} k')
       mo x .N-ob g = g B.◁w κ
-      mo x .N-hom {g} {g'} θ =
-          sym (B.⋆ₕSeq θ B.id₂ B.id₂ κ)
-        ∙ B.⟨ B.⋆₂IdR θ ⟩⋆ₕ⟨ B.⋆₂IdL κ ⟩
-        ∙ B.⟨ sym (B.⋆₂IdL θ) ⟩⋆ₕ⟨ sym (B.⋆₂IdR κ) ⟩
-        ∙ B.⋆ₕSeq B.id₂ θ κ B.id₂
+      mo x .N-hom θ = ▷◁exch B θ κ
 
     yo2 : Modification (yo1 k) (yo1 k')
     yo2 .M-ob = mo
@@ -143,9 +129,7 @@ module _ (B : Bicategory ℓ ℓ' ℓ'') where
       io : (u : B.0Cell)
         → NatTrans (Id {C = B.Hom[ u , x ]}) (B.postcomp (B.id₁ {x}))
       io u .N-ob g = B.ρ⁻ g
-      io u .N-hom θ =
-          symNatIso (B.ρU u x) .trans .N-hom (θ , _)
-        ∙ B.⟨⟩⋆₂⟨ B.⟨⟩⋆ₕ⟨ B.id {x} .F-id ⟩ ⟩
+      io u .N-hom θ = ρ⁻-nat B θ
 
     yoId : Modification (idLaxNatTrans (Hom B x .laxFunctor))
                         (yo1 (B.id₁ {x}))

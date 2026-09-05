@@ -16,6 +16,7 @@ open import Cubical.Categories.NaturalTransformation.More hiding (α)
 open import Cubical.Categories.Bicategory.Base
 open import Cubical.Categories.Bicategory.Functor.Lax
 open import Cubical.Categories.Bicategory.Properties
+open import Cubical.Categories.Bicategory.Properties.Coherence
 open import Cubical.Categories.Bicategory.Transformation
 
 private
@@ -30,17 +31,6 @@ private
   module _ (C : Bicategory ℓc ℓc' ℓc'') where
     private
       module C = Bicategory C
-
-    push : {w x : C.0Cell} {p q r s t u v : C.1Cell w x}
-      (e₁ : C.2Cell p q) (e₂ : C.2Cell q r) (e₃ : C.2Cell r s)
-      (e₄ : C.2Cell s t) (e₅ : C.2Cell t u) (e₆ : C.2Cell u v)
-      →   e₁ C.⋆₂ e₂ C.⋆₂ e₃ C.⋆₂ e₄ C.⋆₂ e₅ C.⋆₂ e₆
-        ≡ (e₁ C.⋆₂ e₂ C.⋆₂ e₃ C.⋆₂ e₄ C.⋆₂ e₅) C.⋆₂ e₆
-    push e₁ e₂ e₃ e₄ e₅ e₆ =
-        C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ sym (C.⋆₂Assoc e₄ e₅ e₆) ⟩
-                      ∙ sym (C.⋆₂Assoc e₃ _ e₆) ⟩
-              ∙ sym (C.⋆₂Assoc e₂ _ e₆) ⟩
-      ∙ sym (C.⋆₂Assoc e₁ _ e₆)
 
     module _ {x y z : C.0Cell} (a : C.1Cell x y) (b : C.1Cell y z) where
       private
@@ -116,7 +106,7 @@ module _ {B : Bicategory ℓb ℓb' ℓb''} {C : Bicategory ℓc ℓc' ℓc''}
     ∙ C.⟨⟩⋆₂⟨ λ⁻-nat C (F.F² f g) ⟩
     ∙ sym (C.⋆₂Assoc _ _ _)
     ∙ C.⟨ sym (unitCoh C (F.F-1cell f) (F.F-1cell g)) ⟩⋆₂⟨⟩
-    ∙ sym (push C _ _ _ _ _ _)
+    ∙ aR5 C _ _ _ _ _ _
 
   -- the identity transformation is pseudonatural
   idIsPseudo : {x y : B.ob} (f : B.1Cell x y)

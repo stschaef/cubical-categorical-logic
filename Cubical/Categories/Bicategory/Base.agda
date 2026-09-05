@@ -73,6 +73,9 @@ module _ (ℓ ℓ' ℓ'' : Level) where
     precomp {x}{y}{z} f =
       seq x y z ∘F (Constant _ _ f ,F 𝟙⟨ Hom[ y , z ] ⟩)
 
+    isSet2Cell : ∀ {x y} {f g : 1Cell x y} → isSet (2Cell f g)
+    isSet2Cell {x}{y} = Hom[ x , y ] .Category.isSetHom
+
     -- isomorphism of 1-cells: an invertible 2-cell
     _≅₂_ : ∀ {x y} → 1Cell x y → 1Cell x y → Type ℓ''
     _≅₂_ {x}{y} f g = CatIso Hom[ x , y ] f g

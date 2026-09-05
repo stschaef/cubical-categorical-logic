@@ -27,7 +27,9 @@ open NatTrans
 open NatIso
 open isIso
 
-module _ {C : Category ℓ ℓ'} {D : Category ℓp ℓp'} where
+-- `C` and `D` are explicit: the level of `FUNCTOR D C` is a non-injective
+-- ℓ-max, so they are never inferred from the expected type.
+module _ (C : Category ℓ ℓ') (D : Category ℓp ℓp') where
   evalAtF : D .Category.ob → Functor (FUNCTOR D C) C
   evalAtF d .F-ob F = F .F-ob d
   evalAtF d .F-hom α = α .N-ob d
@@ -59,12 +61,15 @@ module PrestackNotation {B : Bicategory ℓ ℓ' ℓ''} (P : Prestack B ℓp ℓ
 
   ⟨_⟩ : {a : B.0Cell} → p[ a ] → (x : B.0Cell)
     → Functor B.Hom[ x , a ] P⟨ x ⟩
-  ⟨ e ⟩ x = evalAtF e ∘F P.F-Hom
+  ⟨_⟩ {a} e x = evalAtF P⟨ x ⟩ P⟨ a ⟩ e ∘F P.F-Hom
 
   ⋆ᴾIdL : {x : B.0Cell} (e : p[ x ]) → CatIso P⟨ x ⟩ (B.id₁ ⋆ᴾ e) e
-  ⋆ᴾIdL e = invIso (P.F⁰ .N-ob e , F-PresIsIso {F = evalAtF e} (P.F-id-isIso _))
+  ⋆ᴾIdL {x} e = invIso
+    (P.F⁰ .N-ob e , F-PresIsIso {F = evalAtF P⟨ x ⟩ P⟨ x ⟩ e}
+      (P.F-id-isIso _))
 
   ⋆ᴾAssoc : {x' x a : B.0Cell} (k : B.1Cell x' x) (f : B.1Cell x a)
     (e : p[ a ]) → CatIso P⟨ x' ⟩ (k ⋆ᴾ (f ⋆ᴾ e)) ((k B.⋆₁ f) ⋆ᴾ e)
   ⋆ᴾAssoc k f e .fst = P.F² f k .N-ob e
-  ⋆ᴾAssoc k f e .snd = F-PresIsIso {F = evalAtF e} (P.F-seq-isIso (f , k))
+  ⋆ᴾAssoc {x'} {x} {a} k f e .snd =
+    F-PresIsIso {F = evalAtF P⟨ x' ⟩ P⟨ a ⟩ e} (P.F-seq-isIso (f , k))

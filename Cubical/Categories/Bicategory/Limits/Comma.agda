@@ -18,6 +18,7 @@ open import Cubical.Categories.Isomorphism.More
 
 open import Cubical.Categories.Bicategory.Base
 open import Cubical.Categories.Bicategory.Properties
+open import Cubical.Categories.Bicategory.Properties.Coherence
 open import Cubical.Categories.Bicategory.Transformation.Composition
 open import Cubical.Categories.Bicategory.Prestack.Base
 open import Cubical.Categories.Bicategory.Prestack.Inserter
@@ -85,14 +86,6 @@ module CommaᴮNotation {B : Bicategory ℓ ℓ' ℓ''}
     F = Pr.π₁ᴮ B.⋆₁ f
     G = Pr.π₂ᴮ B.⋆₁ g
 
-    ▷⋆₁ : {x y z w : B.0Cell} {m m' : B.1Cell x y} (α : B.2Cell m m')
-      (s : B.1Cell y z) (t : B.1Cell z w)
-      → (α B.▷w s) B.▷w t
-        ≡ B.α⁺ m s t B.⋆₂ (α B.▷w (s B.⋆₁ t)) B.⋆₂ B.α⁻ m' s t
-    ▷⋆₁ {m' = m'} α s t =
-        ⋆InvRMove (αI B m' s t) (α⁺natL B α s t)
-      ∙ B.⋆₂Assoc _ _ _
-
   -- Reassociation isomorphisms at a probe 1-cell `m`, and the
   -- comparison of `pullθᴮ m` with the inserter 2-cell pulled back
   -- along `m`.  This is where the pentagon is used.
@@ -125,7 +118,7 @@ module CommaᴮNotation {B : Bicategory ℓ ℓ' ℓ''}
           ≡ Ω₁ B.⋆₂ Zof₁ n w
       ψexp₁ n w =
           ▷3 B _ _ _ f
-        ∙ B.⟨⟩⋆₂⟨ B.⟨ ▷⋆₁ n Pr.π₁ᴮ f ⟩⋆₂⟨⟩ ∙ aR3 B _ _ _ _ ⟩
+        ∙ B.⟨⟩⋆₂⟨ B.⟨ ▷⋆₁ B n Pr.π₁ᴮ f ⟩⋆₂⟨⟩ ∙ aR3 B _ _ _ _ ⟩
         ∙ sym (B.⋆₂Assoc _ _ _)
 
       ψexp₂ : {h : B.1Cell x Pr.vertex} {v : B.1Cell x b}
@@ -134,7 +127,7 @@ module CommaᴮNotation {B : Bicategory ℓ ℓ' ℓ''}
           ≡ Ω₂ B.⋆₂ Zof₂ n w
       ψexp₂ n w =
           ▷3 B _ _ _ g
-        ∙ B.⟨⟩⋆₂⟨ B.⟨ ▷⋆₁ n Pr.π₂ᴮ g ⟩⋆₂⟨⟩ ∙ aR3 B _ _ _ _ ⟩
+        ∙ B.⟨⟩⋆₂⟨ B.⟨ ▷⋆₁ B n Pr.π₂ᴮ g ⟩⋆₂⟨⟩ ∙ aR3 B _ _ _ _ ⟩
         ∙ sym (B.⋆₂Assoc _ _ _)
 
       private
@@ -315,6 +308,6 @@ module CommaᴮNotation {B : Bicategory ℓ ℓ' ℓ''}
       → (α B.▷w (insᴮ B.⋆₁ s)) ≡ (γ B.▷w (insᴮ B.⋆₁ s))
       → ((α B.▷w insᴮ) B.▷w s) ≡ ((γ B.▷w insᴮ) B.▷w s)
     whisk {s = s} r =
-        ▷⋆₁ α insᴮ s
+        ▷⋆₁ B α insᴮ s
       ∙ B.⟨⟩⋆₂⟨ B.⟨ r ⟩⋆₂⟨⟩ ⟩
-      ∙ sym (▷⋆₁ γ insᴮ s)
+      ∙ sym (▷⋆₁ B γ insᴮ s)
