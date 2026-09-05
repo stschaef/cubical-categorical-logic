@@ -4,6 +4,9 @@ module Cubical.Categories.Monoidal.Functor where
 
 open import Cubical.Categories.Category.Base
 open import Cubical.Categories.Isomorphism
+open import Cubical.Categories.Isomorphism.More
+open import Cubical.Categories.Category.More
+open import Cubical.Categories.Isomorphism.More
 open import Cubical.Categories.Instances.BinProduct
 open import Cubical.Categories.Functor.Base
 open import Cubical.Categories.NaturalTransformation
@@ -164,40 +167,152 @@ module _ {M : MonoidalCategory ℓC ℓC'} where
   IdStr : StrongMonoidalFunctor M M
   IdStr .StrongMonoidalFunctor.F = Id
   IdStr .StrongMonoidalFunctor.strmonstr = IdStrStr
+{- Composition: the composite's comparisons are `ε_G ⋆ G(ε_H)` and
+   `μ_G ⋆ G(μ_H)`; the coherences follow from `G`'s and `H`'s own,
+   plus naturality of `μ_G`. -}
+module _ {M : MonoidalCategory ℓC ℓC'}
+         {N : MonoidalCategory ℓD ℓD'}
+         {O : MonoidalCategory ℓE ℓE'}
+         {G : Functor (MonoidalCategory.C N) (MonoidalCategory.C O)}
+         {H : Functor (MonoidalCategory.C M) (MonoidalCategory.C N)}
+         (Gs : LaxMonoidalStr N O G) (Hs : LaxMonoidalStr M N H) where
+  open LaxMonoidalStr
+  open NatTrans
+  private
+    module M = MonoidalCategory M
+    module N = MonoidalCategory N
+    module O = MonoidalCategory O
+    module Gs = LaxMonoidalStr Gs
+    module Hs = LaxMonoidalStr Hs
 
--- TODO: complete this
--- module _ {M : MonoidalCategory ℓC ℓC'}
---          {N : MonoidalCategory ℓD ℓD'}
---          {O : MonoidalCategory ℓE ℓE'} where
---   open LaxMonoidalFunctor
---   open LaxMonoidalStr
---   private
---     module O = MonoidalCategory O
---   open NatTrans
---   _∘Lax_ : LaxMonoidalFunctor N O → LaxMonoidalFunctor M N
---      → LaxMonoidalFunctor M O
---   (G ∘Lax H) .F = G .F ∘F H .F
---   (G ∘Lax H) .laxmonstr .ε = G .laxmonstr .ε O.⋆ G .F ⟪ H .laxmonstr .ε ⟫
---   (G ∘Lax H) .laxmonstr .μ .NatTrans.N-ob x =
---     (G .laxmonstr .μ ∘ˡ (H .F ×F H .F)) ⟦ x ⟧
---     O.⋆ (G .F ∘ʳ (H .laxmonstr .μ)) ⟦ x ⟧
---   (G ∘Lax H) .laxmonstr .μ .NatTrans.N-hom f =
---     sym (O.⋆Assoc _ _ _)
---     ∙ cong₂ O._⋆_ ((G .laxmonstr .μ ∘ˡ (H .F ×F H .F)) .N-hom f) refl
---     ∙ O.⋆Assoc _ _ _
---     ∙ cong₂ O._⋆_ refl ((G .F ∘ʳ (H .laxmonstr .μ)) .N-hom f)
---     ∙ sym (O.⋆Assoc _ _ _)
---   (G ∘Lax H) .laxmonstr .αμ-law x y z = {!!}
---   (G ∘Lax H) .laxmonstr .ηε-law x = {!!}
---   (G ∘Lax H) .laxmonstr .ρε-law x = {!!}
+    Gh : {a b : N.C .ob} → N.C [ a , b ] → O.C [ G ⟅ a ⟆ , G ⟅ b ⟆ ]
+    Gh = G .F-hom
 
-  -- _∘Str_ : StrongMonoidalFunctor N O → StrongMonoidalFunctor M N
-  --        → StrongMonoidalFunctor M O
-  -- (G ∘Str H) .StrongMonoidalFunctor.F =
-  --   G .StrongMonoidalFunctor.F ∘F H .StrongMonoidalFunctor.F
-  -- (G ∘Str H) .StrongMonoidalFunctor.strmonstr .StrongMonoidalStr.laxmonstr =
-  --   {!!}
-  -- (G ∘Str H) .StrongMonoidalFunctor.strmonstr .StrongMonoidalStr.ε-isIso =
-  --   {!!}
-  -- (G ∘Str H) .StrongMonoidalFunctor.strmonstr .StrongMonoidalStr.μ-isIso =
-  --   {!!}
+    cL : {a b c : O.C .ob} {f g : O.C [ a , b ]} {h : O.C [ b , c ]}
+      → f ≡ g → f O.⋆ h ≡ g O.⋆ h
+    cL p = cong⋆ O.C p refl
+
+    cR : {a b c : O.C .ob} {f : O.C [ a , b ]} {g h : O.C [ b , c ]}
+      → g ≡ h → f O.⋆ g ≡ f O.⋆ h
+    cR p = cong⋆ O.C refl p
+
+    Gnat : {a b c d : N.C .ob} (f : N.C [ a , b ]) (g : N.C [ c , d ])
+      → (Gh f O.⊗ₕ Gh g) O.⋆ Gs.μ⟨ b , d ⟩
+        ≡ Gs.μ⟨ a , c ⟩ O.⋆ Gh (f N.⊗ₕ g)
+    Gnat f g = Gs.μ .N-hom (f , g)
+
+    GnatL : {a b c : N.C .ob} (f : N.C [ a , b ])
+      → (Gh f O.⊗ₕ O.id {G ⟅ c ⟆}) O.⋆ Gs.μ⟨ b , c ⟩
+        ≡ Gs.μ⟨ a , c ⟩ O.⋆ Gh (f N.⊗ₕ N.id {c})
+    GnatL {c = c} f =
+      cL (cong (Gh f O.⊗ₕ_) (sym (G .F-id))) ∙ Gnat f (N.id {c})
+
+    GnatR : {a b c : N.C .ob} (f : N.C [ a , b ])
+      → (O.id {G ⟅ c ⟆} O.⊗ₕ Gh f) O.⋆ Gs.μ⟨ c , b ⟩
+        ≡ Gs.μ⟨ c , a ⟩ O.⋆ Gh (N.id {c} N.⊗ₕ f)
+    GnatR {c = c} f =
+      cL (cong (O._⊗ₕ Gh f) (sym (G .F-id))) ∙ Gnat (N.id {c}) f
+
+    ⊗L : {a b c d : O.C .ob} (f : O.C [ a , b ]) (g : O.C [ b , c ])
+      → ((f O.⋆ g) O.⊗ₕ O.id {d}) ≡ (f O.⊗ₕ O.id) O.⋆ (g O.⊗ₕ O.id)
+    ⊗L f g =
+        cong ((f O.⋆ g) O.⊗ₕ_) (sym (O.⋆IdL O.id))
+      ∙ O.─⊗─ .F-seq (f , O.id) (g , O.id)
+
+    ⊗R : {a b c d : O.C .ob} (f : O.C [ a , b ]) (g : O.C [ b , c ])
+      → (O.id {d} O.⊗ₕ (f O.⋆ g)) ≡ (O.id O.⊗ₕ f) O.⋆ (O.id O.⊗ₕ g)
+    ⊗R f g =
+        cong (O._⊗ₕ (f O.⋆ g)) (sym (O.⋆IdL O.id))
+      ∙ O.─⊗─ .F-seq (O.id , f) (O.id , g)
+
+    Gseq3 : {a b c d : N.C .ob}
+      (f : N.C [ a , b ]) (g : N.C [ b , c ]) (h : N.C [ c , d ])
+      → Gh ((f N.⋆ g) N.⋆ h) ≡ (Gh f O.⋆ Gh g) O.⋆ Gh h
+    Gseq3 f g h = G .F-seq _ _ ∙ cL (G .F-seq f g)
+
+  ∘LaxStr : LaxMonoidalStr M O (G ∘F H)
+  ∘LaxStr .ε = Gs.ε O.⋆ Gh Hs.ε
+  ∘LaxStr .μ .N-ob (x , y) =
+    Gs.μ⟨ H ⟅ x ⟆ , H ⟅ y ⟆ ⟩ O.⋆ Gh Hs.μ⟨ x , y ⟩
+  ∘LaxStr .μ .N-hom (f , g) =
+      sym (O.⋆Assoc _ _ _)
+    ∙ cL (Gnat (H ⟪ f ⟫) (H ⟪ g ⟫))
+    ∙ O.⋆Assoc _ _ _
+    ∙ cR (sym (G .F-seq _ _)
+          ∙ cong Gh (Hs.μ .N-hom (f , g))
+          ∙ G .F-seq _ _)
+    ∙ sym (O.⋆Assoc _ _ _)
+  ∘LaxStr .ηε-law x =
+      cL (cL (⊗L Gs.ε (Gh Hs.ε)))
+    ∙ cL (O.⋆Assoc _ _ _)
+    ∙ cL (cR (sym (O.⋆Assoc _ _ _)))
+    ∙ cL (cR (cL (GnatL Hs.ε)))
+    ∙ cL (cR (O.⋆Assoc _ _ _))
+    ∙ cL (sym (O.⋆Assoc _ _ _))
+    ∙ O.⋆Assoc _ _ _
+    ∙ cR (sym (Gseq3 (Hs.ε N.⊗ₕ N.id) Hs.μ⟨ M.unit , x ⟩ (H ⟪ M.η⟨ x ⟩ ⟫)))
+    ∙ cR (cong Gh (Hs.ηε-law x))
+    ∙ Gs.ηε-law (H ⟅ x ⟆)
+  ∘LaxStr .ρε-law x =
+      cL (cL (⊗R Gs.ε (Gh Hs.ε)))
+    ∙ cL (O.⋆Assoc _ _ _)
+    ∙ cL (cR (sym (O.⋆Assoc _ _ _)))
+    ∙ cL (cR (cL (GnatR Hs.ε)))
+    ∙ cL (cR (O.⋆Assoc _ _ _))
+    ∙ cL (sym (O.⋆Assoc _ _ _))
+    ∙ O.⋆Assoc _ _ _
+    ∙ cR (sym (Gseq3 (N.id N.⊗ₕ Hs.ε) Hs.μ⟨ x , M.unit ⟩ (H ⟪ M.ρ⟨ x ⟩ ⟫)))
+    ∙ cR (cong Gh (Hs.ρε-law x))
+    ∙ Gs.ρε-law (H ⟅ x ⟆)
+  ∘LaxStr .αμ-law x y z =
+      cL (cR (⊗L Gs.μ⟨ H ⟅ x ⟆ , H ⟅ y ⟆ ⟩ (Gh Hs.μ⟨ x , y ⟩)))
+    ∙ cL (sym (O.⋆Assoc _ _ _))
+    ∙ sym (O.⋆Assoc _ _ _)
+    ∙ cL (O.⋆Assoc _ _ _)
+    ∙ cL (cR (GnatL Hs.μ⟨ x , y ⟩))
+    ∙ cL (sym (O.⋆Assoc _ _ _))
+    ∙ cL (cL (Gs.αμ-law (H ⟅ x ⟆) (H ⟅ y ⟆) (H ⟅ z ⟆)))
+    ∙ cL (O.⋆Assoc _ _ _)
+    ∙ O.⋆Assoc _ _ _
+    ∙ cR (sym (Gseq3 N.α⟨ H ⟅ x ⟆ , H ⟅ y ⟆ , H ⟅ z ⟆ ⟩
+                     (Hs.μ⟨ x , y ⟩ N.⊗ₕ N.id) Hs.μ⟨ x M.⊗ y , z ⟩))
+    ∙ cR (cong Gh (Hs.αμ-law x y z))
+    ∙ cR (Gseq3 (N.id N.⊗ₕ Hs.μ⟨ y , z ⟩) Hs.μ⟨ x , y M.⊗ z ⟩
+                (H ⟪ M.α⟨ x , y , z ⟩ ⟫))
+    ∙ sym
+      ( cL (cL (⊗R Gs.μ⟨ H ⟅ y ⟆ , H ⟅ z ⟆ ⟩ (Gh Hs.μ⟨ y , z ⟩)))
+      ∙ cL (O.⋆Assoc _ _ _)
+      ∙ cL (cR (sym (O.⋆Assoc _ _ _)))
+      ∙ cL (cR (cL (GnatR Hs.μ⟨ y , z ⟩)))
+      ∙ cL (cR (O.⋆Assoc _ _ _))
+      ∙ cL (sym (O.⋆Assoc _ _ _))
+      ∙ O.⋆Assoc _ _ _)
+
+module _ {M : MonoidalCategory ℓC ℓC'}
+         {N : MonoidalCategory ℓD ℓD'}
+         {O : MonoidalCategory ℓE ℓE'} where
+  open LaxMonoidalFunctor
+  open StrongMonoidalFunctor
+
+  _∘Lax_ : LaxMonoidalFunctor N O → LaxMonoidalFunctor M N
+    → LaxMonoidalFunctor M O
+  (G ∘Lax H) .LaxMonoidalFunctor.F = G .F ∘F H .F
+  (G ∘Lax H) .LaxMonoidalFunctor.laxmonstr =
+    ∘LaxStr (G .laxmonstr) (H .laxmonstr)
+
+  _∘Str_ : StrongMonoidalFunctor N O → StrongMonoidalFunctor M N
+    → StrongMonoidalFunctor M O
+  (G ∘Str H) .StrongMonoidalFunctor.F =
+    G .StrongMonoidalFunctor.F ∘F H .StrongMonoidalFunctor.F
+  (G ∘Str H) .StrongMonoidalFunctor.strmonstr .StrongMonoidalStr.laxmonstr =
+    ∘LaxStr (G .StrongMonoidalFunctor.laxmonstr)
+            (H .StrongMonoidalFunctor.laxmonstr)
+  (G ∘Str H) .StrongMonoidalFunctor.strmonstr .StrongMonoidalStr.ε-isIso =
+    ⋆IsIso (G .ε-isIso)
+           (F-PresIsIso {F = G .StrongMonoidalFunctor.F} (H .ε-isIso))
+  (G ∘Str H) .StrongMonoidalFunctor.strmonstr .StrongMonoidalStr.μ-isIso
+    (a , b) =
+    ⋆IsIso (G .μ-isIso (H .StrongMonoidalFunctor.F ⟅ a ⟆
+                       , H .StrongMonoidalFunctor.F ⟅ b ⟆))
+           (F-PresIsIso {F = G .StrongMonoidalFunctor.F}
+                        (H .μ-isIso (a , b)))
