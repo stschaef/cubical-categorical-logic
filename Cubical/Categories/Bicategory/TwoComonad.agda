@@ -12,7 +12,7 @@
   `_^coᴮ` reverses only the modifications, so `TwoMonad (K ^coᴮ)` is
   still a 2-monad — with oplax naturality — see `coIsNotDual` below.
   `_^coᴮ` *is* the right duality for the *formal* monads of
-  `Cubical.Categories.Bicategory.Monad`, whose unit and multiplication
+  `Cubical.Categories.Bicategory.Monad.Base`, whose unit and multiplication
   are 2-cells; `Comonad` there is `Monad (K ^coᴮ)`.
 -}
 module Cubical.Categories.Bicategory.TwoComonad where
@@ -22,7 +22,7 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Categories.Category
 
 open import Cubical.Categories.Bicategory.Base
-open import Cubical.Categories.Bicategory.TwoMonad
+open import Cubical.Categories.Bicategory.TwoMonad.Base
 open import Cubical.Categories.Bicategory.Functor.Lax
 open import Cubical.Categories.Bicategory.Functor.Pseudo
 open import Cubical.Categories.Bicategory.Constructions.Op

@@ -1,7 +1,7 @@
 {-# OPTIONS --lossy-unification #-}
 {- Eilenberg-Moore algebras for a formal monad in a bicategory, and
    the `WildCat` they form. -}
-module Cubical.Categories.Bicategory.MonadAlgebra where
+module Cubical.Categories.Bicategory.Monad.Algebra where
 
 open import Cubical.Foundations.Prelude
 
@@ -9,8 +9,8 @@ open import Cubical.WildCat.Base
 
 open import Cubical.Categories.Bicategory.Base
 open import Cubical.Categories.Bicategory.Properties
-open import Cubical.Categories.Bicategory.Monad
-open import Cubical.Categories.Bicategory.MonadMorphism
+open import Cubical.Categories.Bicategory.Monad.Base
+open import Cubical.Categories.Bicategory.Monad.Morphism
 
 private
   variable

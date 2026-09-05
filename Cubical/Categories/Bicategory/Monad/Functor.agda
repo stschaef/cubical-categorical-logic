@@ -1,13 +1,13 @@
 {-# OPTIONS --lossy-unification #-}
 {- Street's monad functors: morphisms of formal monads carried on
    possibly different 0-cells. -}
-module Cubical.Categories.Bicategory.MonadFunctor where
+module Cubical.Categories.Bicategory.Monad.Functor where
 
 open import Cubical.Foundations.Prelude
 
 open import Cubical.Categories.Bicategory.Base
-open import Cubical.Categories.Bicategory.Monad
-open import Cubical.Categories.Bicategory.MonadMorphism
+open import Cubical.Categories.Bicategory.Monad.Base
+open import Cubical.Categories.Bicategory.Monad.Morphism
 
 private
   variable

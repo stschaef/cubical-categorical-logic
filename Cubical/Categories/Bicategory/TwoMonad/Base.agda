@@ -6,7 +6,7 @@
 
   This is *not* a formal monad in a bicategory (a 1-cell `t : a → a`
   with 2-cells `a ⇒ t` and `t ⋆ t ⇒ t`); that is
-  `Cubical.Categories.Bicategory.Monad`.
+  `Cubical.Categories.Bicategory.Monad.Base`.
 
   The laws are invertible modifications, not equalities: `∘Lax` is
   unital and associative only up to `ridLax`/`lidLax`/`assocLax`, and
@@ -15,7 +15,7 @@
   axioms that would make this a pseudomonad in the sense of Marmolejo
   are not part of the record.
 -}
-module Cubical.Categories.Bicategory.TwoMonad where
+module Cubical.Categories.Bicategory.TwoMonad.Base where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Data.Unit
@@ -160,3 +160,68 @@ module _ (K : Bicategory ℓ ℓ' ℓ'') where
                   (invIso (K.λ⁺ K.id₁ , λI x) .snd)))
              (modIsIso (assocMod AI TμI μI)
                 (λ x → K.α x x x x .nIso (K.id₁ , K.id₁ , K.id₁)))
+
+{- Notation for a 2-monad: the action on cells, the components of the
+   unit and multiplication, and the laws as modifications. -}
+module TwoMonadNotation {K : Bicategory ℓ ℓ' ℓ''} (M : TwoMonad K) where
+  private
+    module K = Bicategory K
+    module Tl = LaxFunctor (TwoMonad.Tl M)
+
+  open TwoMonad M public
+    using (T; Tl; η; μ; Tη; ηT; Tμ; μT; unitL; unitR; assoc)
+
+  T₀ : K.ob → K.ob
+  T₀ = Tl.F-ob
+
+  T₁ : {x y : K.ob} → K.1Cell x y → K.1Cell (T₀ x) (T₀ y)
+  T₁ = Tl.F-1cell
+
+  T₂ : {x y : K.ob} {f g : K.1Cell x y}
+    → K.2Cell f g → K.2Cell (T₁ f) (T₁ g)
+  T₂ = Tl.F-2cell
+
+  -- Laxity cells of T.  Invertible, since T is a pseudofunctor.
+  T⁰ : {x : K.ob} → K.2Cell (K.id₁ {T₀ x}) (T₁ (K.id₁ {x}))
+  T⁰ {x} = NatTrans.N-ob (Tl.F-id {x}) tt*
+
+  T² : {x y z : K.ob} (f : K.1Cell x y) (g : K.1Cell y z)
+    → K.2Cell (T₁ f K.⋆₁ T₁ g) (T₁ (f K.⋆₁ g))
+  T² f g = NatTrans.N-ob Tl.F-seq (f , g)
+
+  -- Unit and multiplication, componentwise.
+  η₁ : (x : K.ob) → K.1Cell x (T₀ x)
+  η₁ = η .N-1cell
+
+  η₂ : {x y : K.ob} (f : K.1Cell x y)
+    → K.2Cell (f K.⋆₁ η₁ y) (η₁ x K.⋆₁ T₁ f)
+  η₂ = η .N-hom
+
+  μ₁ : (x : K.ob) → K.1Cell (T₀ (T₀ x)) (T₀ x)
+  μ₁ = μ .N-1cell
+
+  μ₂ : {x y : K.ob} (f : K.1Cell x y)
+    → K.2Cell (T₁ (T₁ f) K.⋆₁ μ₁ y) (μ₁ x K.⋆₁ T₁ f)
+  μ₂ = μ .N-hom
+
+  -- The laws, forwards and backwards.
+  unitL⁺ = unitL .fst
+  unitL⁻ = unitL .snd .inv
+  unitR⁺ = unitR .fst
+  unitR⁻ = unitR .snd .inv
+  assoc⁺ = assoc .fst
+  assoc⁻ = assoc .snd .inv
+
+  unitL₂ : (x : K.ob) → K.2Cell _ _
+  unitL₂ x = unitL⁺ .M-ob x
+
+  unitR₂ : (x : K.ob) → K.2Cell _ _
+  unitR₂ x = unitR⁺ .M-ob x
+
+  assoc₂ : (x : K.ob) → K.2Cell _ _
+  assoc₂ x = assoc⁺ .M-ob x
+
+  -- `whiskerL T` inserts an identity laxity cell on each side.
+  dropId₂ : {x y : K.ob} {f g : K.1Cell x y} (u : K.2Cell f g)
+    → K.id₂ K.⋆₂ (u K.⋆₂ K.id₂) ≡ u
+  dropId₂ u = K.⋆₂IdL _ ∙ K.⋆₂IdR _

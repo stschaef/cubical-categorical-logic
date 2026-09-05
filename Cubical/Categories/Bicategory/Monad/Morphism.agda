@@ -1,7 +1,7 @@
 {-# OPTIONS --lossy-unification #-}
 {- Monads on a fixed 0-cell of a bicategory, their morphisms, and the
    `WildCat` they form. -}
-module Cubical.Categories.Bicategory.MonadMorphism where
+module Cubical.Categories.Bicategory.Monad.Morphism where
 
 open import Cubical.Foundations.Prelude
 
@@ -10,7 +10,7 @@ open import Cubical.WildCat.Base
 open import Cubical.Categories.Bicategory.Base
 open import Cubical.Categories.Bicategory.Properties
 open import Cubical.Categories.Bicategory.Properties.Coherence
-open import Cubical.Categories.Bicategory.Monad
+open import Cubical.Categories.Bicategory.Monad.Base
 
 private
   variable

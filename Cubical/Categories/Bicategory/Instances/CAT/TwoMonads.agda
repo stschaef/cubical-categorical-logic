@@ -15,7 +15,7 @@ open import Cubical.Categories.Bicategory.Instances.CAT
 open import Cubical.Categories.Bicategory.Instances.CAT.Limits
 open import Cubical.Categories.Bicategory.Functor.Pseudo
 open import Cubical.Categories.Bicategory.Limits.Terminal.TwoMonad
-open import Cubical.Categories.Bicategory.TwoMonad
+open import Cubical.Categories.Bicategory.TwoMonad.Base
 
 private
   variable

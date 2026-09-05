@@ -27,7 +27,7 @@ open import Cubical.Categories.Bicategory.Functor.Identity
 open import Cubical.Categories.Bicategory.Functor.Composition
 open import Cubical.Categories.Bicategory.Transformation
 open import Cubical.Categories.Bicategory.Transformation.Properties
-open import Cubical.Categories.Bicategory.TwoMonad
+open import Cubical.Categories.Bicategory.TwoMonad.Base
 
 private
   variable

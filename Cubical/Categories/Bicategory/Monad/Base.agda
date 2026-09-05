@@ -2,7 +2,7 @@
 {- Formal (Street) monads in a bicategory, displayed monads over
    them, and the identification of monads with lax functors out of
    the terminal bicategory. -}
-module Cubical.Categories.Bicategory.Monad where
+module Cubical.Categories.Bicategory.Monad.Base where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Isomorphism

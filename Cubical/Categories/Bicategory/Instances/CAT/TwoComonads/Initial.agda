@@ -26,7 +26,7 @@ open import Cubical.Categories.Bicategory.Prestack.Base
 open import Cubical.Categories.Bicategory.Universal.Base
 open import Cubical.Categories.Bicategory.Limits.Terminal
 open import Cubical.Categories.Bicategory.Limits.Terminal.TwoMonad
-open import Cubical.Categories.Bicategory.TwoMonad
+open import Cubical.Categories.Bicategory.TwoMonad.Base
 open import Cubical.Categories.Bicategory.TwoComonad
 
 open Category

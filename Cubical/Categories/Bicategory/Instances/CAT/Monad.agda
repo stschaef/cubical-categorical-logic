@@ -12,9 +12,9 @@ open import Cubical.Categories.NaturalTransformation
 open import Cubical.WildCat.Base hiding (_[_,_])
 
 open import Cubical.Categories.Bicategory.Base
-open import Cubical.Categories.Bicategory.Monad
-open import Cubical.Categories.Bicategory.MonadMorphism
-open import Cubical.Categories.Bicategory.MonadAlgebra
+open import Cubical.Categories.Bicategory.Monad.Base
+open import Cubical.Categories.Bicategory.Monad.Morphism
+open import Cubical.Categories.Bicategory.Monad.Algebra
 open import Cubical.Categories.Bicategory.DistributiveLaw
 open import Cubical.Categories.Bicategory.Functor.Lax
 open import Cubical.Categories.Bicategory.Instances.Terminal

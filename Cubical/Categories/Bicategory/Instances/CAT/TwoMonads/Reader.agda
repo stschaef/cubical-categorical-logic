@@ -34,7 +34,7 @@ open import Cubical.Categories.Bicategory.Transformation.Properties
 open import Cubical.Categories.Bicategory.Transformation.Composition
 open import Cubical.Categories.Bicategory.Transformation.Whisker
 open import Cubical.Categories.Bicategory.Transformation.Coherence
-open import Cubical.Categories.Bicategory.TwoMonad
+open import Cubical.Categories.Bicategory.TwoMonad.Base
 
 open Category
 open Functor

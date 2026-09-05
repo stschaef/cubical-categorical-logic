@@ -6,8 +6,8 @@ module Cubical.Categories.Bicategory.DistributiveLaw where
 open import Cubical.Foundations.Prelude
 
 open import Cubical.Categories.Bicategory.Base
-open import Cubical.Categories.Bicategory.Monad
-open import Cubical.Categories.Bicategory.MonadMorphism
+open import Cubical.Categories.Bicategory.Monad.Base
+open import Cubical.Categories.Bicategory.Monad.Morphism
 
 private
   variable

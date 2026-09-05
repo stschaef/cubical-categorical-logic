@@ -10,8 +10,8 @@ open import Cubical.Categories.Functor
 open import Cubical.Categories.NaturalTransformation
 
 open import Cubical.Categories.Bicategory.Base
-open import Cubical.Categories.Bicategory.MonadMorphism
-open import Cubical.Categories.Bicategory.MonadFunctor
+open import Cubical.Categories.Bicategory.Monad.Morphism
+open import Cubical.Categories.Bicategory.Monad.Functor
 open import Cubical.Categories.Bicategory.Instances.CAT
 
 private
