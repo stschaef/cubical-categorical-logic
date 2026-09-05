@@ -50,11 +50,11 @@ module _ (C : Bicategory ℓ ℓ' ℓ'') where
              ≡ ((μ C.▷w t) C.⋆₂ μ)
 
   private
-    𝟚 : Bicategory ℓ-zero ℓ-zero ℓ-zero
-    𝟚 = TerminalBicategory ℓ-zero ℓ-zero ℓ-zero
-    module 𝟚 = Bicategory 𝟚
+    𝟙ᴮ : Bicategory ℓ-zero ℓ-zero ℓ-zero
+    𝟙ᴮ = TerminalBicategory ℓ-zero ℓ-zero ℓ-zero
+    module 𝟙ᴮ = Bicategory 𝟙ᴮ
 
-  fromLaxFunctor : LaxFunctor 𝟚 C → Monad
+  fromLaxFunctor : LaxFunctor 𝟙ᴮ C → Monad
   fromLaxFunctor F = M where
     module F = LaxFunctor F
 
@@ -77,18 +77,18 @@ module _ (C : Bicategory ℓ ℓ' ℓ'') where
         sym (F.lax-α tt* tt* tt* tt* tt* tt* tt*)
       ∙ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ F-Hom-tt ⟩ ∙ C.⋆₂IdR _ ⟩
 
-  toLaxFunctor : Monad → LaxFunctor 𝟚 C
+  toLaxFunctor : Monad → LaxFunctor 𝟙ᴮ C
   toLaxFunctor M = F where
     module M = Monad M
 
-    -- 𝟚 has a single 0-cell, so one functor serves at every (x , y).
+    -- 𝟙ᴮ has a single 0-cell, so one functor serves at every (x , y).
     MFH : Functor (UnitCategory ℓ-zero ℓ-zero) C.Hom[ M.a , M.a ]
     MFH .F-ob _ = M.t
     MFH .F-hom _ = C.id₂
     MFH .F-id = refl
     MFH .F-seq _ _ = sym (C.⋆₂IdL _)
 
-    F : LaxFunctor 𝟚 C
+    F : LaxFunctor 𝟙ᴮ C
     F .LaxFunctor.F-ob _ = M.a
     F .LaxFunctor.F-Hom = MFH
     F .LaxFunctor.F-id .N-ob _ = M.η
@@ -126,16 +126,16 @@ module _ (C : Bicategory ℓ ℓ' ℓ'') where
     where module M = Monad M
 
   -- `F-Hom` is reconstructed via `Functor≡` from its `F-id`, since
-  -- `Unit*` has eta and so every 2-cell of 𝟚 is `tt*`.
+  -- `Unit*` has eta and so every 2-cell of 𝟙ᴮ is `tt*`.
   toLaxFunctor∘fromLaxFunctor :
-    (F : LaxFunctor 𝟚 C) → toLaxFunctor (fromLaxFunctor F) ≡ F
+    (F : LaxFunctor 𝟙ᴮ C) → toLaxFunctor (fromLaxFunctor F) ≡ F
   toLaxFunctor∘fromLaxFunctor F = path
     where
       module F = LaxFunctor F
       Fa : C.0Cell
       Fa = F.F-ob tt*
 
-      G : LaxFunctor 𝟚 C
+      G : LaxFunctor 𝟙ᴮ C
       G = toLaxFunctor (fromLaxFunctor F)
       module G = LaxFunctor G
 
@@ -145,20 +145,20 @@ module _ (C : Bicategory ℓ ℓ' ℓ'') where
       F-Hom-i : I → Functor (UnitCategory ℓ-zero ℓ-zero) C.Hom[ Fa , Fa ]
       F-Hom-i i = F-Hom-path i
 
-      F-id-path : PathP (λ i → NatTrans (C.id {Fa}) (F-Hom-i i ∘F 𝟚.id))
+      F-id-path : PathP (λ i → NatTrans (C.id {Fa}) (F-Hom-i i ∘F 𝟙ᴮ.id))
                         (G.F-id {tt*}) (F.F-id {tt*})
       F-id-path =
-        makeNatTransPathP refl (cong (_∘F 𝟚.id) F-Hom-path)
+        makeNatTransPathP refl (cong (_∘F 𝟙ᴮ.id) F-Hom-path)
           (λ i x → F.F-id .N-ob x)
 
       F-seq-path : PathP (λ i → NatTrans
           (C.seq Fa Fa Fa ∘F (F-Hom-i i ×F F-Hom-i i))
-          (F-Hom-i i ∘F 𝟚.seq tt* tt* tt*))
+          (F-Hom-i i ∘F 𝟙ᴮ.seq tt* tt* tt*))
         (G.F-seq {tt*} {tt*} {tt*}) (F.F-seq {tt*} {tt*} {tt*})
       F-seq-path =
         makeNatTransPathP
           (cong (λ H → C.seq Fa Fa Fa ∘F (H ×F H)) F-Hom-path)
-          (cong (_∘F 𝟚.seq tt* tt* tt*) F-Hom-path)
+          (cong (_∘F 𝟙ᴮ.seq tt* tt* tt*) F-Hom-path)
           (λ i p → F.F-seq .N-ob p)
 
       -- `LaxFunctor` is no-eta, so the path is given by copatterns;
@@ -198,7 +198,7 @@ module _ (C : Bicategory ℓ ℓ' ℓ'') where
           (G.lax-α tt* tt* tt* tt* f g h)
           (F.lax-α tt* tt* tt* tt* f g h) i
 
-  LaxFunctorIsoMonad : Iso (LaxFunctor 𝟚 C) Monad
+  LaxFunctorIsoMonad : Iso (LaxFunctor 𝟙ᴮ C) Monad
   LaxFunctorIsoMonad .Iso.fun = fromLaxFunctor
   LaxFunctorIsoMonad .Iso.inv = toLaxFunctor
   LaxFunctorIsoMonad .Iso.sec = fromLaxFunctor∘toLaxFunctor

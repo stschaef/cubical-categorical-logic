@@ -136,13 +136,13 @@ formalMonad→Monad : (ℓ ℓ' : Level) (M : SmallMonad ℓ ℓ')
 formalMonad→Monad ℓ ℓ' M = ToOrdinary.ordMonad M
 
 private
-  𝟚 : Bicategory ℓ-zero ℓ-zero ℓ-zero
-  𝟚 = TerminalBicategory ℓ-zero ℓ-zero ℓ-zero
+  𝟙ᴮ : Bicategory ℓ-zero ℓ-zero ℓ-zero
+  𝟙ᴮ = TerminalBicategory ℓ-zero ℓ-zero ℓ-zero
 
 -- A monad on a small category is a lax functor out of the walking
 -- monad, by the generic equivalence at `C = CAT`.
 smallMonad≃laxFunctor :
-  (ℓ ℓ' : Level) → Iso (LaxFunctor 𝟚 (CAT {ℓ} {ℓ'})) (SmallMonad ℓ ℓ')
+  (ℓ ℓ' : Level) → Iso (LaxFunctor 𝟙ᴮ (CAT {ℓ} {ℓ'})) (SmallMonad ℓ ℓ')
 smallMonad≃laxFunctor ℓ ℓ' = LaxFunctorIsoMonad (CAT {ℓ} {ℓ'})
 
 -- The category of monads on a fixed small category `A`, and the
