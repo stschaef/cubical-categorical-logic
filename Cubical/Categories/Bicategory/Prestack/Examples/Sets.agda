@@ -5,10 +5,15 @@ module Cubical.Categories.Bicategory.Prestack.Examples.Sets where
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Structure
+open import Cubical.Foundations.Isomorphism using (iso; isoToIsEquiv)
 
 open import Cubical.Categories.Category
 open import Cubical.Categories.Functor
 open import Cubical.Categories.Instances.Sets
+open import Cubical.Categories.Limits.BinProduct.More
+open import Cubical.Categories.Presheaf.Representable
+open import Cubical.Categories.Limits.Terminal
+open import Cubical.Categories.Limits.Terminal.More
 open import Cubical.Categories.Instances.Discrete
 open import Cubical.Categories.Instances.Functors
 open import Cubical.Categories.NaturalTransformation
@@ -21,9 +26,11 @@ open import Cubical.Categories.Bicategory.Functor.Lax
 open import Cubical.Categories.Bicategory.Functor.Pseudo
 open import Cubical.Categories.Bicategory.Prestack.Base
 open import Cubical.Categories.Bicategory.Prestack.Strict
+open import Cubical.Categories.Bicategory.Prestack.Fiberwise
 open import Cubical.Categories.Bicategory.Prestack.Grothendieck
 open import Cubical.Categories.Displayed.Base
 open import Cubical.Categories.Displayed.Functor
+open import Cubical.Categories.Displayed.Isomorphism
 open import Cubical.Categories.Displayed.Instances.Sets.Base
 open import Cubical.Categories.Displayed.Instances.Sets.Properties
 open import Cubical.Categories.Displayed.Presheaf.Uncurried.Fibration
@@ -31,6 +38,7 @@ open import Cubical.Categories.Displayed.Presheaf.Uncurried.UniversalProperties
 open import Cubical.Categories.Displayed.Limits.CartesianV'
 
 open import Cubical.Data.Sigma
+open import Cubical.Data.Unit
 
 private
   variable
@@ -43,6 +51,8 @@ open LaxFunctor
 open Pseudofunctor
 open isIso
 open Functorᴰ
+open Isoᴰ
+open UniversalElement
 open CartesianCategoryⱽ
 
 -- A category all of whose homs are identities (`DiscreteCategory`,
@@ -189,51 +199,50 @@ module _ (ℓ ℓ' : Level) where
     → fᴰ ∫P.⋆ᴰ gᴰ ≡ Sᴰ._⋆ᴰ_ {f = f} {g} {P} {Q} {R} fᴰ gᴰ
   ∫SETPre-⋆ _ _ = refl
 
-  ∫SETPre→ : Functorⱽ (∫Pre SETPre) (SETᴰ ℓ ℓ')
-  ∫SETPre→ .F-obᴰ P = P
-  ∫SETPre→ .F-homᴰ fᴰ = fᴰ
-  ∫SETPre→ .F-idᴰ = refl
-  ∫SETPre→ .F-seqᴰ _ _ = refl
+  -- an isomorphism of displayed categories, identity on all the data
+  ∫SETPreIsoᴰ : Isoᴰ (∫Pre SETPre) (SETᴰ ℓ ℓ')
+  ∫SETPreIsoᴰ .funⱽ .F-obᴰ P = P
+  ∫SETPreIsoᴰ .funⱽ .F-homᴰ fᴰ = fᴰ
+  ∫SETPreIsoᴰ .funⱽ .F-idᴰ = refl
+  ∫SETPreIsoᴰ .funⱽ .F-seqᴰ _ _ = refl
+  ∫SETPreIsoᴰ .invⱽ .F-obᴰ P = P
+  ∫SETPreIsoᴰ .invⱽ .F-homᴰ fᴰ = fᴰ
+  ∫SETPreIsoᴰ .invⱽ .F-idᴰ = refl
+  ∫SETPreIsoᴰ .invⱽ .F-seqᴰ _ _ = refl
+  ∫SETPreIsoᴰ .obSec _ = refl
+  ∫SETPreIsoᴰ .obRet _ = refl
+  ∫SETPreIsoᴰ .homSec _ = refl
+  ∫SETPreIsoᴰ .homRet _ = refl
 
-  ∫SETPre← : Functorⱽ (SETᴰ ℓ ℓ') (∫Pre SETPre)
-  ∫SETPre← .F-obᴰ P = P
-  ∫SETPre← .F-homᴰ fᴰ = fᴰ
-  ∫SETPre← .F-idᴰ = refl
-  ∫SETPre← .F-seqᴰ _ _ = refl
-
-  private
-    homSetPath : {X Y : hSet ℓ} (f : SET ℓ [ X , Y ])
-      (P : ⟨ X ⟩ → hSet ℓ') (Q : ⟨ Y ⟩ → hSet ℓ')
-      {a b : (x : ⟨ X ⟩) → ⟨ P x ⟩ → ⟨ Q (f x) ⟩} (p q : a ≡ b) → p ≡ q
-    homSetPath f P Q = isSetΠ (λ x → isSetΠ λ _ → Q (f x) .snd) _ _
-
-  -- the two agree as displayed categories: the data are `refl`, and
-  -- the laws are equal because displayed homs are sets
+  -- the data being definitionally equal, they are outright equal
   ∫SETPre≡SETᴰ : ∫Pre SETPre ≡ SETᴰ ℓ ℓ'
-  ∫SETPre≡SETᴰ i .Categoryᴰ.ob[_] = ∫P.ob[_]
-  ∫SETPre≡SETᴰ i .Categoryᴰ.Hom[_][_,_] = ∫P.Hom[_][_,_]
-  ∫SETPre≡SETᴰ i .Categoryᴰ.idᴰ = ∫P.idᴰ
-  ∫SETPre≡SETᴰ i .Categoryᴰ._⋆ᴰ_ = ∫P._⋆ᴰ_
-  ∫SETPre≡SETᴰ i .Categoryᴰ.⋆IdLᴰ {x} {y} {f} {xᴰ} {yᴰ} fᴰ =
-    homSetPath f xᴰ yᴰ (∫P.⋆IdLᴰ {x} {y} {f} {xᴰ} {yᴰ} fᴰ)
-                       (Sᴰ.⋆IdLᴰ {x} {y} {f} {xᴰ} {yᴰ} fᴰ) i
-  ∫SETPre≡SETᴰ i .Categoryᴰ.⋆IdRᴰ {x} {y} {f} {xᴰ} {yᴰ} fᴰ =
-    homSetPath f xᴰ yᴰ (∫P.⋆IdRᴰ {x} {y} {f} {xᴰ} {yᴰ} fᴰ)
-                       (Sᴰ.⋆IdRᴰ {x} {y} {f} {xᴰ} {yᴰ} fᴰ) i
-  ∫SETPre≡SETᴰ i .Categoryᴰ.⋆Assocᴰ {x} {y} {z} {w} {f} {g} {h}
-    {xᴰ} {yᴰ} {zᴰ} {wᴰ} fᴰ gᴰ hᴰ =
-    homSetPath (SET ℓ ._⋆_ {x} {z} {w} (SET ℓ ._⋆_ {x} {y} {z} f g) h) xᴰ wᴰ
-      (∫P.⋆Assocᴰ {x} {y} {z} {w} {f} {g} {h} {xᴰ} {yᴰ} {zᴰ} {wᴰ} fᴰ gᴰ hᴰ)
-      (Sᴰ.⋆Assocᴰ {x} {y} {z} {w} {f} {g} {h} {xᴰ} {yᴰ} {zᴰ} {wᴰ} fᴰ gᴰ hᴰ) i
-  ∫SETPre≡SETᴰ i .Categoryᴰ.isSetHomᴰ = ∫P.isSetHomᴰ
+  ∫SETPre≡SETᴰ = sameDataᴰ≡ refl refl refl refl
 
-  -- what the route costs: the vertical cartesian structure has to be
-  -- transported along that path -- it does not transfer by field reuse,
-  -- because `Terminalsⱽ`/`BinProductsⱽ` mention the `Categoryᴰ` itself
-  -- (via `∫C (Cᴰ ×ᴰ _)`) and `Categoryᴰ` is `no-eta-equality`
+  -- each fibre `FAM X` is cartesian, and reindexing preserves the
+  -- structure on the nose, so `∫Pre SETPre` inherits it fibrewise
+  private
+    termFAM : (X : hSet ℓ) → Terminal (FAM X)
+    termFAM X .fst _ = Unit* , isSetUnit*
+    termFAM X .snd _ .fst _ _ = tt*
+    termFAM X .snd _ .snd _ = refl
+
+    presTermFAM : {X Y : hSet ℓ} (f : SET ℓ [ X , Y ])
+      → preservesTerminal (FAM Y) (FAM X) (reindFAM f)
+    presTermFAM {X} {Y} f = preserveOnePreservesAll (FAM Y) (FAM X)
+      (reindFAM f) (termFAM Y) (termFAM X .snd)
+
+    bpFAM : {X : hSet ℓ} (a b : FAM X .ob) → BinProduct (FAM X) (a , b)
+    bpFAM a b .vertex x = _ , isSet× (a x .snd) (b x .snd)
+    bpFAM a b .element = (λ x z → z .fst) , (λ x z → z .snd)
+    bpFAM a b .universal _ = isoToIsEquiv
+      (iso _ (λ uv x z → uv .fst x z , uv .snd x z)
+        (λ _ → refl) (λ _ → refl))
+
+    presBPFAM : {X Y : hSet ℓ} (f : SET ℓ [ X , Y ]) (a b : FAM Y .ob)
+      → preservesBinProduct (reindFAM f) (bpFAM a b)
+    presBPFAM {X} f a b =
+      bpFAM {X = X} (λ x → a (f x)) (λ x → b (f x)) .universal
+
   ∫SETPreCCⱽ : CartesianCategoryⱽ (SET ℓ) (ℓ-max ℓ (ℓ-suc ℓ')) (ℓ-max ℓ ℓ')
-  ∫SETPreCCⱽ .Cᴰ = ∫Pre SETPre
-  ∫SETPreCCⱽ .termⱽ = subst Terminalsⱽ (sym ∫SETPre≡SETᴰ) (EqSETᴰCCⱽ .termⱽ)
-  ∫SETPreCCⱽ .bpⱽ = subst BinProductsⱽ (sym ∫SETPre≡SETᴰ) (EqSETᴰCCⱽ .bpⱽ)
-  ∫SETPreCCⱽ .cartesianLifts =
-    subst isFibration (sym ∫SETPre≡SETᴰ) (EqSETᴰCCⱽ .cartesianLifts)
+  ∫SETPreCCⱽ = ∫PreCartesianCategoryⱽ SETPre termFAM presTermFAM bpFAM
+    presBPFAM

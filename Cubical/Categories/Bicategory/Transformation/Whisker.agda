@@ -147,15 +147,6 @@ module _ {A : Bicategory ℓa ℓa' ℓa''}
     Kl : LaxFunctor B C
     Kl = K.laxFunctor
 
-    κ²I : ∀ {x y z} (a : B.1Cell x y) (b : B.1Cell y z)
-      → CatIso C.Hom[ K.F-ob x , K.F-ob z ]
-               (K.F-1cell a C.⋆₁ K.F-1cell b) (K.F-1cell (a B.⋆₁ b))
-    κ²I a b = K.F² a b , K.F-seq-isIso (a , b)
-
-    κ²⁻ : ∀ {x y z} (a : B.1Cell x y) (b : B.1Cell y z)
-      → C.2Cell (K.F-1cell (a B.⋆₁ b)) (K.F-1cell a C.⋆₁ K.F-1cell b)
-    κ²⁻ a b = κ²I a b .snd .inv
-
   module _ (σ : LaxNatTrans F G) where
     private
       module σ = LaxNatTrans σ
@@ -169,7 +160,7 @@ module _ {A : Bicategory ℓa ℓa' ℓa''}
       nh {x} {y} f =
           K.F² (F.F-1cell f) (σ.N-1cell y)
         C.⋆₂ K.F-2cell (σ.N-hom f)
-        C.⋆₂ κ²⁻ (σ.N-1cell x) (G.F-1cell f)
+        C.⋆₂ κ²⁻ K (σ.N-1cell x) (G.F-1cell f)
 
       wnat : ∀ {x y}{f g : A.1Cell x y} (θ : A.2Cell f g)
         →   (K.F-2cell (F.F-2cell θ) C.▷w n y) C.⋆₂ nh g
@@ -192,12 +183,12 @@ module _ {A : Bicategory ℓa ℓa' ℓa''}
 
         flipK :
             K.F-2cell (σ.N-1cell x B.◁w G.F-2cell θ)
-              C.⋆₂ κ²⁻ (σ.N-1cell x) (G.F-1cell g)
-          ≡ κ²⁻ (σ.N-1cell x) (G.F-1cell f)
+              C.⋆₂ κ²⁻ K (σ.N-1cell x) (G.F-1cell g)
+          ≡ κ²⁻ K (σ.N-1cell x) (G.F-1cell f)
               C.⋆₂ (n x C.◁w K.F-2cell (G.F-2cell θ))
         flipK =
-          ⋆InvsFlipSq (κ²I (σ.N-1cell x) (G.F-1cell f))
-                      (κ²I (σ.N-1cell x) (G.F-1cell g))
+          ⋆InvsFlipSq (κ²I K (σ.N-1cell x) (G.F-1cell f))
+                      (κ²I K (σ.N-1cell x) (G.F-1cell g))
                       (sym (F²nat◁ Kl (σ.N-1cell x) (G.F-2cell θ)))
 
       wid : (x : A.ob)
@@ -231,26 +222,26 @@ module _ {A : Bicategory ℓa ℓa' ℓa''}
             , F-PresIsIso {F = K.F-Hom} (ρI B (σ.N-1cell x) .snd)
 
         rhoU :
-            K.F-2cell (B.ρ⁻ (σ.N-1cell x)) C.⋆₂ κ²⁻ (σ.N-1cell x) B.id₁
+            K.F-2cell (B.ρ⁻ (σ.N-1cell x)) C.⋆₂ κ²⁻ K (σ.N-1cell x) B.id₁
           ≡ C.ρ⁻ (n x) C.⋆₂ (n x C.◁w K.F⁰)
         rhoU =
-          ⋆InvsFlipSq (ρI C (n x)) (κ²I (σ.N-1cell x) B.id₁)
+          ⋆InvsFlipSq (ρI C (n x)) (κ²I K (σ.N-1cell x) B.id₁)
             (sym (⋆InvRMove KρI
               (C.⋆₂Assoc _ _ _ ∙ K.lax-ρ _ _ (σ.N-1cell x))))
 
         flipU :
             K.F-2cell (σ.N-1cell x B.◁w G.F⁰)
-              C.⋆₂ κ²⁻ (σ.N-1cell x) (G.F-1cell A.id₁)
-          ≡ κ²⁻ (σ.N-1cell x) B.id₁ C.⋆₂ (n x C.◁w K.F-2cell G.F⁰)
+              C.⋆₂ κ²⁻ K (σ.N-1cell x) (G.F-1cell A.id₁)
+          ≡ κ²⁻ K (σ.N-1cell x) B.id₁ C.⋆₂ (n x C.◁w K.F-2cell G.F⁰)
         flipU =
-          ⋆InvsFlipSq (κ²I (σ.N-1cell x) B.id₁)
-                      (κ²I (σ.N-1cell x) (G.F-1cell A.id₁))
+          ⋆InvsFlipSq (κ²I K (σ.N-1cell x) B.id₁)
+                      (κ²I K (σ.N-1cell x) (G.F-1cell A.id₁))
                       (sym (F²nat◁ Kl (σ.N-1cell x) G.F⁰))
 
         tail :
             K.F-2cell (B.ρ⁻ (σ.N-1cell x))
               C.⋆₂ K.F-2cell (σ.N-1cell x B.◁w G.F⁰)
-              C.⋆₂ κ²⁻ (σ.N-1cell x) (G.F-1cell A.id₁)
+              C.⋆₂ κ²⁻ K (σ.N-1cell x) (G.F-1cell A.id₁)
           ≡ C.ρ⁻ (n x) C.⋆₂ (n x C.◁w (K.F⁰ C.⋆₂ K.F-2cell G.F⁰))
         tail =
             C.⟨⟩⋆₂⟨ flipU ⟩
@@ -275,18 +266,18 @@ module _ {A : Bicategory ℓa ℓa' ℓa''}
         lemLast :
             K.F² sx (Gf B.⋆₁ Gg)
               C.⋆₂ K.F-2cell (sx B.◁w G.F² f g)
-              C.⋆₂ κ²⁻ sx (G.F-1cell (f A.⋆₁ g))
+              C.⋆₂ κ²⁻ K sx (G.F-1cell (f A.⋆₁ g))
           ≡ (n x C.◁w K.F-2cell (G.F² f g))
         lemLast =
             sym (C.⋆₂Assoc _ _ _)
           ∙ C.⟨ sym (F²nat◁ Kl sx (G.F² f g)) ⟩⋆₂⟨⟩
           ∙ C.⋆₂Assoc _ _ _
-          ∙ C.⟨⟩⋆₂⟨ κ²I sx (G.F-1cell (f A.⋆₁ g)) .snd .ret ⟩
+          ∙ C.⟨⟩⋆₂⟨ κ²I K sx (G.F-1cell (f A.⋆₁ g)) .snd .ret ⟩
           ∙ C.⋆₂IdR _
 
         lemEnd :
             K.F² (sx B.⋆₁ Gf) Gg C.⋆₂ K.F-2cell (B.α⁺ sx Gf Gg)
-          ≡   (κ²⁻ sx Gf C.▷w q) C.⋆₂ C.α⁺ (n x) p q
+          ≡   (κ²⁻ K sx Gf C.▷w q) C.⋆₂ C.α⁺ (n x) p q
             C.⋆₂ (n x C.◁w K.F² Gf Gg) C.⋆₂ K.F² sx (Gf B.⋆₁ Gg)
         lemEnd =
           ⋆InvLMove (K.F² sx Gf C.▷w q , ▷wIsIso C q (K.F-seq-isIso (sx , Gf)))
@@ -297,8 +288,8 @@ module _ {A : Bicategory ℓa ℓa' ℓa''}
               C.⋆₂ K.F-2cell (σ.N-hom f B.▷w Gg)
               C.⋆₂ K.F-2cell (B.α⁺ sx Gf Gg)
               C.⋆₂ K.F-2cell (sx B.◁w G.F² f g)
-              C.⋆₂ κ²⁻ sx (G.F-1cell (f A.⋆₁ g))
-          ≡   (K.F-2cell (σ.N-hom f) C.▷w q) C.⋆₂ (κ²⁻ sx Gf C.▷w q)
+              C.⋆₂ κ²⁻ K sx (G.F-1cell (f A.⋆₁ g))
+          ≡   (K.F-2cell (σ.N-hom f) C.▷w q) C.⋆₂ (κ²⁻ K sx Gf C.▷w q)
             C.⋆₂ C.α⁺ (n x) p q C.⋆₂ (n x C.◁w K.F² Gf Gg)
             C.⋆₂ (n x C.◁w K.F-2cell (G.F² f g))
         backLem =
@@ -308,7 +299,7 @@ module _ {A : Bicategory ℓa ℓa' ℓa''}
 
         lemMid :
             K.F² Ff (sy B.⋆₁ Gg) C.⋆₂ K.F-2cell (B.α⁻ Ff sy Gg)
-          ≡   (K.F-1cell Ff C.◁w κ²⁻ sy Gg)
+          ≡   (K.F-1cell Ff C.◁w κ²⁻ K sy Gg)
             C.⋆₂ C.α⁻ (K.F-1cell Ff) (n y) q
             C.⋆₂ (K.F² Ff sy C.▷w q)
             C.⋆₂ K.F² (Ff B.⋆₁ sy) Gg
@@ -348,12 +339,12 @@ module _ {A : Bicategory ℓa ℓa' ℓa''}
               C.⋆₂ K.F-2cell (σ.N-hom f B.▷w Gg)
               C.⋆₂ K.F-2cell (B.α⁺ sx Gf Gg)
               C.⋆₂ K.F-2cell (sx B.◁w G.F² f g)
-              C.⋆₂ κ²⁻ sx (G.F-1cell (f A.⋆₁ g))
-          ≡   (K.F-1cell Ff C.◁w κ²⁻ sy Gg)
+              C.⋆₂ κ²⁻ K sx (G.F-1cell (f A.⋆₁ g))
+          ≡   (K.F-1cell Ff C.◁w κ²⁻ K sy Gg)
             C.⋆₂ C.α⁻ (K.F-1cell Ff) (n y) q
             C.⋆₂ (K.F² Ff sy C.▷w q)
             C.⋆₂ (K.F-2cell (σ.N-hom f) C.▷w q)
-            C.⋆₂ (κ²⁻ sx Gf C.▷w q)
+            C.⋆₂ (κ²⁻ K sx Gf C.▷w q)
             C.⋆₂ C.α⁺ (n x) p q
             C.⋆₂ (n x C.◁w K.F² Gf Gg)
             C.⋆₂ (n x C.◁w K.F-2cell (G.F² f g))
@@ -389,21 +380,21 @@ module _ {A : Bicategory ℓa ℓa' ℓa''}
           ≡   C.α⁺ (K.F-1cell Ff) (K.F-1cell Fg) (n z)
             C.⋆₂ (K.F-1cell Ff C.◁w K.F² Fg sz)
             C.⋆₂ (K.F-1cell Ff C.◁w K.F-2cell (σ.N-hom g))
-            C.⋆₂ (K.F-1cell Ff C.◁w κ²⁻ sy Gg)
+            C.⋆₂ (K.F-1cell Ff C.◁w κ²⁻ K sy Gg)
             C.⋆₂ C.α⁻ (K.F-1cell Ff) (n y) q
             C.⋆₂ (K.F² Ff sy C.▷w q)
             C.⋆₂ (K.F-2cell (σ.N-hom f) C.▷w q)
-            C.⋆₂ (κ²⁻ sx Gf C.▷w q)
+            C.⋆₂ (κ²⁻ K sx Gf C.▷w q)
             C.⋆₂ C.α⁺ (n x) p q
             C.⋆₂ (n x C.◁w K.F² Gf Gg)
             C.⋆₂ (n x C.◁w K.F-2cell (G.F² f g))
         expandRHS =
           C.⟨⟩⋆₂⟨
               C.⟨ ◁3 C (K.F-1cell Ff) (K.F² Fg sz)
-                       (K.F-2cell (σ.N-hom g)) (κ²⁻ sy Gg) ⟩⋆₂⟨
+                       (K.F-2cell (σ.N-hom g)) (κ²⁻ K sy Gg) ⟩⋆₂⟨
                 C.⟨⟩⋆₂⟨
                     C.⟨ ▷3 C (K.F² Ff sy) (K.F-2cell (σ.N-hom f))
-                             (κ²⁻ sx Gf) q ⟩⋆₂⟨
+                             (κ²⁻ K sx Gf) q ⟩⋆₂⟨
                       C.⟨⟩⋆₂⟨ ◁wSeq C (n x) (K.F² Gf Gg)
                                       (K.F-2cell (G.F² f g)) ⟩ ⟩
                   ∙ aR3 C _ _ _ _ ⟩ ⟩
@@ -448,12 +439,12 @@ module _ {A : Bicategory ℓa ℓa' ℓa''}
     where
     flip1 :
         K.F-2cell (Γ .M-ob x B.▷w G.F-1cell f)
-          C.⋆₂ κ²⁻ (τ .N-1cell x) (G.F-1cell f)
-      ≡   κ²⁻ (σ .N-1cell x) (G.F-1cell f)
+          C.⋆₂ κ²⁻ K (τ .N-1cell x) (G.F-1cell f)
+      ≡   κ²⁻ K (σ .N-1cell x) (G.F-1cell f)
         C.⋆₂ (K.F-2cell (Γ .M-ob x) C.▷w K.F-1cell (G.F-1cell f))
     flip1 =
-      ⋆InvsFlipSq (κ²I (σ .N-1cell x) (G.F-1cell f))
-                  (κ²I (τ .N-1cell x) (G.F-1cell f))
+      ⋆InvsFlipSq (κ²I K (σ .N-1cell x) (G.F-1cell f))
+                  (κ²I K (τ .N-1cell x) (G.F-1cell f))
                   (sym (F²nat▷ Kl (Γ .M-ob x) (G.F-1cell f)))
 
     merge :

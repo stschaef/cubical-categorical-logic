@@ -11,6 +11,7 @@ open import Cubical.Categories.NaturalTransformation
 open import Cubical.Categories.Displayed.Base
 open import Cubical.Categories.Displayed.Functor
 open import Cubical.Categories.Displayed.Instances.Reindex.Base
+open import Cubical.Categories.Displayed.Isomorphism
 
 open import Cubical.Categories.Bicategory.Functor.Pseudo
 open import Cubical.Categories.Bicategory.Instances.LocallyDiscrete
@@ -23,6 +24,7 @@ private
 
 open Functor
 open Functorᴰ
+open Isoᴰ
 open NatTrans
 open isIso
 
@@ -247,14 +249,21 @@ module _ {C : Category ℓ ℓ'} {D : Category ℓd ℓd'} (F : Functor C D)
 
   -- hence an isomorphism of displayed categories over C: the identity
   -- on objects and on displayed morphisms, both ways
-  reindex∫→ : Functorⱽ ∫F ∫R
-  reindex∫→ .F-obᴰ xᴰ = xᴰ
-  reindex∫→ .F-homᴰ fᴰ = fᴰ
-  reindex∫→ .F-idᴰ = reindexId
-  reindex∫→ .F-seqᴰ = reindexSeq
+  reindex∫Isoᴰ : Isoᴰ ∫F ∫R
+  reindex∫Isoᴰ .funⱽ .F-obᴰ xᴰ = xᴰ
+  reindex∫Isoᴰ .funⱽ .F-homᴰ fᴰ = fᴰ
+  reindex∫Isoᴰ .funⱽ .F-idᴰ = reindexId
+  reindex∫Isoᴰ .funⱽ .F-seqᴰ = reindexSeq
+  reindex∫Isoᴰ .invⱽ .F-obᴰ xᴰ = xᴰ
+  reindex∫Isoᴰ .invⱽ .F-homᴰ fᴰ = fᴰ
+  reindex∫Isoᴰ .invⱽ .F-idᴰ = sym reindexId
+  reindex∫Isoᴰ .invⱽ .F-seqᴰ fᴰ gᴰ = sym (reindexSeq fᴰ gᴰ)
+  reindex∫Isoᴰ .obSec _ = refl
+  reindex∫Isoᴰ .obRet _ = refl
+  reindex∫Isoᴰ .homSec _ = refl
+  reindex∫Isoᴰ .homRet _ = refl
 
-  reindex∫← : Functorⱽ ∫R ∫F
-  reindex∫← .F-obᴰ xᴰ = xᴰ
-  reindex∫← .F-homᴰ fᴰ = fᴰ
-  reindex∫← .F-idᴰ = sym reindexId
-  reindex∫← .F-seqᴰ fᴰ gᴰ = sym (reindexSeq fᴰ gᴰ)
+  -- and, the data agreeing definitionally, an outright path
+  reindex∫≡ : ∫F ≡ ∫R
+  reindex∫≡ = sameDataᴰ≡ refl refl (λ i → reindexId i)
+    (λ i fᴰ gᴰ → reindexSeq fᴰ gᴰ i)

@@ -14,6 +14,7 @@ open import Cubical.Categories.Displayed.Base
 open import Cubical.Categories.Displayed.Functor
 open import Cubical.Categories.Displayed.Section.Base
 open import Cubical.Categories.Displayed.Instances.Reindex.Base
+open import Cubical.Categories.Displayed.Isomorphism
 open import Cubical.Categories.Displayed.Instances.Sets.Base
 
 open import Cubical.Categories.Bicategory.Instances.LocallyDiscrete
@@ -29,6 +30,7 @@ private
 
 open Category
 open Functorᴰ
+open Isoᴰ
 
 homGpdOf : {ℓc ℓc' : Level} (C : Category ℓc ℓc') → C .ob → C .ob
   → hGroupoid ℓc'
@@ -72,31 +74,41 @@ module _ {ℓs ℓs' : Level} {C : Category ℓ ℓ'} (F : Functor C (SET ℓs))
   glueHom _ _ _ = refl
 
   -- identity on all displayed data, both ways
-  glue→ : Functorⱽ GLᴰ GLᴾ
-  glue→ .F-obᴰ Pᴰ = Pᴰ
-  glue→ .F-homᴰ fᴰ = fᴰ
-  glue→ .F-idᴰ = reindexId F P
-  glue→ .F-seqᴰ = reindexSeq F P
+  glueIsoᴰ : Isoᴰ GLᴰ GLᴾ
+  glueIsoᴰ .funⱽ .F-obᴰ Pᴰ = Pᴰ
+  glueIsoᴰ .funⱽ .F-homᴰ fᴰ = fᴰ
+  glueIsoᴰ .funⱽ .F-idᴰ = reindexId F P
+  glueIsoᴰ .funⱽ .F-seqᴰ = reindexSeq F P
+  glueIsoᴰ .invⱽ .F-obᴰ Pᴰ = Pᴰ
+  glueIsoᴰ .invⱽ .F-homᴰ fᴰ = fᴰ
+  glueIsoᴰ .invⱽ .F-idᴰ = sym (reindexId F P)
+  glueIsoᴰ .invⱽ .F-seqᴰ fᴰ gᴰ = sym (reindexSeq F P fᴰ gᴰ)
+  glueIsoᴰ .obSec _ = refl
+  glueIsoᴰ .obRet _ = refl
+  glueIsoᴰ .homSec _ = refl
+  glueIsoᴰ .homRet _ = refl
 
-  glue← : Functorⱽ GLᴾ GLᴰ
-  glue← .F-obᴰ Pᴰ = Pᴰ
-  glue← .F-homᴰ fᴰ = fᴰ
-  glue← .F-idᴰ = sym (reindexId F P)
-  glue← .F-seqᴰ fᴰ gᴰ = sym (reindexSeq F P fᴰ gᴰ)
+  glue≡ : GLᴰ ≡ GLᴾ
+  glue≡ = sameDataᴰ≡ {Cᴰ = GLᴰ} {Dᴰ = GLᴾ}
+    (λ _ → GLᴰ.ob[_]) (λ _ → GLᴰ.Hom[_][_,_])
+    (λ i → reindexId F P i)
+    (λ i {_} {_} {_} {f} {g} {xᴰ} {yᴰ} {zᴰ} fᴰ gᴰ →
+      reindexSeq F P {f = f} {g} {xᴰ} {yᴰ} {zᴰ} fᴰ gᴰ i)
 
   -- so a `Section F SETᴰ` -- what `Gluing/` produces -- is a global
   -- section of the prestack glue
   toGLᴾ : Section F (SETᴰ ℓs ℓs') → GlobalSection GLᴾ
-  toGLᴾ s = compFunctorᴰGlobalSection glue→
+  toGLᴾ s = compFunctorᴰGlobalSection (glueIsoᴰ .funⱽ)
     (introS (Id {C = C}) (reindS' (Eq.refl , Eq.refl) s))
 
   -- and a section built *in* the prestack semantics lands there too
   toGLᴾ∫ : Section F (∫Pre (SETPre ℓs ℓs')) → GlobalSection GLᴾ
-  toGLᴾ∫ s = compFunctorᴰGlobalSection (reindex∫→ F (SETPre ℓs ℓs'))
+  toGLᴾ∫ s = compFunctorᴰGlobalSection (reindex∫Isoᴰ F (SETPre ℓs ℓs') .funⱽ)
     (introS (Id {C = C}) (reindS' (Eq.refl , Eq.refl) s))
 
   -- ... and can be read back as an ordinary `SETᴰ` section
   fromPrestackSection : Section F (∫Pre (SETPre ℓs ℓs'))
     → Section F (SETᴰ ℓs ℓs')
   fromPrestackSection s =
-    reindS' (Eq.refl , Eq.refl) (compFunctorᴰSection (∫SETPre→ ℓs ℓs') s)
+    reindS' (Eq.refl , Eq.refl)
+      (compFunctorᴰSection (∫SETPreIsoᴰ ℓs ℓs' .funⱽ) s)
