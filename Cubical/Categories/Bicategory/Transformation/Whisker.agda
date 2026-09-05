@@ -21,6 +21,7 @@ open import Cubical.Categories.Bicategory.Base
 open import Cubical.Categories.Bicategory.Properties
 open import Cubical.Categories.Bicategory.Properties.Coherence
 open import Cubical.Categories.Bicategory.Functor.Lax
+open import Cubical.Categories.Bicategory.Functor.Properties
 open import Cubical.Categories.Bicategory.Functor.Pseudo
 open import Cubical.Categories.Bicategory.Functor.Composition
 open import Cubical.Categories.Bicategory.Transformation
@@ -128,30 +129,6 @@ module _ {A : Bicategory ℓa ℓa' ℓa''}
   whiskerRF .F-id = makeModificationPath λ x → refl
   whiskerRF .F-seq Γ Δ = makeModificationPath λ x → refl
 
--- Naturality of a lax functor's composition constraint in each slot.
-module _ {B : Bicategory ℓb ℓb' ℓb''} {C : Bicategory ℓc ℓc' ℓc''}
-         (K : LaxFunctor B C) where
-  private
-    module B = Bicategory B
-    module C = Bicategory C
-    module K = LaxFunctor K
-
-  F²nat▷ : ∀ {x y z}{a a' : B.1Cell x y} (α : B.2Cell a a')
-    (b : B.1Cell y z)
-    →   (K.F-2cell α C.▷w K.F-1cell b) C.⋆₂ K.F² a' b
-      ≡ K.F² a b C.⋆₂ K.F-2cell (α B.▷w b)
-  F²nat▷ α b =
-      C.⟨ C.⟨⟩⋆ₕ⟨ sym (K.F-Hom .F-id) ⟩ ⟩⋆₂⟨⟩
-    ∙ NatTrans.N-hom K.F-seq (α , B.id₂)
-
-  F²nat◁ : ∀ {x y z} (a : B.1Cell x y){b b' : B.1Cell y z}
-    (β : B.2Cell b b')
-    →   (K.F-1cell a C.◁w K.F-2cell β) C.⋆₂ K.F² a b'
-      ≡ K.F² a b C.⋆₂ K.F-2cell (a B.◁w β)
-  F²nat◁ a β =
-      C.⟨ C.⟨ sym (K.F-Hom .F-id) ⟩⋆ₕ⟨⟩ ⟩⋆₂⟨⟩
-    ∙ NatTrans.N-hom K.F-seq (B.id₂ , β)
-
 -- Left whiskering by a pseudofunctor.  A lax `K` will not do: the
 -- component 2-cell must travel back out of `K` along `K.F²`.
 module _ {A : Bicategory ℓa ℓa' ℓa''}
@@ -178,15 +155,6 @@ module _ {A : Bicategory ℓa ℓa' ℓa''}
     κ²⁻ : ∀ {x y z} (a : B.1Cell x y) (b : B.1Cell y z)
       → C.2Cell (K.F-1cell (a B.⋆₁ b)) (K.F-1cell a C.⋆₁ K.F-1cell b)
     κ²⁻ a b = κ²I a b .snd .inv
-
-    aR6 : {x y : C.0Cell}{f₀ f₁ f₂ f₃ f₄ f₅ f₆ f₇ : C.1Cell x y}
-      (c₀ : C.2Cell f₀ f₁) (c₁ : C.2Cell f₁ f₂) (c₂ : C.2Cell f₂ f₃)
-      (c₃ : C.2Cell f₃ f₄) (c₄ : C.2Cell f₄ f₅) (c₅ : C.2Cell f₅ f₆)
-      (t : C.2Cell f₆ f₇)
-      →   (c₀ C.⋆₂ c₁ C.⋆₂ c₂ C.⋆₂ c₃ C.⋆₂ c₄ C.⋆₂ c₅) C.⋆₂ t
-        ≡ c₀ C.⋆₂ c₁ C.⋆₂ c₂ C.⋆₂ c₃ C.⋆₂ c₄ C.⋆₂ c₅ C.⋆₂ t
-    aR6 c₀ c₁ c₂ c₃ c₄ c₅ t =
-      C.⋆₂Assoc _ _ _ ∙ C.⟨⟩⋆₂⟨ aR5 C c₁ c₂ c₃ c₄ c₅ t ⟩
 
   module _ (σ : LaxNatTrans F G) where
     private
@@ -454,7 +422,7 @@ module _ {A : Bicategory ℓa ℓa' ℓa''}
             C.⟨ ▷wSeq C (K.F² Ff Fg) (K.F-2cell (F.F² f g)) (n z) ⟩⋆₂⟨⟩
           ∙ C.⋆₂Assoc _ _ _
           ∙ C.⟨⟩⋆₂⟨ pushr C (F²nat▷ Kl (F.F² f g) sz) _ ⟩
-          ∙ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ pushn C mergeS _ ∙ aR6 _ _ _ _ _ _ _ ⟩ ⟩
+          ∙ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ pushn C mergeS _ ∙ aR6 C _ _ _ _ _ _ _ ⟩ ⟩
           ∙ sym (aR3 C _ _ _ _)
           ∙ C.⟨ K.lax-α _ _ _ _ Ff Fg sz ⟩⋆₂⟨⟩
           ∙ aR3 C _ _ _ _

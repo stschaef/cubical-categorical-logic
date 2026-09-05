@@ -121,3 +121,12 @@ module _ {B : Bicategory ℓb ℓb' ℓb''} {C : Bicategory ℓc ℓc' ℓc''}
   LaxNatTransCat .⋆IdR Γ = makeModificationPath λ x → C.⋆₂IdR _
   LaxNatTransCat .⋆Assoc Γ Δ Θ = makeModificationPath λ x → C.⋆₂Assoc _ _ _
   LaxNatTransCat .isSetHom = isSetModification
+
+  -- A componentwise invertible modification is an iso in
+  -- `LaxNatTransCat`.
+  modIsIso : {α β : LaxNatTrans F G} (Γ : Modification α β)
+    → ((x : B.0Cell) → isIso C.Hom[ F.F-ob x , G.F-ob x ] (Γ .M-ob x))
+    → isIso LaxNatTransCat Γ
+  modIsIso Γ isI .inv = invMod Γ isI
+  modIsIso Γ isI .sec = makeModificationPath λ x → isI x .sec
+  modIsIso Γ isI .ret = makeModificationPath λ x → isI x .ret

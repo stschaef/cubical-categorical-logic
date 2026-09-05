@@ -16,6 +16,7 @@ open import Cubical.Categories.Instances.BinProduct
 open import Cubical.Categories.Bicategory.Base
 open import Cubical.Categories.Bicategory.Properties
 open import Cubical.Categories.Bicategory.Functor.Lax
+open import Cubical.Categories.Bicategory.Functor.Properties
 open import Cubical.Categories.Bicategory.Functor.Pseudo
 
 private
@@ -58,32 +59,6 @@ module _ {B : Bicategory ℓb ℓb' ℓb''}
       → D.2Cell (1c f D.⋆₁ 1c g) (1c (f B.⋆₁ g))
     μ f g = G.F² (F.F-1cell f) (F.F-1cell g) D.⋆₂ G.F-2cell (F.F² f g)
 
-    G2id : ∀ {x y} (a : C.1Cell x y) → G.F-2cell (C.id₂ {f = a}) ≡ D.id₂
-    G2id a = G.F-Hom .F-id
-
-    -- G's F-seq naturality, in whiskered form.
-    Gnat▷ : ∀ {x y z}{a a' : C.1Cell x y}
-      (α : C.2Cell a a') (b : C.1Cell y z)
-      → (G.F-2cell α D.▷w G.F-1cell b) D.⋆₂ G.F² a' b
-        ≡ G.F² a b D.⋆₂ G.F-2cell (α C.▷w b)
-    Gnat▷ {a = a}{a' = a'} α b =
-      w ∙ G.F-seq .N-hom (α , C.id₂ {f = b})
-      where
-      w : (G.F-2cell α D.▷w G.F-1cell b) D.⋆₂ G.F² a' b
-        ≡ (G.F-2cell α D.⋆ₕ G.F-2cell (C.id₂ {f = b})) D.⋆₂ G.F² a' b
-      w = D.⟨ D.⟨⟩⋆ₕ⟨ sym (G2id b) ⟩ ⟩⋆₂⟨⟩
-
-    Gnat◁ : ∀ {x y z} (a : C.1Cell x y){b b' : C.1Cell y z}
-      (β : C.2Cell b b')
-      → (G.F-1cell a D.◁w G.F-2cell β) D.⋆₂ G.F² a b'
-        ≡ G.F² a b D.⋆₂ G.F-2cell (a C.◁w β)
-    Gnat◁ a {b = b}{b' = b'} β =
-      w ∙ G.F-seq .N-hom (C.id₂ {f = a} , β)
-      where
-      w : (G.F-1cell a D.◁w G.F-2cell β) D.⋆₂ G.F² a b'
-        ≡ (G.F-2cell (C.id₂ {f = a}) D.⋆ₕ G.F-2cell β) D.⋆₂ G.F² a b'
-      w = D.⟨ D.⟨ sym (G2id a) ⟩⋆ₕ⟨⟩ ⟩⋆₂⟨⟩
-
     idNat : ∀ {x} {p q : 𝟙C .ob} (u : 𝟙C [ p , q ])
       → D.id {ob₀ x} .F-hom u D.⋆₂ ε {x}
         ≡ ε {x} D.⋆₂ G.F-2cell (F.F-2cell (B.id {x} .F-hom u))
@@ -118,7 +93,7 @@ module _ {B : Bicategory ℓb ℓb' ℓb''}
       ∙ D.⋆₂Assoc _ _ _
       ∙ D.⟨⟩⋆₂⟨ D.⟨⟩⋆₂⟨ D.⋆₂Assoc _ _ _ ⟩ ⟩
       ∙ D.⟨⟩⋆₂⟨ sym (D.⋆₂Assoc _ _ _) ⟩
-      ∙ D.⟨⟩⋆₂⟨ D.⟨ Gnat▷ F.F⁰ (F.F-1cell f) ⟩⋆₂⟨⟩ ⟩
+      ∙ D.⟨⟩⋆₂⟨ D.⟨ F²nat▷ G F.F⁰ (F.F-1cell f) ⟩⋆₂⟨⟩ ⟩
       ∙ D.⟨⟩⋆₂⟨ D.⋆₂Assoc _ _ _ ⟩
       ∙ D.⟨⟩⋆₂⟨ D.⟨⟩⋆₂⟨
             D.⟨⟩⋆₂⟨ sym (G.F-Hom .F-seq _ _) ⟩
@@ -134,7 +109,7 @@ module _ {B : Bicategory ℓb ℓb' ℓb''}
       ∙ D.⋆₂Assoc _ _ _
       ∙ D.⟨⟩⋆₂⟨ D.⟨⟩⋆₂⟨ D.⋆₂Assoc _ _ _ ⟩ ⟩
       ∙ D.⟨⟩⋆₂⟨ sym (D.⋆₂Assoc _ _ _) ⟩
-      ∙ D.⟨⟩⋆₂⟨ D.⟨ Gnat◁ (F.F-1cell f) F.F⁰ ⟩⋆₂⟨⟩ ⟩
+      ∙ D.⟨⟩⋆₂⟨ D.⟨ F²nat◁ G (F.F-1cell f) F.F⁰ ⟩⋆₂⟨⟩ ⟩
       ∙ D.⟨⟩⋆₂⟨ D.⋆₂Assoc _ _ _ ⟩
       ∙ D.⟨⟩⋆₂⟨ D.⟨⟩⋆₂⟨
             D.⟨⟩⋆₂⟨ sym (G.F-Hom .F-seq _ _) ⟩
@@ -153,7 +128,7 @@ module _ {B : Bicategory ℓb ℓb' ℓb''}
       ∙ D.⋆₂Assoc _ _ _
       ∙ D.⟨⟩⋆₂⟨ D.⟨⟩⋆₂⟨ D.⋆₂Assoc _ _ _ ⟩ ⟩
       ∙ D.⟨⟩⋆₂⟨ sym (D.⋆₂Assoc _ _ _) ⟩
-      ∙ D.⟨⟩⋆₂⟨ D.⟨ Gnat▷ (F.F² f g) (F.F-1cell h) ⟩⋆₂⟨⟩ ⟩
+      ∙ D.⟨⟩⋆₂⟨ D.⟨ F²nat▷ G (F.F² f g) (F.F-1cell h) ⟩⋆₂⟨⟩ ⟩
       ∙ D.⟨⟩⋆₂⟨ D.⋆₂Assoc _ _ _ ⟩
       ∙ D.⟨⟩⋆₂⟨ D.⟨⟩⋆₂⟨
             D.⟨⟩⋆₂⟨ sym (G.F-Hom .F-seq _ _) ⟩
@@ -167,7 +142,7 @@ module _ {B : Bicategory ℓb ℓb' ℓb''}
       ∙ D.⋆₂Assoc _ _ _
       ∙ D.⟨⟩⋆₂⟨ D.⋆₂Assoc _ _ _ ⟩
       ∙ D.⟨⟩⋆₂⟨ D.⟨⟩⋆₂⟨ sym (D.⋆₂Assoc _ _ _) ⟩ ⟩
-      ∙ D.⟨⟩⋆₂⟨ D.⟨⟩⋆₂⟨ D.⟨ sym (Gnat◁ (F.F-1cell f) (F.F² g h)) ⟩⋆₂⟨⟩ ⟩ ⟩
+      ∙ D.⟨⟩⋆₂⟨ D.⟨⟩⋆₂⟨ D.⟨ sym (F²nat◁ G (F.F-1cell f) (F.F² g h)) ⟩⋆₂⟨⟩ ⟩ ⟩
       ∙ D.⟨⟩⋆₂⟨ D.⟨⟩⋆₂⟨ D.⋆₂Assoc _ _ _ ⟩ ⟩
       ∙ D.⟨⟩⋆₂⟨ sym (D.⋆₂Assoc _ _ _) ⟩
       ∙ D.⟨⟩⋆₂⟨ D.⟨ sym (◁wSeq D (1c f) (G.F² (F.F-1cell g) (F.F-1cell h))

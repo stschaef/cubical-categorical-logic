@@ -20,14 +20,13 @@ open import Cubical.Categories.Instances.FullSubcategory
 open import Cubical.Categories.Bicategory.Base
 open import Cubical.Categories.Bicategory.Properties
 open import Cubical.Categories.Bicategory.Properties.Coherence
-open import Cubical.Categories.Bicategory.Constructions.Op
 open import Cubical.Categories.Bicategory.Instances.CAT
-open import Cubical.Categories.Bicategory.Functor.Lax
 open import Cubical.Categories.Bicategory.Functor.Pseudo
 open import Cubical.Categories.Bicategory.Transformation
 open import Cubical.Categories.Bicategory.Transformation.Properties
 open import Cubical.Categories.Bicategory.Transformation.Identity
 open import Cubical.Categories.Bicategory.Transformation.Composition
+open import Cubical.Categories.Bicategory.Transformation.Coherence
 open import Cubical.Categories.Bicategory.Prestack.Base
 open import Cubical.Categories.Bicategory.Prestack.Morphism
 
@@ -87,201 +86,33 @@ module _ (B : Bicategory ℓ ℓ' ℓ'') (ℓp ℓp' : Level) where
   PRESTACKid P = FunctorFromTerminal
     (idLaxNatTrans (P .laxFunctor) , idIsPseudo (P .laxFunctor))
 
-  -- Step 3: the left unitor.
-  module _ (P Q : Prestack B ℓp ℓp') (α : PrestackHom P Q) where
-    private
-      module Bo = Bicategory (B ^opᴮ)
-      module Pl = LaxFunctor (P .laxFunctor)
-      module Ql = LaxFunctor (Q .laxFunctor)
-
-      idα : PrestackHom P P
-      idα = idLaxNatTrans (P .laxFunctor)
-
-      lamHom : {x y : Bo.ob} (f : Bo.1Cell x y)
-        →   seqLaxNatTrans idα α .N-hom f
-              C.⋆₂ (C.λ⁺ (α .N-1cell x) C.▷w Ql.F-1cell f)
-          ≡ (Pl.F-1cell f C.◁w C.λ⁺ (α .N-1cell y)) C.⋆₂ α .N-hom f
-      lamHom {x} {y} f =
-          aR5 C _ _ _ _ _ _
-        ∙ C.⟨⟩⋆₂⟨ C.⟨ ▷wSeq C (C.ρ⁺ Pf) (C.λ⁻ Pf) Ay ⟩⋆₂⟨⟩
-                ∙ aR2 C _ _ _ ⟩
-        ∙ pushn C (α⁻ρ▷ C Pf Ay) _
-        ∙ C.⟨⟩⋆₂⟨ pushn C (λ⁻⋆₁ C Pf Ay) _ ⟩
-        ∙ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ λ⋆₁ C Ax Qf ⟩ ⟩ ⟩
-        ∙ C.⟨⟩⋆₂⟨ pushr C (sym (λ⁻-nat C N)) _
-                ∙ C.⟨⟩⋆₂⟨ C.λU _ _ .nIso (tt* , Ax C.⋆₁ Qf) .sec ⟩
-                ∙ C.⋆₂IdR _ ⟩
-        where
-        Pf = Pl.F-1cell f
-        Qf = Ql.F-1cell f
-        Ax = α .N-1cell x
-        Ay = α .N-1cell y
-        N  = α .N-hom f
-
-    lamMod : Modification (seqLaxNatTrans idα α) α
-    lamMod .M-ob x = C.λ⁺ (α .N-1cell x)
-    lamMod .M-hom = lamHom
-
-    lamModInv : Modification α (seqLaxNatTrans idα α)
-    lamModInv = invMod lamMod
-      (λ x → C.λU _ _ .nIso (tt* , α .N-1cell x))
-
+  -- Steps 3-5: the unitors and the associator, componentwise the
+  -- generic ones for `seqLaxNatTrans`.
   PRESTACKλ : (P Q : Prestack B ℓp ℓp')
     → NatIso (PRESTACKseq P P Q
                 ∘F (PRESTACKid P ×F 𝟙⟨ PrestackHomCat {B = B} P Q ⟩))
              (Snd 𝟙C (PrestackHomCat {B = B} P Q))
-  PRESTACKλ P Q .trans .N-ob (_ , α , _) = lamMod P Q α
+  PRESTACKλ P Q .trans .N-ob (_ , α , _) = lamMod α
   PRESTACKλ P Q .trans .N-hom (_ , Γ) =
     makeModificationPath (λ x → λ-nat C (Γ .M-ob x))
-  PRESTACKλ P Q .nIso (_ , α , _) .inv = lamModInv P Q α
+  PRESTACKλ P Q .nIso (_ , α , _) .inv = lamModInv α
   PRESTACKλ P Q .nIso (_ , α , _) .sec =
     makeModificationPath (λ x → C.λU _ _ .nIso (tt* , α .N-1cell x) .sec)
   PRESTACKλ P Q .nIso (_ , α , _) .ret =
     makeModificationPath (λ x → C.λU _ _ .nIso (tt* , α .N-1cell x) .ret)
 
-  -- Step 4: the right unitor.
-  module _ (P Q : Prestack B ℓp ℓp') (α : PrestackHom P Q) where
-    private
-      module Bo = Bicategory (B ^opᴮ)
-      module Pl = LaxFunctor (P .laxFunctor)
-      module Ql = LaxFunctor (Q .laxFunctor)
-
-      idβ : PrestackHom Q Q
-      idβ = idLaxNatTrans (Q .laxFunctor)
-
-      rhoHom : {x y : Bo.ob} (f : Bo.1Cell x y)
-        →   seqLaxNatTrans α idβ .N-hom f
-              C.⋆₂ (C.ρ⁺ (α .N-1cell x) C.▷w Ql.F-1cell f)
-          ≡ (Pl.F-1cell f C.◁w C.ρ⁺ (α .N-1cell y)) C.⋆₂ α .N-hom f
-      rhoHom {x} {y} f =
-          aR5 C _ _ _ _ _ _
-        ∙ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨
-            C.⟨ ◁wSeq C Ax (C.ρ⁺ Qf) (C.λ⁻ Qf) ⟩⋆₂⟨⟩
-            ∙ aR2 C _ _ _ ⟩ ⟩ ⟩
-        ∙ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ pushn C (ρ⋆₁ C Qf Ax) _ ⟩ ⟩
-        ∙ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨
-            C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ α⁻ρ▷ C Ax Qf ⟩
-                  ∙ sym (◁wSeq C Ax (C.λ⁻ Qf) (C.λ⁺ Qf))
-                  ∙ Ax C.◁⟨ C.λU _ _ .nIso (tt* , Qf) .sec ⟩
-                  ∙ C.◁wId Ax ⟩
-            ∙ C.⋆₂IdR _ ⟩ ⟩
-        ∙ C.⟨⟩⋆₂⟨ ρ-nat C N ⟩
-        ∙ pushn C (α⁻ρ◁ C Pf Ay) _
-        where
-        Pf = Pl.F-1cell f
-        Qf = Ql.F-1cell f
-        Ax = α .N-1cell x
-        Ay = α .N-1cell y
-        N  = α .N-hom f
-
-    rhoMod : Modification (seqLaxNatTrans α idβ) α
-    rhoMod .M-ob x = C.ρ⁺ (α .N-1cell x)
-    rhoMod .M-hom = rhoHom
-
-    rhoModInv : Modification α (seqLaxNatTrans α idβ)
-    rhoModInv = invMod rhoMod
-      (λ x → C.ρU _ _ .nIso (α .N-1cell x , tt*))
-
   PRESTACKρ : (P Q : Prestack B ℓp ℓp')
     → NatIso (PRESTACKseq P Q Q
                 ∘F (𝟙⟨ PrestackHomCat {B = B} P Q ⟩ ×F PRESTACKid Q))
              (Fst (PrestackHomCat {B = B} P Q) 𝟙C)
-  PRESTACKρ P Q .trans .N-ob ((α , _) , _) = rhoMod P Q α
+  PRESTACKρ P Q .trans .N-ob ((α , _) , _) = rhoMod α
   PRESTACKρ P Q .trans .N-hom (Γ , _) =
     makeModificationPath (λ x → ρ-nat C (Γ .M-ob x))
-  PRESTACKρ P Q .nIso ((α , _) , _) .inv = rhoModInv P Q α
+  PRESTACKρ P Q .nIso ((α , _) , _) .inv = rhoModInv α
   PRESTACKρ P Q .nIso ((α , _) , _) .sec =
     makeModificationPath (λ x → C.ρU _ _ .nIso (α .N-1cell x , tt*) .sec)
   PRESTACKρ P Q .nIso ((α , _) , _) .ret =
     makeModificationPath (λ x → C.ρU _ _ .nIso (α .N-1cell x , tt*) .ret)
-
-  -- Step 5: the associator.
-  module _ (P Q R S : Prestack B ℓp ℓp')
-    (α : PrestackHom P Q) (β : PrestackHom Q R) (γ : PrestackHom R S)
-    where
-    private
-      module Bo = Bicategory (B ^opᴮ)
-      module Pl = LaxFunctor (P .laxFunctor)
-      module Ql = LaxFunctor (Q .laxFunctor)
-      module Rl = LaxFunctor (R .laxFunctor)
-      module Sl = LaxFunctor (S .laxFunctor)
-
-      module _ {x y : Bo.ob} (f : Bo.1Cell x y) where
-        private
-          fP = Pl.F-1cell f
-          fQ = Ql.F-1cell f
-          fR = Rl.F-1cell f
-          fS = Sl.F-1cell f
-          ax = α .N-1cell x
-          ay = α .N-1cell y
-          bx = β .N-1cell x
-          by = β .N-1cell y
-          cx = γ .N-1cell x
-          cy = γ .N-1cell y
-          hA = α .N-hom f
-          hB = β .N-hom f
-          hC = γ .N-hom f
-
-        claimA :
-            C.α⁻ fP (ay C.⋆₁ by) cy
-              C.⋆₂ (C.α⁻ fP ay by C.▷w cy)
-              C.⋆₂ ((hA C.▷w by) C.▷w cy)
-          ≡   (fP C.◁w C.α⁺ ay by cy)
-              C.⋆₂ C.α⁻ fP ay (by C.⋆₁ cy)
-              C.⋆₂ (hA C.▷w (by C.⋆₁ cy))
-              C.⋆₂ C.α⁻ (ax C.⋆₁ fQ) by cy
-        claimA =
-            sym (C.⋆₂Assoc _ _ _)
-          ∙ C.⟨ ⋆InvRMove (αI C (fP C.⋆₁ ay) by cy)
-                  (C.⋆₂Assoc _ _ _ ∙ pentP1 C fP ay by cy) ⟩⋆₂⟨⟩
-          ∙ C.⋆₂Assoc _ _ _
-          ∙ C.⟨⟩⋆₂⟨ sym (α⁻natL C hA by cy) ⟩
-          ∙ C.⋆₂Assoc _ _ _
-
-        assocHom :
-            seqLaxNatTrans (seqLaxNatTrans α β) γ .N-hom f
-              C.⋆₂ (C.α⁺ ax bx cx C.▷w fS)
-          ≡   (fP C.◁w C.α⁺ ay by cy)
-              C.⋆₂ seqLaxNatTrans α (seqLaxNatTrans β γ) .N-hom f
-        assocHom =
-            aR5 C _ _ _ _ _ _
-          ∙ C.⟨⟩⋆₂⟨ C.⟨ ▷5 C _ _ _ _ _ cy ⟩⋆₂⟨⟩ ∙ aR5 C _ _ _ _ _ _ ⟩
-          ∙ sym (aR3 C _ _ _ _) ∙ C.⟨ claimA ⟩⋆₂⟨⟩ ∙ aR4 C _ _ _ _ _
-          ∙ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨
-              sym (aR2 C _ _ _)
-              ∙ C.⟨ pentP3 C ax fQ by cy ⟩⋆₂⟨⟩
-              ∙ aR3 C _ _ _ _ ⟩ ⟩ ⟩
-          ∙ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨
-              pushr C (sym (α⁻natM C ax hB cy)) _ ⟩ ⟩ ⟩ ⟩ ⟩
-          ∙ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨
-              rep3 C (pentP1 C ax bx fR cy) _ ⟩ ⟩ ⟩ ⟩ ⟩ ⟩
-          ∙ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨
-              pushr C (sym (α⁻natR C ax bx hC)) _ ⟩ ⟩ ⟩ ⟩ ⟩ ⟩ ⟩
-          ∙ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨
-              C.⟨⟩⋆₂⟨
-                sym (aR2 C _ _ _)
-                ∙ C.⟨ sym (pentP2 C ax bx cx fS) ⟩⋆₂⟨⟩
-                ∙ aR3 C _ _ _ _
-                ∙ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ sym (▷wSeq C _ _ fS)
-                                 ∙ C.⟨ C.α _ _ _ _ .nIso (ax , bx , cx) .sec
-                                   ⟩▷ fS
-                                 ∙ C.▷wId fS ⟩
-                        ∙ C.⋆₂IdR _ ⟩ ⟩ ⟩ ⟩ ⟩ ⟩ ⟩ ⟩ ⟩
-          ∙ sym ( C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨
-                    C.⟨ ◁5 C ax _ _ _ _ _ ⟩⋆₂⟨⟩
-                    ∙ aR5 C _ _ _ _ _ _ ⟩ ⟩ ⟩ ⟩ )
-
-    assocMod : Modification (seqLaxNatTrans (seqLaxNatTrans α β) γ)
-                            (seqLaxNatTrans α (seqLaxNatTrans β γ))
-    assocMod .M-ob x =
-      C.α⁺ (α .N-1cell x) (β .N-1cell x) (γ .N-1cell x)
-    assocMod .M-hom f = assocHom f
-
-    assocModInv : Modification (seqLaxNatTrans α (seqLaxNatTrans β γ))
-                               (seqLaxNatTrans (seqLaxNatTrans α β) γ)
-    assocModInv = invMod assocMod
-      (λ x → C.α _ _ _ _
-        .nIso (α .N-1cell x , β .N-1cell x , γ .N-1cell x))
 
   PRESTACKα : (P Q R S : Prestack B ℓp ℓp')
     → NatIso (PRESTACKseq P R S
@@ -292,12 +123,12 @@ module _ (B : Bicategory ℓ ℓ' ℓ'') (ℓp ℓp' : Level) where
              (PRESTACKseq P Q S
                 ∘F (𝟙⟨ PrestackHomCat {B = B} P Q ⟩ ×F PRESTACKseq Q R S))
   PRESTACKα P Q R S .trans .N-ob ((α , _) , (β , _) , (γ , _)) =
-    assocMod P Q R S α β γ
+    assocMod α β γ
   PRESTACKα P Q R S .trans .N-hom (Γ , Δ , Θ) =
     makeModificationPath
       (λ x → α⁺nat C (Γ .M-ob x) (Δ .M-ob x) (Θ .M-ob x))
   PRESTACKα P Q R S .nIso ((α , _) , (β , _) , (γ , _)) .inv =
-    assocModInv P Q R S α β γ
+    assocModInv α β γ
   PRESTACKα P Q R S .nIso ((α , _) , (β , _) , (γ , _)) .sec =
     makeModificationPath (λ x → C.α _ _ _ _
       .nIso (α .N-1cell x , β .N-1cell x , γ .N-1cell x) .sec)

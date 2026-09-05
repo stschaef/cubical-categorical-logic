@@ -120,6 +120,14 @@ module _ (C : Bicategory ℓ ℓ' ℓ'') where
       ≡ p C.⋆₂ q C.⋆₂ r C.⋆₂ s C.⋆₂ u C.⋆₂ t
   aR5 p q r s u t = C.⋆₂Assoc _ _ _ ∙ C.⟨⟩⋆₂⟨ aR4 q r s u t ⟩
 
+  aR6 : {x y : C.0Cell} {f₀ f₁ f₂ f₃ f₄ f₅ f₆ f₇ : C.1Cell x y}
+    (p : C.2Cell f₀ f₁) (q : C.2Cell f₁ f₂) (r : C.2Cell f₂ f₃)
+    (s : C.2Cell f₃ f₄) (u : C.2Cell f₄ f₅) (v : C.2Cell f₅ f₆)
+    (t : C.2Cell f₆ f₇)
+    →   (p C.⋆₂ q C.⋆₂ r C.⋆₂ s C.⋆₂ u C.⋆₂ v) C.⋆₂ t
+      ≡ p C.⋆₂ q C.⋆₂ r C.⋆₂ s C.⋆₂ u C.⋆₂ v C.⋆₂ t
+  aR6 p q r s u v t = C.⋆₂Assoc _ _ _ ∙ C.⟨⟩⋆₂⟨ aR5 q r s u v t ⟩
+
   -- Rewriting the first two factors of a right-nested composite.
   pushn : {x y : C.0Cell} {f g h k : C.1Cell x y}
     {u : C.2Cell f g} {v : C.2Cell g h} {w : C.2Cell f h}

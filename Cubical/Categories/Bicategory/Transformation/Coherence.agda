@@ -91,12 +91,7 @@ module _ {A : Bicategory ℓa ℓa' ℓa''} {B : Bicategory ℓb ℓb' ℓb''}
             ∙ D.⟨⟩⋆₂⟨ sym (H₃.F-Hom .F-seq _ _) ⟩ ⟩▷ D.id₁ ⟩⋆₂⟨⟩
     ∙ ι.lax-seq f g
 
-{-
-  Unitors and associator for `seqLaxNatTrans`.  These are the generic
-  forms of `lamMod`/`rhoMod`/`assocMod` in `Prestack.Bicategory`,
-  which are hard-wired to `CAT` as the target bicategory; the proofs
-  below are those, with the target bicategory made a parameter.
--}
+-- Unitors and associator for `seqLaxNatTrans`.
 module _ {B : Bicategory ℓb ℓb' ℓb''} {C : Bicategory ℓc ℓc' ℓc''}
          {F G : LaxFunctor B C} (α : LaxNatTrans F G) where
   private
@@ -253,19 +248,3 @@ module _ {B : Bicategory ℓb ℓb' ℓb''} {C : Bicategory ℓc ℓc' ℓc''}
   assocModInv = invMod assocMod
     (λ x → C.α _ _ _ _
       .nIso (α .N-1cell x , β .N-1cell x , γ .N-1cell x))
-
--- A componentwise invertible modification is an iso in `LaxNatTransCat`.
-module _ {B : Bicategory ℓb ℓb' ℓb''} {C : Bicategory ℓc ℓc' ℓc''}
-         {F G : LaxFunctor B C} {α β : LaxNatTrans F G} where
-  private
-    module B = Bicategory B
-    module C = Bicategory C
-    module F = LaxFunctor F
-    module G = LaxFunctor G
-
-  modIsIso : (Γ : Modification α β)
-    → ((x : B.0Cell) → isIso C.Hom[ F.F-ob x , G.F-ob x ] (Γ .M-ob x))
-    → isIso (LaxNatTransCat {F = F} {G = G}) Γ
-  modIsIso Γ isI .inv = invMod Γ isI
-  modIsIso Γ isI .sec = makeModificationPath λ x → isI x .sec
-  modIsIso Γ isI .ret = makeModificationPath λ x → isI x .ret
