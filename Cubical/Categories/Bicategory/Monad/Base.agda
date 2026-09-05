@@ -204,8 +204,9 @@ module _ (C : Bicategory ℓ ℓ' ℓ'') where
   LaxFunctorIsoMonad .Iso.sec = fromLaxFunctor∘toLaxFunctor
   LaxFunctorIsoMonad .Iso.ret = toLaxFunctor∘fromLaxFunctor
 
-{- Notation for a formal monad: the whiskered unit and multiplication
-   that its laws are stated in. -}
+{- Notation for a formal monad: the composites and whiskered cells its
+   laws are stated in.  `ComonadNotation` below is this module at
+   `C ^coᴮ`, re-exported under the dual names. -}
 module MonadNotation {C : Bicategory ℓ ℓ' ℓ''} (M : Monad C) where
   private
     module C = Bicategory C
@@ -214,27 +215,59 @@ module MonadNotation {C : Bicategory ℓ ℓ' ℓ''} (M : Monad C) where
   t² : C.1Cell a a
   t² = t C.⋆₁ t
 
+  t³L : C.1Cell a a
+  t³L = t² C.⋆₁ t
+
+  t³R : C.1Cell a a
+  t³R = t C.⋆₁ t²
+
+  -- Structural cells at the carrier.
+  λt : C.2Cell (C.id₁ C.⋆₁ t) t
+  λt = C.λ⁺ t
+
+  λt⁻ : C.2Cell t (C.id₁ C.⋆₁ t)
+  λt⁻ = C.λ⁻ t
+
+  ρt : C.2Cell (t C.⋆₁ C.id₁) t
+  ρt = C.ρ⁺ t
+
+  ρt⁻ : C.2Cell t (t C.⋆₁ C.id₁)
+  ρt⁻ = C.ρ⁻ t
+
+  αt : C.2Cell t³L t³R
+  αt = C.α⁺ t t t
+
+  αt⁻ : C.2Cell t³R t³L
+  αt⁻ = C.α⁻ t t t
+
+  -- Unit and multiplication, whiskered by the carrier.
   ηt : C.2Cell (C.id₁ C.⋆₁ t) t²
   ηt = η C.▷w t
 
   tη : C.2Cell (t C.⋆₁ C.id₁) t²
   tη = t C.◁w η
 
-  μt : C.2Cell (t² C.⋆₁ t) t²
+  μt : C.2Cell t³L t²
   μt = μ C.▷w t
 
-  tμ : C.2Cell (t C.⋆₁ t²) t²
+  tμ : C.2Cell t³R t²
   tμ = t C.◁w μ
 
   -- The laws, in that notation.
-  idL' : (ηt C.⋆₂ μ) ≡ C.λ⁺ t
+  idL' : (ηt C.⋆₂ μ) ≡ λt
   idL' = idL
 
-  idR' : (tη C.⋆₂ μ) ≡ C.ρ⁺ t
+  idR' : (tη C.⋆₂ μ) ≡ ρt
   idR' = idR
 
-  μAssoc' : (C.α⁺ t t t C.⋆₂ (tμ C.⋆₂ μ)) ≡ (μt C.⋆₂ μ)
+  μAssoc' : (αt C.⋆₂ (tμ C.⋆₂ μ)) ≡ (μt C.⋆₂ μ)
   μAssoc' = μAssoc
+
+  -- An idempotent monad is one whose multiplication is invertible.
+  isIdempotent : Type ℓ''
+  isIdempotent = Cubical.Categories.Category.isIso C.Hom[ a , a ] μ
+
+
 
 -- `_^coᴮ` reverses the 2-cells, which is where a formal monad's unit
 -- and multiplication live, so it is the monad/comonad duality here.
@@ -243,16 +276,63 @@ module MonadNotation {C : Bicategory ℓ ℓ' ℓ''} (M : Monad C) where
 Comonad : Bicategory ℓ ℓ' ℓ'' → Type (ℓ-max ℓ (ℓ-max ℓ' ℓ''))
 Comonad K = Monad (K ^coᴮ)
 
+{- `MonadNotation` at `K ^coᴮ`, re-exported under the dual names.  The
+   carrier and the whiskerings are `K`'s on the nose, so only the
+   2-cells turn around. -}
 module ComonadNotation {K : Bicategory ℓ ℓ' ℓ''} (W : Comonad K) where
   private
     module K = Bicategory K
-  open Monad W public using (a; t)
+    module M = MonadNotation W
+  open M public using (a; t; t²; t³L; t³R)
 
-  counit : K.2Cell t K.id₁
-  counit = Monad.η W
+  -- Taken at `K`, not re-exported: `M`'s `λt` is `K.λ⁻` and vice versa.
+  λt : K.2Cell (K.id₁ K.⋆₁ t) t
+  λt = K.λ⁺ t
 
-  comult : K.2Cell t (t K.⋆₁ t)
-  comult = Monad.μ W
+  λt⁻ : K.2Cell t (K.id₁ K.⋆₁ t)
+  λt⁻ = K.λ⁻ t
+
+  ρt : K.2Cell (t K.⋆₁ K.id₁) t
+  ρt = K.ρ⁺ t
+
+  ρt⁻ : K.2Cell t (t K.⋆₁ K.id₁)
+  ρt⁻ = K.ρ⁻ t
+
+  ε : K.2Cell t K.id₁
+  ε = M.η
+
+  δ : K.2Cell t t²
+  δ = M.μ
+
+  αw : K.2Cell t³R t³L
+  αw = M.αt
+
+  αw⁻ : K.2Cell t³L t³R
+  αw⁻ = M.αt⁻
+
+  εt : K.2Cell t² (K.id₁ K.⋆₁ t)
+  εt = M.ηt
+
+  tε : K.2Cell t² (t K.⋆₁ K.id₁)
+  tε = M.tη
+
+  δt : K.2Cell t² t³L
+  δt = M.μt
+
+  tδ : K.2Cell t² t³R
+  tδ = M.tμ
+
+  counitL : (δ K.⋆₂ εt) ≡ λt⁻
+  counitL = M.idL'
+
+  counitR : (δ K.⋆₂ tε) ≡ ρt⁻
+  counitR = M.idR'
+
+  δAssoc : ((δ K.⋆₂ tδ) K.⋆₂ αw) ≡ (δ K.⋆₂ δt)
+  δAssoc = M.μAssoc'
+
+  isIdempotent : Type ℓ''
+  isIdempotent = M.isIdempotent
 
 -- A monad in a displayed bicategory lying over a monad in the base:
 -- the data sits over M's data and the laws are PathPs over M's laws.
