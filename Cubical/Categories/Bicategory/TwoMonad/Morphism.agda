@@ -1,11 +1,15 @@
 {-# OPTIONS --lossy-unification #-}
 {-
-  Identity and composition of lax morphisms of pseudoalgebras, the
-  data `Bicategory.TwoMonad.Algebra` does not supply.
+  Identity and composition of morphisms of pseudoalgebras, the data
+  `Bicategory.TwoMonad.Algebra` does not supply.
 
-  Both are complete: `idAlgHom` and `seqAlgHom`, together with
-  `idCellIsIso`/`seqCellIsIso` saying that identities and composites of
-  pseudo morphisms are pseudo.
+  In the `lax` variance both are complete: `idAlgHom` and
+  `seqAlgHom`, together with `idCellIsIso`/`seqCellIsIso` saying that
+  identities and composites of pseudo morphisms are pseudo.  In the
+  `colax` variance only the identity `idAlgHomᶜ` is available, as the
+  transpose of `idAlgHom` along its invertible cell; composition
+  there is a genuinely different argument, not a transpose of
+  `seqMultAx`, and is not proved.
 -}
 module Cubical.Categories.Bicategory.TwoMonad.Morphism where
 
@@ -340,7 +344,7 @@ module _ {K : Bicategory ℓ ℓ' ℓ''} (M : TwoMonad K) where
       ⋆CancelL (Gc , ▷wIsIso K (T1 a K.⋆₁ a) Wiso) (lhsKey ∙ sym rhsKey)
 
     -- The identity morphism of pseudoalgebras.
-    idAlgHom : AlgHom M A A
+    idAlgHom : AlgHom M A A lax
     idAlgHom .mor = K.id₁
     idAlgHom .cell = idCell
     idAlgHom .unitAx = idUnitAx
@@ -353,10 +357,14 @@ module _ {K : Bicategory ℓ ℓ' ℓ''} (M : TwoMonad K) where
              (⋆IsIso (K.λU (Tob c) c .nIso (tt* , a))
                      (invIso (_ , K.ρU (Tob c) c .nIso (a , tt*)) .snd))
 
+    -- Hence also the identity colax morphism, with the inverse cell.
+    idAlgHomᶜ : AlgHom M A A colax
+    idAlgHomᶜ = pseudoLax→colax M A A idAlgHom idCellIsIso
+
   -- The composite of two lax morphisms: paste the two comparison
   -- cells, splitting `T` of the composite by `T`'s laxity constraint.
   module _ {A B C : PseudoAlgebra M}
-           (h : AlgHom M A B) (k : AlgHom M B C) where
+           (h : AlgHom M A B lax) (k : AlgHom M B C lax) where
     private
       f = h .mor
       g = k .mor
@@ -1237,7 +1245,7 @@ module _ {K : Bicategory ℓ ℓ' ℓ''} (M : TwoMonad K) where
         (mLemL ∙ phaseI ∙ cong Mid (h .multAx) ∙ phaseII ∙ sym mLemR)
 
     -- The composite morphism of pseudoalgebras.
-    seqAlgHom : AlgHom M A C
+    seqAlgHom : AlgHom M A C lax
     seqAlgHom .mor = seqMor
     seqAlgHom .cell = seqCell
     seqAlgHom .unitAx = seqUnitAx

@@ -2,6 +2,12 @@
 {-
   Algebras for a 2-monad `M` on a bicategory `K`.
 
+  Morphisms come in two variances, `lax` and `colax`, differing in
+  the direction of the comparison 2-cell; `isPseudoAlgHom` and
+  `isStrictAlgHom` cut out the other two classical notions in either
+  variance.  A pseudo morphism is the same data read either way,
+  `pseudoLax→colax`/`pseudoColax→lax`.
+
   Not to be confused with `Bicategory.MonadAlgebra`, which is the
   Eilenberg-Moore construction for a *formal* monad (a 1-cell
   `t : a → a`).  Here the action of the monad on an algebra is a
@@ -23,6 +29,7 @@ open import Cubical.Categories.NaturalTransformation
 
 open import Cubical.Categories.Bicategory.Base
 open import Cubical.Categories.Bicategory.Properties
+open import Cubical.Categories.Bicategory.Properties.Coherence
 open import Cubical.Categories.Bicategory.Functor.Lax
 open import Cubical.Categories.Bicategory.Functor.Pseudo
 open import Cubical.Categories.Bicategory.Functor.Properties
@@ -34,11 +41,81 @@ private
   variable
     ℓ ℓ' ℓ'' : Level
 
+-- The variance of an algebra morphism: which way its comparison
+-- 2-cell points.  Invertibility is *not* part of the variance: a
+-- morphism whose cell is invertible is the same thing read either
+-- way (`pseudoLax→colax` below), so bundling it would duplicate the
+-- two pseudo cases rather than name a new one.
+data Variance : Type where
+  lax colax : Variance
+
 open Category
 open NatIso
 open LaxNatTrans
 open Modification
 open isIso
+
+-- Two transpositions in a category, used to read a morphism with an
+-- invertible comparison cell in the opposite variance.
+private
+  module _ {ℓC ℓC' : Level} {C : Category ℓC ℓC'} where
+    transposeR : {w x y z : C .ob} {A : C [ w , x ]}
+      (q : CatIso C x y) (Bi : CatIso C y z) (Ci : CatIso C w z)
+      → A ⋆⟨ C ⟩ (q .fst ⋆⟨ C ⟩ Bi .fst) ≡ Ci .fst
+      → q .snd .inv ≡ Bi .fst ⋆⟨ C ⟩ (Ci .snd .inv ⋆⟨ C ⟩ A)
+    transposeR {A = A} q Bi Ci p =
+      sym ( cong (λ z → Bi .fst ⋆⟨ C ⟩ z)
+              ( ⋆InvRMove (⋆Iso q Bi)
+                  ( C .⋆Assoc _ _ _
+                  ∙ cong (λ z → Ci .snd .inv ⋆⟨ C ⟩ z) p
+                  ∙ Ci .snd .sec)
+              ∙ C .⋆IdL _)
+          ∙ sym (C .⋆Assoc _ _ _)
+          ∙ cong (λ z → z ⋆⟨ C ⟩ q .snd .inv) (Bi .snd .ret)
+          ∙ C .⋆IdL _)
+
+    transposeR⁻ : {w x y z : C .ob} {A : C [ w , x ]}
+      (q : CatIso C x y) (Bi : CatIso C y z) (Ci : CatIso C w z)
+      → q .snd .inv ≡ Bi .fst ⋆⟨ C ⟩ (Ci .snd .inv ⋆⟨ C ⟩ A)
+      → A ⋆⟨ C ⟩ (q .fst ⋆⟨ C ⟩ Bi .fst) ≡ Ci .fst
+    transposeR⁻ {A = A} q Bi Ci p =
+      ⋆CancelL (invIso Ci)
+        ( sym (C .⋆Assoc _ _ _)
+        ∙ ⋆InvRMove⁻ (⋆Iso q Bi)
+            ( ⋆CancelL Bi
+                ( sym p
+                ∙ sym ( sym (C .⋆Assoc _ _ _)
+                      ∙ cong (λ z → z ⋆⟨ C ⟩ q .snd .inv) (Bi .snd .ret)
+                      ∙ C .⋆IdL _))
+            ∙ sym (C .⋆IdL _))
+        ∙ sym (Ci .snd .sec))
+
+    transposeL : {x y z : C .ob} {L : C [ z , x ]} {Φ : C [ z , y ]}
+      {Ψ : C [ y , z ]} (q : CatIso C x y)
+      → Ψ ⋆⟨ C ⟩ Φ ≡ C .id
+      → L ⋆⟨ C ⟩ q .fst ≡ Φ
+      → q .snd .inv ≡ Ψ ⋆⟨ C ⟩ L
+    transposeL {Ψ = Ψ} q e p =
+      sym ( cong (λ z → Ψ ⋆⟨ C ⟩ z) (⋆InvRMove q p)
+          ∙ sym (C .⋆Assoc _ _ _)
+          ∙ cong (λ z → z ⋆⟨ C ⟩ q .snd .inv) e
+          ∙ C .⋆IdL _)
+
+    transposeL⁻ : {x y z : C .ob} {L : C [ z , x ]} {Φ : C [ z , y ]}
+      {Ψ : C [ y , z ]} (q : CatIso C x y)
+      → Φ ⋆⟨ C ⟩ Ψ ≡ C .id
+      → q .snd .inv ≡ Ψ ⋆⟨ C ⟩ L
+      → L ⋆⟨ C ⟩ q .fst ≡ Φ
+    transposeL⁻ {Φ = Φ} q e p =
+        cong (λ z → z ⋆⟨ C ⟩ q .fst)
+          (sym ( cong (λ z → Φ ⋆⟨ C ⟩ z) p
+               ∙ sym (C .⋆Assoc _ _ _)
+               ∙ cong (λ z → z ⋆⟨ C ⟩ _) e
+               ∙ C .⋆IdL _))
+      ∙ C .⋆Assoc _ _ _
+      ∙ cong (λ z → Φ ⋆⟨ C ⟩ z) (q .snd .sec)
+      ∙ C .⋆IdR _
+
 
 module _ {K : Bicategory ℓ ℓ' ℓ''} (M : TwoMonad K) where
   private
@@ -161,85 +238,153 @@ module _ {K : Bicategory ℓ ℓ' ℓ''} (M : TwoMonad K) where
   CoherentPseudoAlgebra : Type (ℓ-max ℓ (ℓ-max ℓ' ℓ''))
   CoherentPseudoAlgebra = Σ PseudoAlgebra isCoherentPseudoAlgebra
 
-  -- Lax morphisms of pseudoalgebras: a 1-cell together with a
+  -- Morphisms of pseudoalgebras: a 1-cell together with a
   -- (not necessarily invertible) comparison 2-cell, coherent with the
-  -- unit and multiplication constraints of the two algebras.
+  -- unit and multiplication constraints of the two algebras.  The
+  -- variance says which way the comparison 2-cell points.
   module _ (A B : PseudoAlgebra) where
     private
       Ac = A .carrier
       Bc = B .carrier
       a  = A .act
       b  = B .act
+      uB⁻ = B .actUnitIso .inv
+      mA⁻ = A .actMultIso .inv
 
-    record AlgHom : Type (ℓ-max ℓ' ℓ'') where
+    -- The comparison 2-cell.  In the `lax` variance it points the way
+    -- a lax monoidal functor's constraint does.
+    AlgCell : Variance → K.1Cell Ac Bc → Type ℓ''
+    AlgCell lax   f = K.2Cell (T₁ f K.⋆₁ b) (a K.⋆₁ f)
+    AlgCell colax f = K.2Cell (a K.⋆₁ f) (T₁ f K.⋆₁ b)
+
+    -- The unit axiom.  Reversing the comparison cell forces the
+    -- algebra's own unit constraint to be used backwards, which is
+    -- why `PseudoAlgebra` and not `LaxAlgebra` is the right domain.
+    UnitAx : (v : Variance) (f : K.1Cell Ac Bc) → AlgCell v f → Type ℓ''
+    UnitAx lax f c =
+        K.α⁻ f (ηc Bc) b
+          K.⋆₂ (M.η .N-hom f K.▷w b)
+          K.⋆₂ K.α⁺ (ηc Ac) (T₁ f) b
+          K.⋆₂ (ηc Ac K.◁w c)
+          K.⋆₂ K.α⁻ (ηc Ac) a f
+          K.⋆₂ (A .actUnit K.▷w f)
+          K.⋆₂ K.λ⁺ f
+      ≡ (f K.◁w B .actUnit) K.⋆₂ K.ρ⁺ f
+    UnitAx colax f c =
+        (ηc Ac K.◁w c)
+      ≡   K.α⁻ (ηc Ac) a f
+          K.⋆₂ (A .actUnit K.▷w f)
+          K.⋆₂ K.λ⁺ f
+          K.⋆₂ K.ρ⁻ f
+          K.⋆₂ (f K.◁w uB⁻)
+          K.⋆₂ K.α⁻ f (ηc Bc) b
+          K.⋆₂ (M.η .N-hom f K.▷w b)
+          K.⋆₂ K.α⁺ (ηc Ac) (T₁ f) b
+
+    -- The multiplication axiom.
+    MultAx : (v : Variance) (f : K.1Cell Ac Bc) → AlgCell v f → Type ℓ''
+    MultAx lax f c =
+        (T₁ (T₁ f) K.◁w B .actMult)
+          K.⋆₂ K.α⁻ (T₁ (T₁ f)) (μc Bc) b
+          K.⋆₂ (M.μ .N-hom f K.▷w b)
+          K.⋆₂ K.α⁺ (μc Ac) (T₁ f) b
+          K.⋆₂ (μc Ac K.◁w c)
+      ≡   K.α⁻ (T₁ (T₁ f)) (T₁ b) b
+          K.⋆₂ (T.F² (T₁ f) b K.▷w b)
+          K.⋆₂ (T₂ c K.▷w b)
+          K.⋆₂ (T.F-seq-isIso (a , f) .inv K.▷w b)
+          K.⋆₂ K.α⁺ (T₁ a) (T₁ f) b
+          K.⋆₂ (T₁ a K.◁w c)
+          K.⋆₂ K.α⁻ (T₁ a) a f
+          K.⋆₂ (A .actMult K.▷w f)
+          K.⋆₂ K.α⁺ (μc Ac) a f
+    MultAx colax f c =
+        (μc Ac K.◁w c)
+      ≡   K.α⁻ (μc Ac) a f
+          K.⋆₂ (mA⁻ K.▷w f)
+          K.⋆₂ K.α⁺ (T₁ a) a f
+          K.⋆₂ (T₁ a K.◁w c)
+          K.⋆₂ K.α⁻ (T₁ a) (T₁ f) b
+          K.⋆₂ (T.F² a f K.▷w b)
+          K.⋆₂ (T₂ c K.▷w b)
+          K.⋆₂ (T.F-seq-isIso (T₁ f , b) .inv K.▷w b)
+          K.⋆₂ K.α⁺ (T₁ (T₁ f)) (T₁ b) b
+          K.⋆₂ (T₁ (T₁ f) K.◁w B .actMult)
+          K.⋆₂ K.α⁻ (T₁ (T₁ f)) (μc Bc) b
+          K.⋆₂ (M.μ .N-hom f K.▷w b)
+          K.⋆₂ K.α⁺ (μc Ac) (T₁ f) b
+
+    record AlgHom (v : Variance) : Type (ℓ-max ℓ' ℓ'') where
       no-eta-equality
       field
-        mor  : K.1Cell Ac Bc
-        cell : K.2Cell (T₁ mor K.⋆₁ b) (a K.⋆₁ mor)
-
-        unitAx :
-            K.α⁻ mor (ηc Bc) b
-              K.⋆₂ (M.η .N-hom mor K.▷w b)
-              K.⋆₂ K.α⁺ (ηc Ac) (T₁ mor) b
-              K.⋆₂ (ηc Ac K.◁w cell)
-              K.⋆₂ K.α⁻ (ηc Ac) a mor
-              K.⋆₂ (A .actUnit K.▷w mor)
-              K.⋆₂ K.λ⁺ mor
-          ≡ (mor K.◁w B .actUnit) K.⋆₂ K.ρ⁺ mor
-
-        multAx :
-            (T₁ (T₁ mor) K.◁w B .actMult)
-              K.⋆₂ K.α⁻ (T₁ (T₁ mor)) (μc Bc) b
-              K.⋆₂ (M.μ .N-hom mor K.▷w b)
-              K.⋆₂ K.α⁺ (μc Ac) (T₁ mor) b
-              K.⋆₂ (μc Ac K.◁w cell)
-          ≡   K.α⁻ (T₁ (T₁ mor)) (T₁ b) b
-              K.⋆₂ (T.F² (T₁ mor) b K.▷w b)
-              K.⋆₂ (T₂ cell K.▷w b)
-              K.⋆₂ (T.F-seq-isIso (a , mor) .inv K.▷w b)
-              K.⋆₂ K.α⁺ (T₁ a) (T₁ mor) b
-              K.⋆₂ (T₁ a K.◁w cell)
-              K.⋆₂ K.α⁻ (T₁ a) a mor
-              K.⋆₂ (A .actMult K.▷w mor)
-              K.⋆₂ K.α⁺ (μc Ac) a mor
+        mor    : K.1Cell Ac Bc
+        cell   : AlgCell v mor
+        unitAx : UnitAx v mor cell
+        multAx : MultAx v mor cell
 
     open AlgHom
 
     -- Pseudo morphisms: those whose comparison cell is invertible.
-    isPseudoAlgHom : AlgHom → Type ℓ''
-    isPseudoAlgHom h = isIso K.Hom[ T₀ Ac , Bc ] (h .cell)
+    -- The condition does not mention the variance.
+    isPseudoAlgHom : {v : Variance} → AlgHom v → Type ℓ''
+    isPseudoAlgHom {lax} h = isIso K.Hom[ T₀ Ac , Bc ] (h .cell)
+    isPseudoAlgHom {colax} h = isIso K.Hom[ T₀ Ac , Bc ] (h .cell)
 
     -- Strict morphisms: the comparison cell is the one induced by an
     -- equality of 1-cells.
-    isStrictAlgHom : AlgHom → Type (ℓ-max ℓ' ℓ'')
-    isStrictAlgHom h =
+    isStrictAlgHom : {v : Variance} → AlgHom v → Type (ℓ-max ℓ' ℓ'')
+    isStrictAlgHom {lax} h =
       Σ[ p ∈ T₁ (h .mor) K.⋆₁ b ≡ a K.⋆₁ h .mor ]
         pathToIso {C = K.Hom[ T₀ Ac , Bc ]} p .fst ≡ h .cell
+    isStrictAlgHom {colax} h =
+      Σ[ p ∈ a K.⋆₁ h .mor ≡ T₁ (h .mor) K.⋆₁ b ]
+        pathToIso {C = K.Hom[ T₀ Ac , Bc ]} p .fst ≡ h .cell
 
-    isStrictAlgHom→isPseudoAlgHom :
-      (h : AlgHom) → isStrictAlgHom h → isPseudoAlgHom h
-    isStrictAlgHom→isPseudoAlgHom h (p , q) =
+    isStrictAlgHom→isPseudoAlgHom : {v : Variance} (h : AlgHom v)
+      → isStrictAlgHom h → isPseudoAlgHom h
+    isStrictAlgHom→isPseudoAlgHom {lax} h (p , q) =
+      subst (isIso K.Hom[ T₀ Ac , Bc ]) q
+        (pathToIso {C = K.Hom[ T₀ Ac , Bc ]} p .snd)
+    isStrictAlgHom→isPseudoAlgHom {colax} h (p , q) =
       subst (isIso K.Hom[ T₀ Ac , Bc ]) q
         (pathToIso {C = K.Hom[ T₀ Ac , Bc ]} p .snd)
 
     -- Algebra 2-cells: a 2-cell of the underlying 1-cells commuting
     -- with the two comparison cells.
-    AlgHom2 : AlgHom → AlgHom → Type ℓ''
-    AlgHom2 h k =
-      Σ[ σ ∈ K.2Cell (h .mor) (k .mor) ]
-        (T₂ σ K.▷w b) K.⋆₂ k .cell ≡ h .cell K.⋆₂ (a K.◁w σ)
+    Compat : (v : Variance) (h k : AlgHom v)
+      → K.2Cell (h .mor) (k .mor) → Type ℓ''
+    Compat lax h k σ =
+      (T₂ σ K.▷w b) K.⋆₂ k .cell ≡ h .cell K.⋆₂ (a K.◁w σ)
+    Compat colax h k σ =
+      (a K.◁w σ) K.⋆₂ k .cell ≡ h .cell K.⋆₂ (T₂ σ K.▷w b)
 
-    idAlgHom2 : (h : AlgHom) → AlgHom2 h h
-    idAlgHom2 h .fst = K.id₂
-    idAlgHom2 h .snd =
+    isPropCompat : (v : Variance) (h k : AlgHom v)
+      (σ : K.2Cell (h .mor) (k .mor)) → isProp (Compat v h k σ)
+    isPropCompat lax h k σ = K.isSet2Cell _ _
+    isPropCompat colax h k σ = K.isSet2Cell _ _
+
+    AlgHom2 : {v : Variance} → AlgHom v → AlgHom v → Type ℓ''
+    AlgHom2 {v} h k =
+      Σ[ σ ∈ K.2Cell (h .mor) (k .mor) ] Compat v h k σ
+
+    idCompat : (v : Variance) (h : AlgHom v) → Compat v h h K.id₂
+    idCompat lax h =
         K.⟨ K.⟨ T₂Id ⟩▷ b ∙ K.▷wId b ⟩⋆₂⟨⟩
       ∙ K.⋆₂IdL _
       ∙ sym (K.⟨⟩⋆₂⟨ K.◁wId a ⟩ ∙ K.⋆₂IdR _)
+    idCompat colax h =
+        K.⟨ K.◁wId a ⟩⋆₂⟨⟩
+      ∙ K.⋆₂IdL _
+      ∙ sym (K.⟨⟩⋆₂⟨ K.⟨ T₂Id ⟩▷ b ∙ K.▷wId b ⟩ ∙ K.⋆₂IdR _)
 
-    seqAlgHom2 : {h k l : AlgHom}
-      → AlgHom2 h k → AlgHom2 k l → AlgHom2 h l
-    seqAlgHom2 σ τ .fst = σ .fst K.⋆₂ τ .fst
-    seqAlgHom2 σ τ .snd =
+    idAlgHom2 : {v : Variance} (h : AlgHom v) → AlgHom2 h h
+    idAlgHom2 h .fst = K.id₂
+    idAlgHom2 {v} h .snd = idCompat v h
+
+    seqCompat : (v : Variance) (h k l : AlgHom v)
+      (σ : AlgHom2 h k) (τ : AlgHom2 k l)
+      → Compat v h l (σ .fst K.⋆₂ τ .fst)
+    seqCompat lax h k l σ τ =
         K.⟨ K.⟨ T₂Seq (σ .fst) (τ .fst) ⟩▷ b
           ∙ ▷wSeq K (T₂ (σ .fst)) (T₂ (τ .fst)) b ⟩⋆₂⟨⟩
       ∙ K.⋆₂Assoc _ _ _
@@ -248,23 +393,144 @@ module _ {K : Bicategory ℓ ℓ' ℓ''} (M : TwoMonad K) where
       ∙ K.⟨ σ .snd ⟩⋆₂⟨⟩
       ∙ K.⋆₂Assoc _ _ _
       ∙ K.⟨⟩⋆₂⟨ sym (◁wSeq K a (σ .fst) (τ .fst)) ⟩
+    seqCompat colax h k l σ τ =
+        K.⟨ ◁wSeq K a (σ .fst) (τ .fst) ⟩⋆₂⟨⟩
+      ∙ K.⋆₂Assoc _ _ _
+      ∙ K.⟨⟩⋆₂⟨ τ .snd ⟩
+      ∙ sym (K.⋆₂Assoc _ _ _)
+      ∙ K.⟨ σ .snd ⟩⋆₂⟨⟩
+      ∙ K.⋆₂Assoc _ _ _
+      ∙ K.⟨⟩⋆₂⟨ sym ( K.⟨ T₂Seq (σ .fst) (τ .fst) ⟩▷ b
+                    ∙ ▷wSeq K (T₂ (σ .fst)) (T₂ (τ .fst)) b) ⟩
 
-    AlgHom2≡ : {h k : AlgHom} {σ τ : AlgHom2 h k}
+    seqAlgHom2 : {v : Variance} {h k l : AlgHom v}
+      → AlgHom2 h k → AlgHom2 k l → AlgHom2 h l
+    seqAlgHom2 σ τ .fst = σ .fst K.⋆₂ τ .fst
+    seqAlgHom2 {v} {h} {k} {l} σ τ .snd = seqCompat v h k l σ τ
+
+    AlgHom2≡ : {v : Variance} {h k : AlgHom v} {σ τ : AlgHom2 h k}
       → σ .fst ≡ τ .fst → σ ≡ τ
-    AlgHom2≡ = Σ≡Prop λ _ → K.isSet2Cell _ _
+    AlgHom2≡ {v} {h} {k} = Σ≡Prop (isPropCompat v h k)
 
-    -- The hom-category of lax algebra morphisms and algebra 2-cells.
-    AlgHomCat : Category (ℓ-max ℓ' ℓ'') ℓ''
-    AlgHomCat .ob = AlgHom
-    AlgHomCat .Hom[_,_] = AlgHom2
-    AlgHomCat .id {h} = idAlgHom2 h
-    AlgHomCat ._⋆_ {h} {k} {l} = seqAlgHom2 {h} {k} {l}
-    AlgHomCat .⋆IdL {h} {k} σ = AlgHom2≡ {h} {k} (K.⋆₂IdL _)
-    AlgHomCat .⋆IdR {h} {k} σ = AlgHom2≡ {h} {k} (K.⋆₂IdR _)
-    AlgHomCat .⋆Assoc {h} {k} {l} {m} σ τ ν =
-      AlgHom2≡ {h} {m} (K.⋆₂Assoc _ _ _)
-    AlgHomCat .isSetHom =
-      isSetΣ K.isSet2Cell λ _ → isProp→isSet (K.isSet2Cell _ _)
+    -- The hom-category of algebra morphisms and algebra 2-cells.
+    AlgHomCat : Variance → Category (ℓ-max ℓ' ℓ'') ℓ''
+    AlgHomCat v .ob = AlgHom v
+    AlgHomCat v .Hom[_,_] = AlgHom2
+    AlgHomCat v .id {h} = idAlgHom2 h
+    AlgHomCat v ._⋆_ {h} {k} {l} = seqAlgHom2 {v} {h} {k} {l}
+    AlgHomCat v .⋆IdL {h} {k} σ = AlgHom2≡ {v} {h} {k} (K.⋆₂IdL _)
+    AlgHomCat v .⋆IdR {h} {k} σ = AlgHom2≡ {v} {h} {k} (K.⋆₂IdR _)
+    AlgHomCat v .⋆Assoc {h} {k} {l} {m} σ τ ν =
+      AlgHom2≡ {v} {h} {m} (K.⋆₂Assoc _ _ _)
+    AlgHomCat v .isSetHom =
+      isSetΣ K.isSet2Cell λ _ →
+        isProp→isSet (isPropCompat v _ _ _)
+
+    -- A comparison cell that is invertible satisfies the lax axioms
+    -- iff its inverse satisfies the colax ones: the two are
+    -- transposes along that cell.  This is why invertibility is not
+    -- part of the variance.
+    module _ (f : K.1Cell Ac Bc) (c : AlgCell lax f)
+             (ci : isIso K.Hom[ T₀ Ac , Bc ] c) where
+      private
+        c⁻ = ci .inv
+        Tf = T₁ f
+        Ta = T₁ a
+        Tb = T₁ b
+        TTf = T₁ (T₁ f)
+        nA = ηc Ac
+        muA = μc Ac
+
+        Bη : CatIso K.Hom[ Ac , Bc ] (nA K.⋆₁ (a K.⋆₁ f)) f
+        Bη = ⋆Iso (invIso (αI K nA a f))
+               (⋆Iso (_ , ▷wIsIso K f (A .actUnitIso))
+                     (K.λ⁺ f , K.λU Ac Bc .nIso (tt* , f)))
+
+        Cη : CatIso K.Hom[ Ac , Bc ] (f K.⋆₁ (ηc Bc K.⋆₁ b)) f
+        Cη = ⋆Iso (_ , ◁wIsIso K f (B .actUnitIso)) (ρI K f)
+
+        qη : CatIso K.Hom[ Ac , Bc ]
+               (nA K.⋆₁ (Tf K.⋆₁ b)) (nA K.⋆₁ (a K.⋆₁ f))
+        qη = _ , ◁wIsIso K nA ci
+
+        qμ : CatIso K.Hom[ T₀ (T₀ Ac) , Bc ]
+               (muA K.⋆₁ (Tf K.⋆₁ b)) (muA K.⋆₁ (a K.⋆₁ f))
+        qμ = _ , ◁wIsIso K muA ci
+
+        Φi : CatIso K.Hom[ T₀ (T₀ Ac) , Bc ]
+               (TTf K.⋆₁ (Tb K.⋆₁ b)) (muA K.⋆₁ (a K.⋆₁ f))
+        Φi = ⋆Iso (invIso (αI K TTf Tb b))
+             (⋆Iso (_ , ▷wIsIso K b (T.F-seq-isIso (Tf , b)))
+             (⋆Iso (_ , ▷wIsIso K b (F-PresIsIso {F = T.F-Hom} ci))
+             (⋆Iso (_ , ▷wIsIso K b (invIso (κ²I M.T a f) .snd))
+             (⋆Iso (αI K Ta Tf b)
+             (⋆Iso (_ , ◁wIsIso K Ta ci)
+             (⋆Iso (invIso (αI K Ta a f))
+             (⋆Iso (_ , ▷wIsIso K f (A .actMultIso))
+                   (αI K muA a f))))))))
+
+        Ψ : K.2Cell (muA K.⋆₁ (a K.⋆₁ f)) (TTf K.⋆₁ (Tb K.⋆₁ b))
+        Ψ =   K.α⁻ muA a f
+          K.⋆₂ (mA⁻ K.▷w f)
+          K.⋆₂ K.α⁺ Ta a f
+          K.⋆₂ (Ta K.◁w c⁻)
+          K.⋆₂ K.α⁻ Ta Tf b
+          K.⋆₂ (T.F² a f K.▷w b)
+          K.⋆₂ (T₂ c⁻ K.▷w b)
+          K.⋆₂ (T.F-seq-isIso (Tf , b) .inv K.▷w b)
+          K.⋆₂ K.α⁺ TTf Tb b
+
+        flat : Φi .snd .inv ≡ Ψ
+        flat = K.⟨ K.⟨ K.⟨ K.⟨ K.⟨ K.⟨ aR2 K _ _ _
+                                     ⟩⋆₂⟨⟩ ∙ aR3 K _ _ _ _
+                                 ⟩⋆₂⟨⟩ ∙ aR4 K _ _ _ _ _
+                             ⟩⋆₂⟨⟩ ∙ aR5 K _ _ _ _ _ _
+                         ⟩⋆₂⟨⟩ ∙ aR6 K _ _ _ _ _ _ _
+                     ⟩⋆₂⟨⟩ ∙ aR7 K _ _ _ _ _ _ _ _
+                 ⟩⋆₂⟨⟩ ∙ aR8 K _ _ _ _ _ _ _ _ _
+
+      laxUnit→colaxUnit : UnitAx lax f c → UnitAx colax f c⁻
+      laxUnit→colaxUnit e =
+          transposeR qη Bη Cη (aR3 K _ _ _ _ ∙ e)
+        ∙ K.⟨⟩⋆₂⟨ aR2 K _ _ _ ⟩
+        ∙ aR3 K _ _ _ _
+
+      colaxUnit→laxUnit : UnitAx colax f c⁻ → UnitAx lax f c
+      colaxUnit→laxUnit e =
+          sym (aR3 K _ _ _ _)
+        ∙ transposeR⁻ qη Bη Cη
+            (e ∙ sym (K.⟨⟩⋆₂⟨ aR2 K _ _ _ ⟩ ∙ aR3 K _ _ _ _))
+
+      laxMult→colaxMult : MultAx lax f c → MultAx colax f c⁻
+      laxMult→colaxMult e =
+          transposeL qμ (K.⟨ sym flat ⟩⋆₂⟨⟩ ∙ Φi .snd .sec)
+            (aR4 K _ _ _ _ _ ∙ e)
+        ∙ aR9 K _ _ _ _ _ _ _ _ _ _
+
+      colaxMult→laxMult : MultAx colax f c⁻ → MultAx lax f c
+      colaxMult→laxMult e =
+          sym (aR4 K _ _ _ _ _)
+        ∙ transposeL⁻ qμ (K.⟨⟩⋆₂⟨ sym flat ⟩ ∙ Φi .snd .ret)
+            (e ∙ sym (aR9 K _ _ _ _ _ _ _ _ _ _))
+
+    -- A pseudo morphism, read in the other variance.
+    pseudoLax→colax : (h : AlgHom lax) → isPseudoAlgHom h → AlgHom colax
+    pseudoLax→colax h hi .mor = h .mor
+    pseudoLax→colax h hi .cell = hi .inv
+    pseudoLax→colax h hi .unitAx =
+      laxUnit→colaxUnit (h .mor) (h .cell) hi (h .unitAx)
+    pseudoLax→colax h hi .multAx =
+      laxMult→colaxMult (h .mor) (h .cell) hi (h .multAx)
+
+    pseudoColax→lax : (k : AlgHom colax) → isPseudoAlgHom k → AlgHom lax
+    pseudoColax→lax k ki .mor = k .mor
+    pseudoColax→lax k ki .cell = ki .inv
+    pseudoColax→lax k ki .unitAx =
+      colaxUnit→laxUnit (k .mor) (ki .inv)
+        (invIso (k .cell , ki) .snd) (k .unitAx)
+    pseudoColax→lax k ki .multAx =
+      colaxMult→laxMult (k .mor) (ki .inv)
+        (invIso (k .cell , ki) .snd) (k .multAx)
 
 {-
   Sanity check: for the identity 2-monad both `η` and `μ` are identity

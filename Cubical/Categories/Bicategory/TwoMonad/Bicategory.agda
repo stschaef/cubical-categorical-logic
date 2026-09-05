@@ -1,8 +1,10 @@
 {-# OPTIONS --lossy-unification #-}
 {-
   The bicategory `Alg` of pseudoalgebras for a 2-monad: 0-cells are
-  pseudoalgebras (coherence is not needed), 1-cells are lax morphisms
-  and 2-cells are algebra 2-cells.  Unitors and associator are those
+  pseudoalgebras (coherence is not needed), 1-cells are morphisms in
+  the `lax` variance and 2-cells are algebra 2-cells.  The colax
+  variance has hom-categories (`AlgHomCat _ _ colax`) and identities
+  but no composition, so no bicategory.  Unitors and associator are those
   of the ambient bicategory, so triangle and pentagon are inherited.
 -}
 module Cubical.Categories.Bicategory.TwoMonad.Bicategory where
@@ -51,7 +53,7 @@ module _ {K : Bicategory ℓ ℓ' ℓ''} (M : TwoMonad K) where
 
   -- Horizontal composition of algebra 2-cells.
   module _ {A B C : PseudoAlgebra M}
-           {h h' : AlgHom M A B} {k k' : AlgHom M B C}
+           {h h' : AlgHom M A B lax} {k k' : AlgHom M B C lax}
            (σ : AlgHom2 M A B h h') (τ : AlgHom2 M B C k k') where
     private
       a = A .act
@@ -119,7 +121,7 @@ module _ {K : Bicategory ℓ ℓ' ℓ''} (M : TwoMonad K) where
       ∙ sym (aR6 K _ _ _ _ _ _ _)
 
   -- The identity 1-cell, as a functor from the terminal category.
-  idAlgFunctor : (A : PseudoAlgebra M) → Functor 𝟙C (AlgHomCat M A A)
+  idAlgFunctor : (A : PseudoAlgebra M) → Functor 𝟙C (AlgHomCat M A A lax)
   idAlgFunctor A .F-ob _ = idAlgHom M A
   idAlgFunctor A .F-hom _ = idAlgHom2 M A A (idAlgHom M A)
   idAlgFunctor A .F-id = refl
@@ -129,7 +131,8 @@ module _ {K : Bicategory ℓ ℓ' ℓ''} (M : TwoMonad K) where
 
   -- Horizontal composition, as a bifunctor of hom-categories.
   seqAlgFunctor : (A B C : PseudoAlgebra M)
-    → Functor (AlgHomCat M A B ×C AlgHomCat M B C) (AlgHomCat M A C)
+    → Functor (AlgHomCat M A B lax ×C AlgHomCat M B C lax)
+              (AlgHomCat M A C lax)
   seqAlgFunctor A B C .F-ob (h , k) = seqAlgHom M h k
   seqAlgFunctor A B C .F-hom {x} {y} (σ , τ) =
     seqAlgHom2ₕ {h = x .fst} {h' = y .fst} {k = x .snd} {k' = y .snd}
@@ -144,7 +147,7 @@ module _ {K : Bicategory ℓ ℓ' ℓ''} (M : TwoMonad K) where
 
   -- An algebra 2-cell is invertible as soon as its underlying 2-cell
   -- is.
-  module _ {A B : PseudoAlgebra M} {h k : AlgHom M A B}
+  module _ {A B : PseudoAlgebra M} {h k : AlgHom M A B lax}
            (σ : AlgHom2 M A B h k)
            (iso : isIso K.Hom[ A .carrier , B .carrier ] (σ .fst)) where
     private
@@ -163,13 +166,13 @@ module _ {K : Bicategory ℓ ℓ' ℓ''} (M : TwoMonad K) where
         ∙ pushn K (sym (▷wSeq K _ _ b) ∙ K.⟨ T2col ⟩▷ b ∙ K.▷wId b) _
         ∙ K.⋆₂IdL _)
 
-    algHom2IsIso : isIso (AlgHomCat M A B) {x = h} {y = k} σ
+    algHom2IsIso : isIso (AlgHomCat M A B lax) {x = h} {y = k} σ
     algHom2IsIso .inv = invAlgHom2
     algHom2IsIso .sec = AlgHom2≡ M A B {h = k} {k = k} (iso .sec)
     algHom2IsIso .ret = AlgHom2≡ M A B {h = h} {k = h} (iso .ret)
 
   -- The left unitor.
-  module _ {A B : PseudoAlgebra M} (h : AlgHom M A B) where
+  module _ {A B : PseudoAlgebra M} (h : AlgHom M A B lax) where
     private
       a = A .act
       b = B .act
@@ -226,7 +229,7 @@ module _ {K : Bicategory ℓ ℓ' ℓ''} (M : TwoMonad K) where
       ∙ sym (aR6 K _ _ _ _ _ _ _)
 
   -- The right unitor.
-  module _ {A B : PseudoAlgebra M} (h : AlgHom M A B) where
+  module _ {A B : PseudoAlgebra M} (h : AlgHom M A B lax) where
     private
       a = A .act
       b = B .act
@@ -318,8 +321,8 @@ module _ {K : Bicategory ℓ ℓ' ℓ''} (M : TwoMonad K) where
 
   -- The associator.
   module _ {A B C D : PseudoAlgebra M}
-           (h : AlgHom M A B) (k : AlgHom M B C)
-           (l : AlgHom M C D) where
+           (h : AlgHom M A B lax) (k : AlgHom M B C lax)
+           (l : AlgHom M C D lax) where
     private
       a = A .act
       b = B .act
@@ -448,7 +451,7 @@ module _ {K : Bicategory ℓ ℓ' ℓ''} (M : TwoMonad K) where
   -- 2-cells.
   Alg : Bicategory (ℓ-max ℓ (ℓ-max ℓ' ℓ'')) (ℓ-max ℓ' ℓ'') ℓ''
   Alg .Bicategory.ob = PseudoAlgebra M
-  Alg .Bicategory.Hom[_,_] = AlgHomCat M
+  Alg .Bicategory.Hom[_,_] = λ A B → AlgHomCat M A B lax
   Alg .Bicategory.id {A} = idAlgFunctor A
   Alg .Bicategory.seq = seqAlgFunctor
   Alg .Bicategory.λU A B .trans .N-ob (_ , h) = λAlgCell h
