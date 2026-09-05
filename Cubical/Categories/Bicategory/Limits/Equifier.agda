@@ -74,22 +74,3 @@ module EquifierᴮNotation {B : Bicategory ℓ ℓ' ℓ''}
     (h : B.1Cell x a) (p : Eq.EqPred h)
     → (k B.⋆₁ introᴱ h p) B.≅₂ introᴱ (k B.⋆₁ h) (Eq.reindPred k p)
   introᴱ-nat k h p = intro-natural k (h , p)
-
--- PIE limits: products, inserters, equifiers.
-module _ (B : Bicategory ℓ ℓ' ℓ'') where
-  private
-    module B = Bicategory B
-
-  record hasPIEᴮ : Type (ℓ-max ℓ (ℓ-max ℓ' ℓ'')) where
-    field
-      terminalᴮ : Terminalᴮ B
-      productsᴮ : (a b : B.0Cell) → BinProductᴮ B a b
-      insertersᴮ : hasInsertersᴮ B
-      equifiersᴮ : hasEquifiersᴮ B
-
-  open hasPIEᴮ
-
-  -- Comma objects cost no equifiers: `Commaᴮ` is definitionally an
-  -- inserter over the product (`Limits/Comma.agda`).
-  hasPIE→hasCommasᴮ : hasPIEᴮ → hasCommaObjectsᴮ B
-  hasPIE→hasCommasᴮ pie = commaFromInsertersᴮ B (pie .insertersᴮ)

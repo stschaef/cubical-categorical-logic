@@ -12,7 +12,9 @@ open import Cubical.Categories.Instances.Terminal.More
 
 open import Cubical.Categories.Bicategory.Base
 open import Cubical.Categories.Bicategory.Instances.CAT
-open import Cubical.Categories.Bicategory.Instances.CAT.Limits
+open import Cubical.Categories.Bicategory.Instances.CAT.Terminal
+open import Cubical.Categories.Bicategory.Instances.CAT.Product
+open import Cubical.Categories.Bicategory.Instances.CAT.PIE
 open import Cubical.Categories.Bicategory.Functor.Pseudo
 open import Cubical.Categories.Bicategory.Limits.Terminal.TwoMonad
 open import Cubical.Categories.Bicategory.TwoMonad.Base

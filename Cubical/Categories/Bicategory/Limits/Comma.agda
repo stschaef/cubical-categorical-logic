@@ -49,8 +49,13 @@ module _ (B : Bicategory ℓ ℓ' ℓ'') where
   Commaᴮ P f g = Inserterᴮ B (BinProductᴮNotation.π₁ᴮ P B.⋆₁ f)
                              (BinProductᴮNotation.π₂ᴮ P B.⋆₁ g)
 
-  -- Comma objects come for free from products and inserters: the
-  -- prestacks are literally the same.
+  -- NOTE: this is comma objects *relative to a chosen product*, not
+  -- an intrinsic notion -- `P` is a parameter of the statement, so
+  -- `commaFromInsertersᴮ` below assumes products rather than deriving
+  -- them.  Given the product, the two prestacks are literally equal,
+  -- so the inserter IS the comma object and no equifier is needed.
+  -- A bicategory can have comma objects without having products; that
+  -- weaker statement is not what this says.
   hasCommaObjectsᴮ : Type (ℓ-max ℓ (ℓ-max ℓ' ℓ''))
   hasCommaObjectsᴮ = {a b c : B.0Cell} (P : BinProductᴮ B a b)
     (f : B.1Cell a c) (g : B.1Cell b c) → Commaᴮ P f g

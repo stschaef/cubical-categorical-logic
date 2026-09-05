@@ -127,14 +127,3 @@ module _ {ℓ ℓ' : Level} {C D : Category (ℓ-max ℓ ℓ') ℓ'}
 module _ {ℓ ℓ' : Level} where
   equifiersCAT : hasEquifiersᴮ (CAT {ℓ-max ℓ ℓ'} {ℓ'})
   equifiersCAT θ φ = equifierCAT θ φ
-
-  -- CAT has all PIE limits as soon as it has a terminal object and
-  -- binary products; inserters and equifiers are the work above.
-  pieCAT : Terminalᴮ (CAT {ℓ-max ℓ ℓ'} {ℓ'})
-    → ((a b : Category (ℓ-max ℓ ℓ') ℓ')
-        → BinProductᴮ (CAT {ℓ-max ℓ ℓ'} {ℓ'}) a b)
-    → hasPIEᴮ (CAT {ℓ-max ℓ ℓ'} {ℓ'})
-  pieCAT t p .hasPIEᴮ.terminalᴮ = t
-  pieCAT t p .hasPIEᴮ.productsᴮ = p
-  pieCAT t p .hasPIEᴮ.insertersᴮ = insertersCAT
-  pieCAT t p .hasPIEᴮ.equifiersᴮ = equifiersCAT
