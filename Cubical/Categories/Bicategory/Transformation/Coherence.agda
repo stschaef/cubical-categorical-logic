@@ -1,9 +1,13 @@
 {-# OPTIONS --lossy-unification #-}
 {-
-  Composition of lax functors is unital and associative only up to
-  lax natural transformations, not on the nose.  Those comparisons all
-  have identity components, so their coherence is that of
-  `idLaxNatTrans` once the two laxity cells have been compared.
+  Unitors and associators, in the two directions they are needed.
+
+  For `∘Lax` of lax functors: `ridLax`/`lidLax`/`assocLax`.  Those
+  comparisons all have identity components, so their coherence is that
+  of `idLaxNatTrans` once the two laxity cells have been compared.
+
+  For `seqLaxNatTrans` of lax transformations: `lamMod`/`rhoMod`/
+  `assocMod`, generic in the target bicategory.
 -}
 module Cubical.Categories.Bicategory.Transformation.Coherence where
 
