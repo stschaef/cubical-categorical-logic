@@ -18,6 +18,7 @@ open import Cubical.Categories.Instances.Terminal.More
 open import Cubical.Categories.Bicategory.Base
 open import Cubical.Categories.Bicategory.Functor.Lax
 open import Cubical.Categories.Bicategory.Instances.Terminal
+open import Cubical.Categories.Bicategory.Constructions.Co
 open import Cubical.Categories.Bicategory.Displayed
 
 private
@@ -202,6 +203,24 @@ module _ (C : Bicategory ℓ ℓ' ℓ'') where
   LaxFunctorIsoMonad .Iso.inv = toLaxFunctor
   LaxFunctorIsoMonad .Iso.sec = fromLaxFunctor∘toLaxFunctor
   LaxFunctorIsoMonad .Iso.ret = toLaxFunctor∘fromLaxFunctor
+
+-- `_^coᴮ` reverses the 2-cells, which is where a formal monad's unit
+-- and multiplication live, so it is the monad/comonad duality here.
+-- (For `TwoMonad`, whose unit and multiplication are 1-cells of
+-- `Lax(K,K)`, the duality is `_^opᴮ` instead.)
+Comonad : Bicategory ℓ ℓ' ℓ'' → Type (ℓ-max ℓ (ℓ-max ℓ' ℓ''))
+Comonad K = Monad (K ^coᴮ)
+
+module ComonadNotation {K : Bicategory ℓ ℓ' ℓ''} (W : Comonad K) where
+  private
+    module K = Bicategory K
+  open Monad W public using (a; t)
+
+  counit : K.2Cell t K.id₁
+  counit = Monad.η W
+
+  comult : K.2Cell t (t K.⋆₁ t)
+  comult = Monad.μ W
 
 -- A monad in a displayed bicategory lying over a monad in the base:
 -- the data sits over M's data and the laws are PathPs over M's laws.
