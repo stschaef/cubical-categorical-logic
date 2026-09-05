@@ -150,13 +150,9 @@ module _ {ℓC ℓC' ℓD ℓD' : Level}
 -}
 module _ {ℓs ℓC ℓC' : Level} {C : Category ℓC ℓC'}
   (F : Functor C (SET ℓs)) (bpC : BinProducts C)
-  (expC : AllExponentiable C bpC)
   (Fp : preservesProvidedBinProducts F bpC) where
   module C = Category C
   module ×C = BinProductsNotation bpC
-  module ⇒C = ExponentialsNotation bpC expC
-  module ⇒ue (c d : C .ob) =
-    ExponentialNotation.⇒ue (λ d' → bpC (d' , c)) (expC c d)
 
   Gl = ArtinGlue F
   module Gl = Category Gl
@@ -199,43 +195,64 @@ module _ {ℓs ℓC ℓC' : Level} {C : Category ℓC ℓC'}
     ( funExt⁻ (Img.×β₂ X Y {Γ = S} {f = f} {g = g}) s
     ∙ sym (prβ₂ X Y (f s) (g s)))
 
+
+-- the exponential also needs `C` cartesian closed
+module _ {ℓs ℓC ℓC' : Level} {C : Category ℓC ℓC'}
+  (F : Functor C (SET ℓs)) (bpC : BinProducts C)
+  (expC : AllExponentiable C bpC)
+  (Fp : preservesProvidedBinProducts F bpC) where
+  module CE = Category C
+  module ×CE = BinProductsNotation bpC
+  module ⇒C = ExponentialsNotation bpC expC
+  module ⇒ue (c d : C .ob) =
+    ExponentialNotation.⇒ue (λ d' → bpC (d' , c)) (expC c d)
+
+  GlE = ArtinGlue F
+  module GlE = Category GlE
+
+  prF = pr F bpC Fp
+  prβ₁F = prβ₁ F bpC Fp
+  prβ₂F = prβ₂ F bpC Fp
+  prExtF = prExt F bpC Fp
+  prPointF = prPoint F bpC Fp
+
   tapp : {X Y : C .ob} → ⟨ F ⟅ ⇒C._⇒_ X Y ⟆ ⟩ → ⟨ F ⟅ X ⟆ ⟩
     → ⟨ F ⟅ Y ⟆ ⟩
-  tapp {X} {Y} k x = (F ⟪ ⇒C.app ⟫) (pr (⇒C._⇒_ X Y) X k x)
+  tapp {X} {Y} k x = (F ⟪ ⇒C.app ⟫) (prF (⇒C._⇒_ X Y) X k x)
 
-  tappNat : {Z X Y : C .ob} (m : C [ ×C._×_ Z X , Y ])
+  tappNat : {Z X Y : C .ob} (m : C [ ×CE._×_ Z X , Y ])
     (z : ⟨ F ⟅ Z ⟆ ⟩) (x : ⟨ F ⟅ X ⟆ ⟩)
-    → (F ⟪ m ⟫) (pr Z X z x) ≡ tapp ((F ⟪ ⇒C.lda m ⟫) z) x
+    → (F ⟪ m ⟫) (prF Z X z x) ≡ tapp ((F ⟪ ⇒C.lda m ⟫) z) x
   tappNat {Z} {X} {Y} m z x =
-      cong (λ n → (F ⟪ n ⟫) (pr Z X z x)) (sym (⇒ue.β X Y {Z} {m}))
-    ∙ funExt⁻ (F .F-seq _ _) (pr Z X z x)
+      cong (λ n → (F ⟪ n ⟫) (prF Z X z x)) (sym (⇒ue.β X Y {Z} {m}))
+    ∙ funExt⁻ (F .F-seq _ _) (prF Z X z x)
     ∙ cong (F ⟪ ⇒C.app ⟫) step
     where
-    step : (F ⟪ ×C._,p_ (×C.π₁ C.⋆ ⇒C.lda m) ×C.π₂ ⟫) (pr Z X z x)
-         ≡ pr (⇒C._⇒_ X Y) X ((F ⟪ ⇒C.lda m ⟫) z) x
-    step = prExt _ _
+    step : (F ⟪ ×CE._,p_ (×CE.π₁ CE.⋆ ⇒C.lda m) ×CE.π₂ ⟫) (prF Z X z x)
+         ≡ prF (⇒C._⇒_ X Y) X ((F ⟪ ⇒C.lda m ⟫) z) x
+    step = prExtF _ _
       ( funExt⁻ (sym (F .F-seq _ _)) _
-      ∙ cong (λ n → (F ⟪ n ⟫) (pr Z X z x)) ×C.×β₁
+      ∙ cong (λ n → (F ⟪ n ⟫) (prF Z X z x)) ×CE.×β₁
       ∙ funExt⁻ (F .F-seq _ _) _
-      ∙ cong (F ⟪ ⇒C.lda m ⟫) (prβ₁ Z X z x)
-      ∙ sym (prβ₁ _ _ _ _))
+      ∙ cong (F ⟪ ⇒C.lda m ⟫) (prβ₁F Z X z x)
+      ∙ sym (prβ₁F _ _ _ _))
       ( funExt⁻ (sym (F .F-seq _ _)) _
-      ∙ cong (λ n → (F ⟪ n ⟫) (pr Z X z x)) ×C.×β₂
-      ∙ prβ₂ Z X z x
-      ∙ sym (prβ₂ _ _ _ _))
+      ∙ cong (λ n → (F ⟪ n ⟫) (prF Z X z x)) ×CE.×β₂
+      ∙ prβ₂F Z X z x
+      ∙ sym (prβ₂F _ _ _ _))
 
   module Ds = Category (SET ℓs)
 
-  bpGl : BinProducts Gl
+  bpGl : BinProducts GlE
   bpGl = glueBinProducts F bpC BinProductsSET Fp
 
   private
     module ×Gl = BinProductsNotation bpGl
 
-  glueExponentials : AllExponentiable Gl bpGl
+  glueExponentials : AllExponentiable GlE bpGl
   glueExponentials ((A , X) , α) ((B , Y) , β) = ue
     where
-    u : Gl.ob
+    u : GlE.ob
     u = (A , X) , α
 
     W : C .ob
@@ -254,81 +271,81 @@ module _ {ℓs ℓC ℓC' : Level} {C : Category ℓC ℓC'}
     γE : ⟨ Eset ⟩ → ⟨ F ⟅ W ⟆ ⟩
     γE e = e .snd .fst
 
-    expOb : Gl.ob
+    expOb : GlE.ob
     expOb = (Eset , W) , γE
 
     appD : ⟨ Eset ⟩ × ⟨ A ⟩ → ⟨ B ⟩
     appD p = p .fst .fst (p .snd)
 
-    appGl : Gl [ bpGl (expOb , u) .vertex , ((B , Y) , β) ]
+    appGl : GlE [ bpGl (expOb , u) .vertex , ((B , Y) , β) ]
     appGl = (appD , ⇒C.app) , funExt (λ p →
-        cong (F ⟪ ⇒C.app ⟫) (prPoint W X _ _ p)
+        cong (F ⟪ ⇒C.app ⟫) (prPointF W X _ _ p)
       ∙ sym (p .fst .snd .snd (p .snd)))
 
     module At (G : hSet ℓs) (Z : C .ob) (δ : ⟨ G ⟩ → ⟨ F ⟅ Z ⟆ ⟩) where
-      w : Gl.ob
+      w : GlE.ob
       w = (G , Z) , δ
 
-      ldaGl : Gl [ bpGl (w , u) .vertex , ((B , Y) , β) ]
-        → Gl [ w , expOb ]
+      ldaGl : GlE [ bpGl (w , u) .vertex , ((B , Y) , β) ]
+        → GlE [ w , expOb ]
       ldaGl ((mD , mC) , msq) =
         ( (λ e → (λ a → mD (e , a))
                 , (F ⟪ ⇒C.lda mC ⟫) (δ e)
                 , λ a → sym (funExt⁻ msq (e , a))
-                      ∙ cong (F ⟪ mC ⟫) (prPoint Z X _ _ (e , a))
+                      ∙ cong (F ⟪ mC ⟫) (prPointF Z X _ _ (e , a))
                       ∙ tappNat mC (δ e) (α a))
         , ⇒C.lda mC ) , refl
 
-      πw : Gl [ bpGl (w , u) .vertex , w ]
+      πw : GlE [ bpGl (w , u) .vertex , w ]
       πw = ×Gl.π₁ {a = w} {b = u}
 
-      πu : Gl [ bpGl (w , u) .vertex , u ]
+      πu : GlE [ bpGl (w , u) .vertex , u ]
       πu = ×Gl.π₂ {a = w} {b = u}
 
-      pull : Gl [ w , expOb ]
-        → Gl [ bpGl (w , u) .vertex , bpGl (expOb , u) .vertex ]
-      pull l = ×Gl._,p_ {a = expOb} {b = u} (πw Gl.⋆ l) πu
+      pull : GlE [ w , expOb ]
+        → GlE [ bpGl (w , u) .vertex , bpGl (expOb , u) .vertex ]
+      pull l = ×Gl._,p_ {a = expOb} {b = u} (πw GlE.⋆ l) πu
 
-      ⟪⟫D : (l : Gl [ w , expOb ]) (p : ⟨ G ⟩ × ⟨ A ⟩)
+      ⟪⟫D : (l : GlE [ w , expOb ]) (p : ⟨ G ⟩ × ⟨ A ⟩)
         → pull l .fst .fst p ≡ (l .fst .fst (p .fst) , p .snd)
       ⟪⟫D l p = ΣPathP
         ( funExt⁻ (cong (λ n → n .fst .fst) (×Gl.×β₁ {a = expOb} {b = u}
-            {f = πw Gl.⋆ l} {g = πu})) p
+            {f = πw GlE.⋆ l} {g = πu})) p
         , funExt⁻ (cong (λ n → n .fst .fst) (×Gl.×β₂ {a = expOb} {b = u}
-            {f = πw Gl.⋆ l} {g = πu})) p)
+            {f = πw GlE.⋆ l} {g = πu})) p)
 
-      ⟪⟫C : (l : Gl [ w , expOb ])
-        → ×C._,p_ (×C.π₁ C.⋆ l .fst .snd) ×C.π₂ ≡ pull l .fst .snd
-      ⟪⟫C l = ×C.,p≡
+      ⟪⟫C : (l : GlE [ w , expOb ])
+        → ×CE._,p_ (×CE.π₁ CE.⋆ l .fst .snd) ×CE.π₂ ≡ pull l .fst .snd
+      ⟪⟫C l = ×CE.,p≡
         (sym (cong (λ n → n .fst .snd) (×Gl.×β₁ {a = expOb} {b = u}
-          {f = πw Gl.⋆ l} {g = πu})))
+          {f = πw GlE.⋆ l} {g = πu})))
         (sym (cong (λ n → n .fst .snd) (×Gl.×β₂ {a = expOb} {b = u}
-          {f = πw Gl.⋆ l} {g = πu})))
+          {f = πw GlE.⋆ l} {g = πu})))
 
-      secGl : (m : Gl [ bpGl (w , u) .vertex , ((B , Y) , β) ])
-        → pull (ldaGl m) Gl.⋆ appGl ≡ m
+      secGl : (m : GlE [ bpGl (w , u) .vertex , ((B , Y) , β) ])
+        → pull (ldaGl m) GlE.⋆ appGl ≡ m
       secGl m@((mD , mC) , msq) = Σ≡Prop (λ _ → Ds.isSetHom _ _)
         (ΣPathP
           ( funExt (λ p → cong appD (⟪⟫D (ldaGl m) p))
-          , cong (C._⋆ ⇒C.app) (sym (⟪⟫C (ldaGl m)))
+          , cong (CE._⋆ ⇒C.app) (sym (⟪⟫C (ldaGl m)))
             ∙ ⇒ue.β X Y {Z} {mC}))
 
-      retGl : (l : Gl [ w , expOb ]) → ldaGl (pull l Gl.⋆ appGl) ≡ l
+      retGl : (l : GlE [ w , expOb ]) → ldaGl (pull l GlE.⋆ appGl) ≡ l
       retGl l = Σ≡Prop (λ _ → Ds.isSetHom _ _) (ΣPathP (funExt eq , ldaC))
         where
-        ldaC : ⇒C.lda ((pull l Gl.⋆ appGl) .fst .snd) ≡ l .fst .snd
-        ldaC = cong ⇒C.lda (cong (C._⋆ ⇒C.app) (sym (⟪⟫C l)))
+        ldaC : ⇒C.lda ((pull l GlE.⋆ appGl) .fst .snd) ≡ l .fst .snd
+        ldaC = cong ⇒C.lda (cong (CE._⋆ ⇒C.app) (sym (⟪⟫C l)))
              ∙ sym (⇒ue.η X Y {Z} {l .fst .snd})
 
         eq : (e : ⟨ G ⟩)
-          → ldaGl (pull l Gl.⋆ appGl) .fst .fst e ≡ l .fst .fst e
+          → ldaGl (pull l GlE.⋆ appGl) .fst .fst e ≡ l .fst .fst e
         eq e = ΣPathP
           ( funExt (λ a → cong appD (⟪⟫D l (e , a)))
           , ΣPathP
             ( cong (λ n → (F ⟪ n ⟫) (δ e)) ldaC ∙ funExt⁻ (l .snd) e
             , isProp→PathP (λ i → isPropΠ (λ a → (F ⟅ Y ⟆) .snd _ _)) _ _))
 
-    ue : Exponential Gl u ((B , Y) , β) (λ d → bpGl (d , u))
+    ue : Exponential GlE u ((B , Y) , β) (λ d → bpGl (d , u))
     ue .vertex = expOb
     ue .element = appGl
     ue .universal ((G , Z) , δ) =

@@ -77,7 +77,13 @@ _ = FREECCC.C
 _ : Category (ℓ-suc ℓ-zero) ℓ-zero
 _ = SET ℓ-zero
 
--- Canonicity does not follow from here with plain categories alone:
+-- Canonicity over this cartesian closed glue is not run here: the
+-- free CCC's eliminator needs the glue displayed over the syntax, and
+-- `Gluing.Bicategorical.Section` gets only the terminal object and
+-- binary products that far, not the exponential.  The cartesian
+-- fragment does run, in `Gluing.Bicategorical.CartesianCanonicity`.
+--
+-- Canonicity does not follow from `rec` with plain categories alone:
 -- `FreeCartesianClosedCategory`'s recursor produces a functor into
 -- `GLUE`, but the only uniqueness principle for functors out of it
 -- (`FreeCCCFunctor≅`) yields a `NatIso`, not the equality
