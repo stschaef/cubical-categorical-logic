@@ -1,11 +1,15 @@
 {-# OPTIONS --lossy-unification #-}
 {- Eilenberg-Moore algebras for a formal monad in a bicategory, and
-   the `WildCat` they form. -}
+   the category they form. -}
 module Cubical.Categories.Bicategory.Monad.Algebra where
 
 open import Cubical.Foundations.Prelude
 
-open import Cubical.WildCat.Base
+open import Cubical.Foundations.Isomorphism
+open import Cubical.Foundations.HLevels
+open import Cubical.Data.Sigma
+
+open import Cubical.Categories.Category
 
 open import Cubical.Categories.Bicategory.Base
 open import Cubical.Categories.Bicategory.Properties
@@ -68,18 +72,37 @@ module _ (C : Bicategory ℓ ℓ' ℓ'')
     ∙ sym (C.⋆₂Assoc _ _ _)
     ∙ C.⟨ sym (▷wSeq C (u .f) (v .f) M.t) ⟩⋆₂⟨⟩
 
-  -- The Eilenberg-Moore WildCat; its laws are those of `Hom[ b , a ]`.
-  EMWild : WildCat (ℓ-max ℓ' ℓ'') ℓ''
-  EMWild .WildCat.ob = Algebra
-  EMWild .WildCat.Hom[_,_] = AlgebraMor
-  EMWild .WildCat.id {P} = idAlgMor P
-  EMWild .WildCat._⋆_ u v = v ∘A u
-  EMWild .WildCat.⋆IdL u = AlgebraMor≡ (C.⋆₂IdL (u .f))
-  EMWild .WildCat.⋆IdR u = AlgebraMor≡ (C.⋆₂IdR (u .f))
-  EMWild .WildCat.⋆Assoc u v w =
+  -- An algebra morphism is a 2-cell plus one equation between 2-cells,
+  -- so the hom-types are sets and this is a genuine category.
+  AlgebraMorΣ : (P Q : Algebra) → Type ℓ''
+  AlgebraMorΣ P Q =
+    Σ[ f ∈ C.2Cell (P .x) (Q .x) ]
+      ((P .ξ C.⋆₂ f) ≡ ((f C.▷w M.t) C.⋆₂ Q .ξ))
+
+  isoAlgebraMorΣ : (P Q : Algebra) → Iso (AlgebraMor P Q) (AlgebraMorΣ P Q)
+  isoAlgebraMorΣ P Q .Iso.fun u = u .f , u .f-comm
+  isoAlgebraMorΣ P Q .Iso.inv (g , p) = record { f = g ; f-comm = p }
+  isoAlgebraMorΣ P Q .Iso.sec _ = refl
+  isoAlgebraMorΣ P Q .Iso.ret _ = refl
+
+  isSetAlgebraMor : (P Q : Algebra) → isSet (AlgebraMor P Q)
+  isSetAlgebraMor P Q =
+    isOfHLevelRetractFromIso 2 (isoAlgebraMorΣ P Q)
+      (isSetΣ C.isSet2Cell λ _ → isProp→isSet (C.isSet2Cell _ _))
+
+  -- The Eilenberg-Moore category; its laws are those of `Hom[ b , a ]`.
+  EM : Category (ℓ-max ℓ' ℓ'') ℓ''
+  EM .Category.ob = Algebra
+  EM .Category.Hom[_,_] = AlgebraMor
+  EM .Category.id {P} = idAlgMor P
+  EM .Category._⋆_ u v = v ∘A u
+  EM .Category.⋆IdL u = AlgebraMor≡ (C.⋆₂IdL (u .f))
+  EM .Category.⋆IdR u = AlgebraMor≡ (C.⋆₂IdR (u .f))
+  EM .Category.⋆Assoc u v w =
     AlgebraMor≡ (C.⋆₂Assoc (u .f) (v .f) (w .f))
+  EM .Category.isSetHom {P} {Q} = isSetAlgebraMor P Q
 
 module _ (C : Bicategory ℓ ℓ' ℓ'') where
-  EMWildOfMonad : (M : Monad C) (b : Bicategory.ob C)
-    → WildCat (ℓ-max ℓ' ℓ'') ℓ''
-  EMWildOfMonad M b = EMWild C (Monad.a M) (fromMonad C M) b
+  EMOfMonad : (M : Monad C) (b : Bicategory.ob C)
+    → Category (ℓ-max ℓ' ℓ'') ℓ''
+  EMOfMonad M b = EM C (Monad.a M) (fromMonad C M) b

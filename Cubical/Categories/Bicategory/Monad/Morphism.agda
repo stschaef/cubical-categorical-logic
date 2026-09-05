@@ -1,11 +1,15 @@
 {-# OPTIONS --lossy-unification #-}
 {- Monads on a fixed 0-cell of a bicategory, their morphisms, and the
-   `WildCat` they form. -}
+   category they form. -}
 module Cubical.Categories.Bicategory.Monad.Morphism where
 
 open import Cubical.Foundations.Prelude
 
-open import Cubical.WildCat.Base
+open import Cubical.Foundations.Isomorphism
+open import Cubical.Foundations.HLevels
+open import Cubical.Data.Sigma
+
+open import Cubical.Categories.Category
 
 open import Cubical.Categories.Bicategory.Base
 open import Cubical.Categories.Bicategory.Properties
@@ -97,16 +101,41 @@ module _ (C : Bicategory ℓ ℓ' ℓ'') (a : Bicategory.ob C) where
       ∙ C.⟨ sym (▷wSeq C (f .φ) (g .φ) (M .t)) ⟩⋆₂⟨
             sym (◁wSeq C (M'' .t) (f .φ) (g .φ)) ⟩
 
+  -- A morphism is a 2-cell plus two equations between 2-cells, so the
+  -- hom-types are sets and this is a category, not merely a WildCat.
+  MonadMorphismΣ : (M M' : MonadOn) → Type ℓ''
+  MonadMorphismΣ M M' =
+    Σ[ φ ∈ C.2Cell (M .t) (M' .t) ]
+      ((M .η C.⋆₂ φ) ≡ M' .η)
+    × ((M .μ C.⋆₂ φ)
+        ≡ (((φ C.▷w M .t) C.⋆₂ (M' .t C.◁w φ)) C.⋆₂ M' .μ))
+
+  isoMonadMorphismΣ : (M M' : MonadOn)
+    → Iso (MonadMorphism M M') (MonadMorphismΣ M M')
+  isoMonadMorphismΣ M M' .Iso.fun u = u .φ , u .φ-η , u .φ-μ
+  isoMonadMorphismΣ M M' .Iso.inv (g , p , q) =
+    record { φ = g ; φ-η = p ; φ-μ = q }
+  isoMonadMorphismΣ M M' .Iso.sec _ = refl
+  isoMonadMorphismΣ M M' .Iso.ret _ = refl
+
+  isSetMonadMorphism : (M M' : MonadOn) → isSet (MonadMorphism M M')
+  isSetMonadMorphism M M' =
+    isOfHLevelRetractFromIso 2 (isoMonadMorphismΣ M M')
+      (isSetΣ C.isSet2Cell λ _ →
+        isSet× (isProp→isSet (C.isSet2Cell _ _))
+               (isProp→isSet (C.isSet2Cell _ _)))
+
   -- The category laws are those of the 2-cell category `Hom[ a , a ]`.
-  MndWild : WildCat (ℓ-max ℓ' ℓ'') ℓ''
-  MndWild .WildCat.ob = MonadOn
-  MndWild .WildCat.Hom[_,_] = MonadMorphism
-  MndWild .WildCat.id {M} = idMonadMor M
-  MndWild .WildCat._⋆_ f g = g ∘M f
-  MndWild .WildCat.⋆IdL f = MonadMorphism≡ (C.⋆₂IdL (f .φ))
-  MndWild .WildCat.⋆IdR f = MonadMorphism≡ (C.⋆₂IdR (f .φ))
-  MndWild .WildCat.⋆Assoc f g h =
+  MND : Category (ℓ-max ℓ' ℓ'') ℓ''
+  MND .Category.ob = MonadOn
+  MND .Category.Hom[_,_] = MonadMorphism
+  MND .Category.id {M} = idMonadMor M
+  MND .Category._⋆_ f g = g ∘M f
+  MND .Category.⋆IdL f = MonadMorphism≡ (C.⋆₂IdL (f .φ))
+  MND .Category.⋆IdR f = MonadMorphism≡ (C.⋆₂IdR (f .φ))
+  MND .Category.⋆Assoc f g h =
     MonadMorphism≡ (C.⋆₂Assoc (f .φ) (g .φ) (h .φ))
+  MND .Category.isSetHom {M} {M'} = isSetMonadMorphism M M'
 
 -- A `Monad C` is a `MonadOn C` at its own carrier: the two records
 -- have definitionally the same data and laws.

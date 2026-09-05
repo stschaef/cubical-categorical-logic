@@ -9,7 +9,6 @@ open import Cubical.Foundations.Isomorphism
 open import Cubical.Categories.Category
 open import Cubical.Categories.Functor
 open import Cubical.Categories.NaturalTransformation
-open import Cubical.WildCat.Base hiding (_[_,_])
 
 open import Cubical.Categories.Bicategory.Base
 open import Cubical.Categories.Bicategory.Monad.Base
@@ -147,12 +146,12 @@ smallMonad≃laxFunctor ℓ ℓ' = LaxFunctorIsoMonad (CAT {ℓ} {ℓ'})
 
 -- The category of monads on a fixed small category `A`, and the
 -- Eilenberg-Moore category of a monad on a small category.
-SmallMonadCat : (A : Category ℓ ℓ') → WildCat _ _
-SmallMonadCat {ℓ} {ℓ'} A = MndWild (CAT {ℓ} {ℓ'}) A
+SmallMonadCat : (A : Category ℓ ℓ') → Category _ _
+SmallMonadCat {ℓ} {ℓ'} A = MND (CAT {ℓ} {ℓ'}) A
 
-EMCategoryOfSmallMonad : (M : SmallMonad ℓ ℓ') → WildCat _ _
+EMCategoryOfSmallMonad : (M : SmallMonad ℓ ℓ') → Category _ _
 EMCategoryOfSmallMonad {ℓ} {ℓ'} M =
-  EMWildOfMonad (CAT {ℓ} {ℓ'}) M (Monad.a M)
+  EMOfMonad (CAT {ℓ} {ℓ'}) M (Monad.a M)
 
 -- A Beck law `Λ : T ∘F S ⇒ S ∘F T` of two monads on `A`, and the
 -- composite monad it induces.
