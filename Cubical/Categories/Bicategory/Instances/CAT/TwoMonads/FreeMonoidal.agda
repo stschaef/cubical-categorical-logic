@@ -92,16 +92,17 @@ module _ {ℓ : Level} where
 
     mι² : {C D E : Category ℓ ℓ} (F : Functor C D) (G : Functor D E)
       → isMonoidalNat (T₁Str G ∘Str T₁Str F) (T₁Str (G ∘F F)) (ι² F G)
-    mι² {C} {D} {E} F G = rec₂-isMonoidal C (FreeMonoidalOn E) _ _ _
+    mι² {C} {D} {E} F G = rec₂-isMonoidal C (FreeMonoidalOn E)
+      (T₁Str G ∘Str T₁Str F) (T₁Str (G ∘F F)) _
 
     mι²⁻ : {C D E : Category ℓ ℓ} (F : Functor C D) (G : Functor D E)
       → isMonoidalNat (T₁Str (G ∘F F)) (T₁Str G ∘Str T₁Str F) (ι²⁻ F G)
-    mι²⁻ {C} {D} {E} F G = rec₂-isMonoidal C (FreeMonoidalOn E) _ _ _
+    mι²⁻ {C} {D} {E} F G = rec₂-isMonoidal C (FreeMonoidalOn E)
+      (T₁Str (G ∘F F)) (T₁Str G ∘Str T₁Str F) _
 
   ι⁰-sec : {C : Category ℓ ℓ}
     → seqTrans (ι⁰⁻ {C}) (ι⁰ {C}) ≡ idTrans (T₁ (Id {C = C}))
   ι⁰-sec {C} = uniq₂ C (FreeMonoidalOn C) (T₁Str Id) (T₁Str Id)
-    (seqTrans ι⁰⁻ ι⁰) (idTrans (T₁ Id))
     (isMonoidalNat-seq (T₁Str Id) IdStr (T₁Str Id) ι⁰⁻ ι⁰ mι⁰⁻ mι⁰)
     (isMonoidalNat-id (T₁Str Id))
     (λ c → (|FreeMonoidalOn| C) .⋆IdL _)
@@ -109,7 +110,6 @@ module _ {ℓ : Level} where
   ι⁰-ret : {C : Category ℓ ℓ}
     → seqTrans (ι⁰ {C}) (ι⁰⁻ {C}) ≡ idTrans (Id {C = |FreeMonoidalOn| C})
   ι⁰-ret {C} = uniq₂ C (FreeMonoidalOn C) IdStr IdStr
-    (seqTrans ι⁰ ι⁰⁻) (idTrans Id)
     (isMonoidalNat-seq IdStr (T₁Str Id) IdStr ι⁰ ι⁰⁻ mι⁰ mι⁰⁻)
     (isMonoidalNat-id IdStr)
     (λ c → (|FreeMonoidalOn| C) .⋆IdL _)
@@ -118,7 +118,6 @@ module _ {ℓ : Level} where
     → seqTrans (ι²⁻ F G) (ι² F G) ≡ idTrans (T₁ (G ∘F F))
   ι²-sec {C} {D} {E} F G =
     uniq₂ C (FreeMonoidalOn E) (T₁Str (G ∘F F)) (T₁Str (G ∘F F))
-      (seqTrans (ι²⁻ F G) (ι² F G)) (idTrans (T₁ (G ∘F F)))
       (isMonoidalNat-seq (T₁Str (G ∘F F)) (T₁Str G ∘Str T₁Str F)
         (T₁Str (G ∘F F)) (ι²⁻ F G) (ι² F G) (mι²⁻ F G) (mι² F G))
       (isMonoidalNat-id (T₁Str (G ∘F F)))
@@ -129,7 +128,6 @@ module _ {ℓ : Level} where
   ι²-ret {C} {D} {E} F G =
     uniq₂ C (FreeMonoidalOn E)
       (T₁Str G ∘Str T₁Str F) (T₁Str G ∘Str T₁Str F)
-      (seqTrans (ι² F G) (ι²⁻ F G)) (idTrans (T₁ G ∘F T₁ F))
       (isMonoidalNat-seq (T₁Str G ∘Str T₁Str F) (T₁Str (G ∘F F))
         (T₁Str G ∘Str T₁Str F) (ι² F G) (ι²⁻ F G) (mι² F G) (mι²⁻ F G))
       (isMonoidalNat-id (T₁Str G ∘Str T₁Str F))
@@ -210,7 +208,6 @@ module _ {ℓ : Level} where
   FMLax .LaxFunctor.F-id .N-ob _ = ι⁰
   FMLax .LaxFunctor.F-id {x} .N-hom _ =
     uniq₂ x (FreeMonoidalOn x) IdStr (T₁Str Id)
-      (seqTrans (idTrans Id) ι⁰) (seqTrans ι⁰ (T₂ Id Id (idTrans Id)))
       (isMonoidalNat-seq IdStr IdStr (T₁Str Id)
         (idTrans Id) ι⁰ (isMonoidalNat-id IdStr) mι⁰)
       (isMonoidalNat-seq IdStr (T₁Str Id) (T₁Str Id)
@@ -221,8 +218,6 @@ module _ {ℓ : Level} where
   FMLax .LaxFunctor.F-seq {x} {y} {z} .N-hom {F , G} {F' , G'} (u , v) =
     uniq₂ x (FreeMonoidalOn z)
       (T₁Str G ∘Str T₁Str F) (T₁Str (G' ∘F F'))
-      (seqTrans (hSeqCAT (T₂ F F' u) (T₂ G G' v)) (ι² F' G'))
-      (seqTrans (ι² F G) (T₂ (G ∘F F) (G' ∘F F') (hSeqCAT u v)))
       (isMonoidalNat-seq (T₁Str G ∘Str T₁Str F) (T₁Str G' ∘Str T₁Str F')
         (T₁Str (G' ∘F F')) (hSeqCAT (T₂ F F' u) (T₂ G G' v)) (ι² F' G')
         (isMonoidalNat-seq (T₁Str G ∘Str T₁Str F) (T₁Str G ∘Str T₁Str F')
@@ -241,7 +236,6 @@ module _ {ℓ : Level} where
     where K = |FreeMonoidalOn| z
   FMLax .LaxFunctor.lax-λ x y f =
     uniq₂ x (FreeMonoidalOn y) (T₁Str f ∘Str IdStr) (T₁Str f)
-      (seqTrans wh rest) uf'
       (isMonoidalNat-seq (T₁Str f ∘Str IdStr) (T₁Str f ∘Str T₁Str Id)
         (T₁Str f) wh rest
         (isMonoidalNat-seq (T₁Str f ∘Str IdStr) (T₁Str f ∘Str T₁Str Id)
@@ -257,12 +251,10 @@ module _ {ℓ : Level} where
     where
       K = |FreeMonoidalOn| y
       uf = Bicategory.λ⁺ (CAT {ℓ} {ℓ}) f
-      uf' = Bicategory.λ⁺ (CAT {ℓ} {ℓ}) (T₁ f)
       wh = hSeqCAT ι⁰ (idTrans (T₁ f))
       rest = seqTrans (ι² Id f) (T₂ (f ∘F Id) f uf)
   FMLax .LaxFunctor.lax-ρ x y f =
     uniq₂ x (FreeMonoidalOn y) (IdStr ∘Str T₁Str f) (T₁Str f)
-      (seqTrans wh rest) uf'
       (isMonoidalNat-seq (IdStr ∘Str T₁Str f) (T₁Str Id ∘Str T₁Str f)
         (T₁Str f) wh rest
         (isMonoidalNat-seq (IdStr ∘Str T₁Str f) (IdStr ∘Str T₁Str f)
@@ -279,13 +271,11 @@ module _ {ℓ : Level} where
     where
       K = |FreeMonoidalOn| y
       uf = Bicategory.ρ⁺ (CAT {ℓ} {ℓ}) f
-      uf' = Bicategory.ρ⁺ (CAT {ℓ} {ℓ}) (T₁ f)
       wh = hSeqCAT (idTrans (T₁ f)) ι⁰
       rest = seqTrans (ι² f Id) (T₂ (Id ∘F f) f uf)
   FMLax .LaxFunctor.lax-α x y z w f g h =
     uniq₂ x (FreeMonoidalOn w)
       (T₁Str h ∘Str (T₁Str g ∘Str T₁Str f)) (T₁Str ((h ∘F g) ∘F f))
-      (seqTrans whL restL) (seqTrans af' (seqTrans whR (ι² f (h ∘F g))))
       (isMonoidalNat-seq (T₁Str h ∘Str (T₁Str g ∘Str T₁Str f))
         (T₁Str h ∘Str T₁Str (g ∘F f)) (T₁Str ((h ∘F g) ∘F f)) whL restL
         (isMonoidalNat-seq (T₁Str h ∘Str (T₁Str g ∘Str T₁Str f))
@@ -383,7 +373,8 @@ module _ {ℓ : Level} where
       → isMonoidalNat (μFreeStr y ∘Str T₁Str (T₁ F))
                       (T₁Str F ∘Str μFreeStr x) (μnat F)
     mμnat {x} {y} F =
-      rec₂-isMonoidal (|FreeMonoidalOn| x) (FreeMonoidalOn y) _ _ _
+      rec₂-isMonoidal (|FreeMonoidalOn| x) (FreeMonoidalOn y)
+        (μFreeStr y ∘Str T₁Str (T₁ F)) (T₁Str F ∘Str μFreeStr x) _
 
     -- the laxity cell of `FMLax ∘Lax FMLax`
     ι²² : {x y z : Category ℓ ℓ} (f : Functor x y) (g : Functor y z)
@@ -417,7 +408,6 @@ module _ {ℓ : Level} where
   FMMult .LaxNatTrans.N-natural {x} {y} {f} {g} θ =
     uniq₂ (|FreeMonoidalOn| x) (FreeMonoidalOn y)
       (μFreeStr y ∘Str T₁Str (T₁ f)) (T₁Str g ∘Str μFreeStr x)
-      (seqTrans wh (μnat g)) (seqTrans (μnat f) wh')
       (isMonoidalNat-seq (μFreeStr y ∘Str T₁Str (T₁ f))
         (μFreeStr y ∘Str T₁Str (T₁ g)) (T₁Str g ∘Str μFreeStr x)
         wh (μnat g)
@@ -450,9 +440,6 @@ module _ {ℓ : Level} where
   FMMult .LaxNatTrans.lax-id C =
     uniq₂ (|FreeMonoidalOn| C) (FreeMonoidalOn C)
       (μFreeStr C ∘Str IdStr) (T₁Str Id ∘Str μFreeStr C)
-      (seqTrans wh (μnat Id))
-      (seqTrans (Bicategory.λ⁺ (CAT {ℓ} {ℓ}) (μFree C))
-        (seqTrans (Bicategory.ρ⁻ (CAT {ℓ} {ℓ}) (μFree C)) wh'))
       (isMonoidalNat-seq (μFreeStr C ∘Str IdStr)
         (μFreeStr C ∘Str T₁Str (T₁ Id)) (T₁Str Id ∘Str μFreeStr C)
         wh (μnat Id)
@@ -464,9 +451,10 @@ module _ {ℓ : Level} where
             (idTrans (μFree C)) (isMonoidalNat-id (μFreeStr C))))
         (mμnat Id))
       (isMonoidalNat-seq (μFreeStr C ∘Str IdStr) (μFreeStr C)
-        (T₁Str Id ∘Str μFreeStr C) _ _ (mλ⁺ (μFreeStr C))
+        (T₁Str Id ∘Str μFreeStr C) lu (seqTrans ru wh')
+        (mλ⁺ (μFreeStr C))
         (isMonoidalNat-seq (μFreeStr C) (IdStr ∘Str μFreeStr C)
-          (T₁Str Id ∘Str μFreeStr C) _ wh' (mρ⁻ (μFreeStr C))
+          (T₁Str Id ∘Str μFreeStr C) ru wh' (mρ⁻ (μFreeStr C))
           (isMonoidalNat-seq (IdStr ∘Str μFreeStr C)
             (IdStr ∘Str μFreeStr C) (T₁Str Id ∘Str μFreeStr C)
             (Id ∘ʳ idTrans (μFree C)) (ι⁰ ∘ˡ μFree C)
@@ -478,12 +466,11 @@ module _ {ℓ : Level} where
       K = |FreeMonoidalOn| C
       wh = hSeqCAT ι⁰⁰ (idTrans (μFree C))
       wh' = hSeqCAT (idTrans (μFree C)) ι⁰
+      lu = Bicategory.λ⁺ (CAT {ℓ} {ℓ}) (μFree C)
+      ru = Bicategory.ρ⁻ (CAT {ℓ} {ℓ}) (μFree C)
   FMMult .LaxNatTrans.lax-seq {x} {y} {z} f g =
     uniq₂ (|FreeMonoidalOn| x) (FreeMonoidalOn z)
       S0 (T₁Str (g ∘F f) ∘Str μFreeStr x)
-      (seqTrans whL (μnat (g ∘F f)))
-      (seqTrans A1 (seqTrans A2 (seqTrans A3 (seqTrans A4
-        (seqTrans A5 A6)))))
       (isMonoidalNat-seq S0 (μFreeStr z ∘Str T₁Str (T₁ (g ∘F f)))
         (T₁Str (g ∘F f) ∘Str μFreeStr x) whL (μnat (g ∘F f))
         (isMonoidalNat-seq S0 (μFreeStr z ∘Str T₁Str (T₁ (g ∘F f)))
@@ -495,9 +482,11 @@ module _ {ℓ : Level} where
             (μFreeStr z) (idTrans (μFree z))
             (isMonoidalNat-id (μFreeStr z))))
         (mμnat (g ∘F f)))
-      (isMonoidalNat-seq S0 S1 (T₁Str (g ∘F f) ∘Str μFreeStr x) A1 _
+      (isMonoidalNat-seq S0 S1 (T₁Str (g ∘F f) ∘Str μFreeStr x) A1
+        (seqTrans A2 (seqTrans A3 (seqTrans A4 (seqTrans A5 A6))))
         (mα⁺ (T₁Str (T₁ f)) (T₁Str (T₁ g)) (μFreeStr z))
-        (isMonoidalNat-seq S1 S2 (T₁Str (g ∘F f) ∘Str μFreeStr x) A2 _
+        (isMonoidalNat-seq S1 S2 (T₁Str (g ∘F f) ∘Str μFreeStr x) A2
+          (seqTrans A3 (seqTrans A4 (seqTrans A5 A6)))
           (isMonoidalNat-seq S1 S1 S2
             ((μFree z ∘F T₁ (T₁ g)) ∘ʳ idTrans (T₁ (T₁ f)))
             (μnat g ∘ˡ T₁ (T₁ f))
@@ -507,10 +496,11 @@ module _ {ℓ : Level} where
             (isMonoidalNat-∘ˡ (T₁Str (T₁ f))
               (μFreeStr z ∘Str T₁Str (T₁ g)) (T₁Str g ∘Str μFreeStr y)
               (μnat g) (mμnat g)))
-          (isMonoidalNat-seq S2 S3 (T₁Str (g ∘F f) ∘Str μFreeStr x) A3 _
+          (isMonoidalNat-seq S2 S3 (T₁Str (g ∘F f) ∘Str μFreeStr x) A3
+            (seqTrans A4 (seqTrans A5 A6))
             (mα⁻ (T₁Str (T₁ f)) (μFreeStr y) (T₁Str g))
             (isMonoidalNat-seq S3 S4 (T₁Str (g ∘F f) ∘Str μFreeStr x)
-              A4 _
+              A4 (seqTrans A5 A6)
               (isMonoidalNat-seq S3 S4 S4
                 (T₁ g ∘ʳ μnat f) (idTrans (T₁ g) ∘ˡ (T₁ f ∘F μFree x))
                 (isMonoidalNat-∘ʳ (T₁Str g)
@@ -583,17 +573,18 @@ module _ {ℓ : Level} where
   private
     muL : (C : Category ℓ ℓ)
       → isMonoidalNat (μFreeStr C ∘Str T₁Str (ηFree C)) IdStr (uL C)
-    muL C = rec₂-isMonoidal C (FreeMonoidalOn C) _ _ _
+    muL C = rec₂-isMonoidal C (FreeMonoidalOn C)
+      (μFreeStr C ∘Str T₁Str (ηFree C)) IdStr _
 
     muL⁻ : (C : Category ℓ ℓ)
       → isMonoidalNat IdStr (μFreeStr C ∘Str T₁Str (ηFree C)) (uL⁻ C)
-    muL⁻ C = rec₂-isMonoidal C (FreeMonoidalOn C) _ _ _
+    muL⁻ C = rec₂-isMonoidal C (FreeMonoidalOn C)
+      IdStr (μFreeStr C ∘Str T₁Str (ηFree C)) _
 
     uL-isIso : (C : Category ℓ ℓ)
       → isIso (FUNCTOR (|FreeMonoidalOn| C) (|FreeMonoidalOn| C)) (uL C)
     uL-isIso C .inv = uL⁻ C
     uL-isIso C .sec = uniq₂ C (FreeMonoidalOn C) IdStr IdStr
-      (seqTrans (uL⁻ C) (uL C)) (idTrans Id)
       (isMonoidalNat-seq IdStr (μFreeStr C ∘Str T₁Str (ηFree C)) IdStr
         (uL⁻ C) (uL C) (muL⁻ C) (muL C))
       (isMonoidalNat-id IdStr)
@@ -601,7 +592,6 @@ module _ {ℓ : Level} where
     uL-isIso C .ret = uniq₂ C (FreeMonoidalOn C)
       (μFreeStr C ∘Str T₁Str (ηFree C))
       (μFreeStr C ∘Str T₁Str (ηFree C))
-      (seqTrans (uL C) (uL⁻ C)) (idTrans (μFree C ∘F T₁ (ηFree C)))
       (isMonoidalNat-seq (μFreeStr C ∘Str T₁Str (ηFree C)) IdStr
         (μFreeStr C ∘Str T₁Str (ηFree C)) (uL C) (uL⁻ C) (muL C) (muL⁻ C))
       (isMonoidalNat-id (μFreeStr C ∘Str T₁Str (ηFree C)))
@@ -612,13 +602,13 @@ module _ {ℓ : Level} where
   unitLMod .Modification.M-ob C = uL C
   unitLMod .Modification.M-hom {x} {y} f =
     uniq₂ x (FreeMonoidalOn y) M0 M6
-      (seqTrans (seqTrans A1 (seqTrans A2 (seqTrans A3
-        (seqTrans A4 A5)))) A6)
-      (seqTrans B1 (seqTrans B2 B3))
-      (isMonoidalNat-seq M0 M5 M6 _ A6
-        (isMonoidalNat-seq M0 M1 M5 A1 _
+      (isMonoidalNat-seq M0 M5 M6
+        (seqTrans A1 (seqTrans A2 (seqTrans A3 (seqTrans A4 A5)))) A6
+        (isMonoidalNat-seq M0 M1 M5 A1
+          (seqTrans A2 (seqTrans A3 (seqTrans A4 A5)))
           (mα⁻ (T₁Str f) (T₁Str (ηFree y)) (μFreeStr y))
-          (isMonoidalNat-seq M1 M2 M5 A2 _
+          (isMonoidalNat-seq M1 M2 M5 A2
+            (seqTrans A3 (seqTrans A4 A5))
             (isMonoidalNat-seq M1 M2 M2
               (μFree y ∘ʳ WH) (idTrans (μFree y) ∘ˡ TT)
               (isMonoidalNat-∘ʳ (μFreeStr y)
@@ -627,7 +617,7 @@ module _ {ℓ : Level} where
               (isMonoidalNat-∘ˡ (T₁Str (T₁ f) ∘Str T₁Str (ηFree x))
                 (μFreeStr y) (μFreeStr y) (idTrans (μFree y))
                 (isMonoidalNat-id (μFreeStr y))))
-            (isMonoidalNat-seq M2 M3 M5 A3 _
+            (isMonoidalNat-seq M2 M3 M5 A3 (seqTrans A4 A5)
               (mα⁺ (T₁Str (ηFree x)) (T₁Str (T₁ f)) (μFreeStr y))
               (isMonoidalNat-seq M3 M4 M5 A4 A5
                 (isMonoidalNat-seq M3 M3 M4
@@ -647,7 +637,7 @@ module _ {ℓ : Level} where
             (μFreeStr x ∘Str T₁Str (ηFree x)) IdStr (uL x) (muL x))
           (isMonoidalNat-∘ˡ IdStr (T₁Str f) (T₁Str f) (idTrans (T₁ f))
             (isMonoidalNat-id (T₁Str f)))))
-      (isMonoidalNat-seq M0 R1 M6 B1 _
+      (isMonoidalNat-seq M0 R1 M6 B1 (seqTrans B2 B3)
         (isMonoidalNat-seq M0 M0 R1
           ((μFree y ∘F T₁ (ηFree y)) ∘ʳ idTrans (T₁ f)) (uL y ∘ˡ T₁ f)
           (isMonoidalNat-∘ʳ (μFreeStr y ∘Str T₁Str (ηFree y))
@@ -762,13 +752,17 @@ module _ {ℓ : Level} where
       → isMonoidalNat (μFreeStr C ∘Str μFreeStr (|FreeMonoidalOn| C))
           ((μFreeStr C ∘Str T₁Str (μFree C)) ∘Str IdStr) (aM C)
     maM C = rec₂-isMonoidal (|FreeMonoidalOn| (|FreeMonoidalOn| C))
-      (FreeMonoidalOn C) _ _ _
+      (FreeMonoidalOn C)
+      (μFreeStr C ∘Str μFreeStr (|FreeMonoidalOn| C))
+      ((μFreeStr C ∘Str T₁Str (μFree C)) ∘Str IdStr) _
 
     maM⁻ : (C : Category ℓ ℓ)
       → isMonoidalNat ((μFreeStr C ∘Str T₁Str (μFree C)) ∘Str IdStr)
           (μFreeStr C ∘Str μFreeStr (|FreeMonoidalOn| C)) (aM⁻ C)
     maM⁻ C = rec₂-isMonoidal (|FreeMonoidalOn| (|FreeMonoidalOn| C))
-      (FreeMonoidalOn C) _ _ _
+      (FreeMonoidalOn C)
+      ((μFreeStr C ∘Str T₁Str (μFree C)) ∘Str IdStr)
+      (μFreeStr C ∘Str μFreeStr (|FreeMonoidalOn| C)) _
 
     aM-isIso : (C : Category ℓ ℓ)
       → isIso (FUNCTOR (|FreeMonoidalOn| (|FreeMonoidalOn|
@@ -778,8 +772,6 @@ module _ {ℓ : Level} where
       (FreeMonoidalOn C)
       ((μFreeStr C ∘Str T₁Str (μFree C)) ∘Str IdStr)
       ((μFreeStr C ∘Str T₁Str (μFree C)) ∘Str IdStr)
-      (seqTrans (aM⁻ C) (aM C))
-      (idTrans ((μFree C ∘F T₁ (μFree C)) ∘F Id))
       (isMonoidalNat-seq
         ((μFreeStr C ∘Str T₁Str (μFree C)) ∘Str IdStr)
         (μFreeStr C ∘Str μFreeStr (|FreeMonoidalOn| C))
@@ -791,8 +783,6 @@ module _ {ℓ : Level} where
       (FreeMonoidalOn C)
       (μFreeStr C ∘Str μFreeStr (|FreeMonoidalOn| C))
       (μFreeStr C ∘Str μFreeStr (|FreeMonoidalOn| C))
-      (seqTrans (aM C) (aM⁻ C))
-      (idTrans (μFree C ∘F μFree (|FreeMonoidalOn| C)))
       (isMonoidalNat-seq
         (μFreeStr C ∘Str μFreeStr (|FreeMonoidalOn| C))
         ((μFreeStr C ∘Str T₁Str (μFree C)) ∘Str IdStr)
@@ -809,77 +799,7 @@ module _ {ℓ : Level} where
   assocMod' .Modification.M-ob C = aM C
   assocMod' .Modification.M-hom {x} {y} f =
     uniq₂ (|FreeMonoidalOn| (|FreeMonoidalOn| x)) (FreeMonoidalOn y)
-      P0 P6
-      (seqTrans (seqTrans a1 (seqTrans a2 (seqTrans a3
-        (seqTrans a4 a5)))) a6)
-      (seqTrans b1 (seqTrans b2 (seqTrans b3 (seqTrans b4
-        (seqTrans b5 b6)))))
-      (isMonoidalNat-seq P0 P5 P6 _ a6
-        (isMonoidalNat-seq P0 P1 P5 a1 _ (mα⁻ TTf μTy μy)
-          (isMonoidalNat-seq P1 P2 P5 a2 _
-            (isMonoidalNat-seq P1 P2 P2
-              (μFree y ∘ʳ μnat (T₁ f))
-              (idTrans (μFree y) ∘ˡ (T₁ (T₁ f) ∘F μFree TX))
-              (isMonoidalNat-∘ʳ μy (μTy ∘Str TTf) (TTf1 ∘Str μTx)
-                (μnat (T₁ f)) (mμnat (T₁ f)))
-              (isMonoidalNat-∘ˡ (TTf1 ∘Str μTx) μy μy
-                (idTrans (μFree y)) (isMonoidalNat-id μy)))
-            (isMonoidalNat-seq P2 P3 P5 a3 _ (mα⁺ μTx TTf1 μy)
-              (isMonoidalNat-seq P3 P4 P5 a4 a5
-                (isMonoidalNat-seq P3 P3 P4
-                  ((μFree y ∘F T₁ (T₁ f)) ∘ʳ idTrans (μFree TX))
-                  (μnat f ∘ˡ μFree TX)
-                  (isMonoidalNat-∘ʳ (μy ∘Str TTf1) μTx μTx
-                    (idTrans (μFree TX)) (isMonoidalNat-id μTx))
-                  (isMonoidalNat-∘ˡ μTx (μy ∘Str TTf1) (Tf ∘Str μx)
-                    (μnat f) (mμnat f)))
-                (mα⁻ μTx μx Tf)))))
-        (isMonoidalNat-seq P5 P6 P6
-          (T₁ f ∘ʳ aM x)
-          (idTrans (T₁ f) ∘ˡ ((μFree x ∘F T₁ (μFree x)) ∘F Id))
-          (isMonoidalNat-∘ʳ Tf (μx ∘Str μTx)
-            ((μx ∘Str Tμx) ∘Str IdStr) (aM x) (maM x))
-          (isMonoidalNat-∘ˡ ((μx ∘Str Tμx) ∘Str IdStr) Tf Tf
-            (idTrans (T₁ f)) (isMonoidalNat-id Tf))))
-      (isMonoidalNat-seq P0 Q1 P6 b1 _
-        (isMonoidalNat-seq P0 P0 Q1
-          ((μFree y ∘F μFree TY) ∘ʳ idTrans TTTf) (aM y ∘ˡ TTTf)
-          (isMonoidalNat-∘ʳ (μy ∘Str μTy) TTf TTf (idTrans TTTf)
-            (isMonoidalNat-id TTf))
-          (isMonoidalNat-∘ˡ TTf (μy ∘Str μTy)
-            ((μy ∘Str Tμy) ∘Str IdStr) (aM y) (maM y)))
-        (isMonoidalNat-seq Q1 Q2 P6 b2 _
-          (mα⁻ TTf IdStr (μy ∘Str Tμy))
-          (isMonoidalNat-seq Q2 Q3 P6 b3 _
-            (isMonoidalNat-seq Q2 Q3 Q3
-              ((μFree y ∘F T₁ (μFree y)) ∘ʳ AH)
-              (idTrans (μFree y ∘F T₁ (μFree y)) ∘ˡ (TTTf ∘F Id))
-              (isMonoidalNat-∘ʳ (μy ∘Str Tμy) (IdStr ∘Str TTf)
-                (TTf ∘Str IdStr) AH mAH)
-              (isMonoidalNat-∘ˡ (TTf ∘Str IdStr) (μy ∘Str Tμy)
-                (μy ∘Str Tμy) (idTrans (μFree y ∘F T₁ (μFree y)))
-                (isMonoidalNat-id (μy ∘Str Tμy))))
-            (isMonoidalNat-seq Q3 Q4 P6 b4 _
-              (mα⁺ IdStr TTf (μy ∘Str Tμy))
-              (isMonoidalNat-seq Q4 Q5 P6 b5 b6
-                (isMonoidalNat-seq Q4 Q4 Q5
-                  (((μFree y ∘F T₁ (μFree y)) ∘F TTTf) ∘ʳ idTrans Id)
-                  (SH ∘ˡ Id)
-                  (isMonoidalNat-∘ʳ ((μy ∘Str Tμy) ∘Str TTf) IdStr
-                    IdStr (idTrans Id) (isMonoidalNat-id IdStr))
-                  (isMonoidalNat-∘ˡ IdStr ((μy ∘Str Tμy) ∘Str TTf)
-                    (Tf ∘Str (μx ∘Str Tμx)) SH mSH))
-                (mα⁻ IdStr (μx ∘Str Tμx) Tf))))))
-      (λ w →
-        let ps2 = K .⋆IdR _ ∙ K .⋆IdL _ ∙ K .⋆IdR _
-            pF = collapse K refl (collapse K (K .⋆IdL _) refl)
-            pSH = K .⋆IdL _ ∙ cong₂ (seq' K) ps2 pF ∙ K .⋆IdR _
-            pA = K .⋆IdL _ ∙ collapseL K (K .⋆IdL _)
-               ∙ K .⋆IdL _ ∙ K .⋆IdR _ ∙ K .⋆IdL _
-        in  cong₂ (seq' K) pA (K .⋆IdL _) ∙ K .⋆IdR _
-          ∙ sym (collapseL K (K .⋆IdL _) ∙ K .⋆IdL _
-                ∙ collapseL K (collapse K (K .⋆IdL _) refl)
-                ∙ K .⋆IdL _ ∙ K .⋆IdR _ ∙ K .⋆IdL _ ∙ pSH))
+      P0 P6 mlhs mrhs pgen
     where
       K = |FreeMonoidalOn| y
       TX = |FreeMonoidalOn| x
@@ -976,6 +896,99 @@ module _ {ℓ : Level} where
       b6 = Bicategory.α⁻ (CAT {ℓ} {ℓ}) Id
         (μFree x ∘F T₁ (μFree x)) (T₁ f)
 
+      lhs : NatTrans (P0 .F) (P6 .F)
+      lhs =
+        seqTrans (seqTrans a1 (seqTrans a2 (seqTrans a3
+          (seqTrans a4 a5)))) a6
+
+      rhs : NatTrans (P0 .F) (P6 .F)
+      rhs =
+        seqTrans b1 (seqTrans b2 (seqTrans b3 (seqTrans b4
+          (seqTrans b5 b6))))
+
+      mlhs : isMonoidalNat P0 P6 lhs
+      mlhs =
+        isMonoidalNat-seq P0 P5 P6
+          (seqTrans a1 (seqTrans a2 (seqTrans a3 (seqTrans a4 a5)))) a6
+          (isMonoidalNat-seq P0 P1 P5 a1
+            (seqTrans a2 (seqTrans a3 (seqTrans a4 a5)))
+            (mα⁻ TTf μTy μy)
+            (isMonoidalNat-seq P1 P2 P5 a2
+              (seqTrans a3 (seqTrans a4 a5))
+              (isMonoidalNat-seq P1 P2 P2
+                (μFree y ∘ʳ μnat (T₁ f))
+                (idTrans (μFree y) ∘ˡ (T₁ (T₁ f) ∘F μFree TX))
+                (isMonoidalNat-∘ʳ μy (μTy ∘Str TTf) (TTf1 ∘Str μTx)
+                  (μnat (T₁ f)) (mμnat (T₁ f)))
+                (isMonoidalNat-∘ˡ (TTf1 ∘Str μTx) μy μy
+                  (idTrans (μFree y)) (isMonoidalNat-id μy)))
+              (isMonoidalNat-seq P2 P3 P5 a3 (seqTrans a4 a5)
+                (mα⁺ μTx TTf1 μy)
+                (isMonoidalNat-seq P3 P4 P5 a4 a5
+                  (isMonoidalNat-seq P3 P3 P4
+                    ((μFree y ∘F T₁ (T₁ f)) ∘ʳ idTrans (μFree TX))
+                    (μnat f ∘ˡ μFree TX)
+                    (isMonoidalNat-∘ʳ (μy ∘Str TTf1) μTx μTx
+                      (idTrans (μFree TX)) (isMonoidalNat-id μTx))
+                    (isMonoidalNat-∘ˡ μTx (μy ∘Str TTf1) (Tf ∘Str μx)
+                      (μnat f) (mμnat f)))
+                  (mα⁻ μTx μx Tf)))))
+          (isMonoidalNat-seq P5 P6 P6
+            (T₁ f ∘ʳ aM x)
+            (idTrans (T₁ f) ∘ˡ ((μFree x ∘F T₁ (μFree x)) ∘F Id))
+            (isMonoidalNat-∘ʳ Tf (μx ∘Str μTx)
+              ((μx ∘Str Tμx) ∘Str IdStr) (aM x) (maM x))
+            (isMonoidalNat-∘ˡ ((μx ∘Str Tμx) ∘Str IdStr) Tf Tf
+              (idTrans (T₁ f)) (isMonoidalNat-id Tf)))
+
+      mrhs : isMonoidalNat P0 P6 rhs
+      mrhs =
+        isMonoidalNat-seq P0 Q1 P6 b1
+          (seqTrans b2 (seqTrans b3 (seqTrans b4 (seqTrans b5 b6))))
+          (isMonoidalNat-seq P0 P0 Q1
+            ((μFree y ∘F μFree TY) ∘ʳ idTrans TTTf) (aM y ∘ˡ TTTf)
+            (isMonoidalNat-∘ʳ (μy ∘Str μTy) TTf TTf (idTrans TTTf)
+              (isMonoidalNat-id TTf))
+            (isMonoidalNat-∘ˡ TTf (μy ∘Str μTy)
+              ((μy ∘Str Tμy) ∘Str IdStr) (aM y) (maM y)))
+          (isMonoidalNat-seq Q1 Q2 P6 b2
+            (seqTrans b3 (seqTrans b4 (seqTrans b5 b6)))
+            (mα⁻ TTf IdStr (μy ∘Str Tμy))
+            (isMonoidalNat-seq Q2 Q3 P6 b3
+              (seqTrans b4 (seqTrans b5 b6))
+              (isMonoidalNat-seq Q2 Q3 Q3
+                ((μFree y ∘F T₁ (μFree y)) ∘ʳ AH)
+                (idTrans (μFree y ∘F T₁ (μFree y)) ∘ˡ (TTTf ∘F Id))
+                (isMonoidalNat-∘ʳ (μy ∘Str Tμy) (IdStr ∘Str TTf)
+                  (TTf ∘Str IdStr) AH mAH)
+                (isMonoidalNat-∘ˡ (TTf ∘Str IdStr) (μy ∘Str Tμy)
+                  (μy ∘Str Tμy) (idTrans (μFree y ∘F T₁ (μFree y)))
+                  (isMonoidalNat-id (μy ∘Str Tμy))))
+              (isMonoidalNat-seq Q3 Q4 P6 b4 (seqTrans b5 b6)
+                (mα⁺ IdStr TTf (μy ∘Str Tμy))
+                (isMonoidalNat-seq Q4 Q5 P6 b5 b6
+                  (isMonoidalNat-seq Q4 Q4 Q5
+                    (((μFree y ∘F T₁ (μFree y)) ∘F TTTf) ∘ʳ idTrans Id)
+                    (SH ∘ˡ Id)
+                    (isMonoidalNat-∘ʳ ((μy ∘Str Tμy) ∘Str TTf) IdStr
+                      IdStr (idTrans Id) (isMonoidalNat-id IdStr))
+                    (isMonoidalNat-∘ˡ IdStr ((μy ∘Str Tμy) ∘Str TTf)
+                      (Tf ∘Str (μx ∘Str Tμx)) SH mSH))
+                  (mα⁻ IdStr (μx ∘Str Tμx) Tf)))))
+
+      pgen : (w : (|FreeMonoidalOn| TX) .ob)
+        → lhs .N-ob (↑ w) ≡ rhs .N-ob (↑ w)
+      pgen w =
+        let ps2 = K .⋆IdR _ ∙ K .⋆IdL _ ∙ K .⋆IdR _
+            pF = collapse K refl (collapse K (K .⋆IdL _) refl)
+            pSH = K .⋆IdL _ ∙ cong₂ (seq' K) ps2 pF ∙ K .⋆IdR _
+            pA = K .⋆IdL _ ∙ collapseL K (K .⋆IdL _)
+               ∙ K .⋆IdL _ ∙ K .⋆IdR _ ∙ K .⋆IdL _
+        in  cong₂ (seq' K) pA (K .⋆IdL _) ∙ K .⋆IdR _
+          ∙ sym (collapseL K (K .⋆IdL _) ∙ K .⋆IdL _
+                ∙ collapseL K (collapse K (K .⋆IdL _) refl)
+                ∙ K .⋆IdL _ ∙ K .⋆IdR _ ∙ K .⋆IdL _ ∙ pSH)
+
   FreeMonoidalTwoMonad : TwoMonad (CAT {ℓ} {ℓ})
   FreeMonoidalTwoMonad .TwoMonad.T = FMPs
   FreeMonoidalTwoMonad .TwoMonad.η = FMUnit
@@ -1018,12 +1031,10 @@ module _ {ℓ : Level} (M : MonoidalCategory ℓ ℓ) where
     actMultCell
   actMultIsIso .inv = actMultCell⁻
   actMultIsIso .sec = uniq₂ (|FreeMonoidalOn| A) M H H
-    (seqTrans actMultCell⁻ actMultCell) (idTrans (ev ∘F μFree A))
     (isMonoidalNat-seq H G H actMultCell⁻ actMultCell mMult⁻ mMult)
     (isMonoidalNat-id H)
     (λ c → A .⋆IdL _)
   actMultIsIso .ret = uniq₂ (|FreeMonoidalOn| A) M G G
-    (seqTrans actMultCell actMultCell⁻) (idTrans (ev ∘F T₁ ev))
     (isMonoidalNat-seq G H G actMultCell actMultCell⁻ mMult mMult⁻)
     (isMonoidalNat-id G)
     (λ c → A .⋆IdL _)

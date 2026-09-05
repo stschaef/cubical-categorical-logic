@@ -359,12 +359,15 @@ module _ (C : Category ℓC ℓC') where
 
       -- 2-dimensional uniqueness: a monoidal natural transformation
       -- out of the free monoidal category is determined by its
-      -- restriction along ηFree.
-      uniq₂ : (σ τ : NatTrans G.F H.F)
+      -- restriction along ηFree.  The two transformations are
+      -- implicit: at a use site they are read off the goal rather
+      -- than respelled, which keeps their naturality proofs out of
+      -- the comparison the use site would otherwise force.
+      uniq₂ : {σ τ : NatTrans G.F H.F}
         → isMonoidalNat G H σ → isMonoidalNat G H τ
         → (∀ c → σ .N-ob (↑ c) ≡ τ .N-ob (↑ c))
         → σ ≡ τ
-      uniq₂ σ τ mσ mτ p↑ = makeNatTransPath (funExt go) where
+      uniq₂ {σ} {τ} mσ mτ p↑ = makeNatTransPath (funExt go) where
         go : ∀ x → σ .N-ob x ≡ τ .N-ob x
         go (↑ c) = p↑ c
         go unit = ⋆CancelL G.ε-Iso (mσ .fst ∙ sym (mτ .fst))
@@ -548,7 +551,7 @@ module _ {C : Category ℓC ℓC'} {D : Category ℓD ℓD'}
     → (∀ c → σ .N-ob (↑ c) ≡ ↑ₘ (β .N-ob c))
     → σ ≡ T₂ β
   T₂-uniq β σ mσ p = uniq₂ C (FreeMonoidalOn D)
-    (T₁Str F₁) (T₁Str G₁) σ (T₂ β) mσ (T₂-isMonoidal β) p
+    (T₁Str F₁) (T₁Str G₁) mσ (T₂-isMonoidal β) p
 
 module _ {C : Category ℓC ℓC'} where
   MonObInd : ∀ {ℓ} (Pr : MonOb C → Type ℓ)
