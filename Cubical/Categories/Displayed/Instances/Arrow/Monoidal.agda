@@ -121,26 +121,6 @@ module _ (M : MonoidalCategory ℓC ℓC') where
       MP .MonoidalPropᴰ.ρᴰ⟨_⟩ _ = sym (M.ρ .trans .N-hom _)
       MP .MonoidalPropᴰ.ρ⁻¹ᴰ⟨_⟩ _ = sym (symNatIso M.ρ .trans .N-hom _)
 
--- Lifting an iso of pairs along the arrow bundle: conjugate by it.
--- Only the base iso's laws are used, so this is `isIsoFibrationIso`
--- with the displayed invertibility forgotten.
-module _ (C : Category ℓC ℓC') where
-  isIsoFibrationArrow : isWeakIsoFibration (Arrow.Arrow C)
-  isIsoFibrationArrow {c = x , y}{c' = x' , y'} f fg = record
-    { f*cᴰ = x≅x' .fst ⋆⟨ C ⟩ (f ⋆⟨ C ⟩ y'≅y .fst)
-    ; π = sym (C .⋆IdR _)
-      ∙ C .⋆Assoc _ _ _
-      ∙ cong₂ (seq' C) refl
-        (cong₂ (seq' C) refl (sym (y'≅y .snd .ret)) ∙ sym (C .⋆Assoc _ _ _))
-      ∙ sym (C .⋆Assoc _ _ _)
-    ; σ = sym (C .⋆Assoc _ _ _)
-      ∙ cong₂ (comp' C) refl (x≅x' .snd .sec)
-      ∙ C .⋆IdL _
-    }
-    where
-      x≅x' = SplitCatIso× C C fg .fst
-      y'≅y = invIso (SplitCatIso× C C fg .snd)
-
 -- The comma monoidal category of two strong monoidal functors: its
 -- sections along a functor are monoidal natural transformations.
 module _ {M : MonoidalCategory ℓC ℓC'} {N : MonoidalCategory ℓD ℓD'}

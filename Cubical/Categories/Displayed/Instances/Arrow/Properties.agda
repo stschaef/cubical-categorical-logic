@@ -50,6 +50,25 @@ module _ (C : Category ℓC ℓC') where
       rightLift = isTwoSidedWeakFibrationArrow .rightLifts (p .fst) (f .fst)
       module rightLift = WeakRightOpCartesianLift rightLift
 
+  -- The same lift for the full arrow bundle: only the base iso's
+  -- laws are used, so this is isIsoFibrationIso with the displayed
+  -- invertibility forgotten.
+  isIsoFibrationArrow : isWeakIsoFibration (Arrow C)
+  isIsoFibrationArrow {c = x , y}{c' = x' , y'} f fg = record
+    { f*cᴰ = x≅x' .fst ⋆⟨ C ⟩ (f ⋆⟨ C ⟩ y'≅y .fst)
+    ; π = sym (C .⋆IdR _)
+      ∙ C .⋆Assoc _ _ _
+      ∙ cong₂ (seq' C) refl
+        (cong₂ (seq' C) refl (sym (y'≅y .snd .ret)) ∙ sym (C .⋆Assoc _ _ _))
+      ∙ sym (C .⋆Assoc _ _ _)
+    ; σ = sym (C .⋆Assoc _ _ _)
+      ∙ cong₂ (comp' C) refl (x≅x' .snd .sec)
+      ∙ C .⋆IdL _
+    }
+    where
+      x≅x' = SplitCatIso× C C fg .fst
+      y'≅y = invIso (SplitCatIso× C C fg .snd)
+
   isIsoFibrationIso : isWeakIsoFibration (Iso C)
   isIsoFibrationIso {c = x , y}{c' = x' , y'} x'≅y' fg = record
     { f*cᴰ = ⋆Iso x≅x' (⋆Iso x'≅y' y'≅y)

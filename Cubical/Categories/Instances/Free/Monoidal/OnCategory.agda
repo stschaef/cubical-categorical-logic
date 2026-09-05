@@ -46,6 +46,101 @@ open isIsoᴰ
 open Section
 open Functorᴰ
 
+{- A natural transformation between strong monoidal functors is
+   monoidal when it commutes with the ε and μ comparisons.  TODO:
+   this and the next three lemmas belong in Monoidal.Functor. -}
+module _ {M : MonoidalCategory ℓC ℓC'} {N : MonoidalCategory ℓD ℓD'}
+         (G H : StrongMonoidalFunctor M N) where
+  private
+    module M = MonoidalCategory M
+    module N = MonoidalCategory N
+    module G = StrongMonoidalFunctor G
+    module H = StrongMonoidalFunctor H
+
+  isMonoidalNat : NatTrans G.F H.F → Type (ℓ-max ℓC ℓD')
+  isMonoidalNat σ =
+    (G.ε ⋆⟨ N.C ⟩ σ .N-ob M.unit ≡ H.ε)
+    × (∀ x y → G.μ⟨ x , y ⟩ ⋆⟨ N.C ⟩ σ .N-ob (x M.⊗ y)
+             ≡ (σ .N-ob x N.⊗ₕ σ .N-ob y) ⋆⟨ N.C ⟩ H.μ⟨ x , y ⟩)
+
+module _ {M : MonoidalCategory ℓC ℓC'} {N : MonoidalCategory ℓD ℓD'}
+         (G : StrongMonoidalFunctor M N) where
+  private
+    module N = MonoidalCategory N
+    module G = StrongMonoidalFunctor G
+  isMonoidalNat-id : isMonoidalNat G G (idTrans G.F)
+  isMonoidalNat-id .fst = N.⋆IdR _
+  isMonoidalNat-id .snd x y =
+    N.⋆IdR _ ∙ sym (N.⋆IdL _) ∙ cong₂ N._⋆_ (sym (N.─⊗─ .F-id)) refl
+
+-- Monoidal natural transformations are closed under composition.
+module _ {M : MonoidalCategory ℓC ℓC'} {N : MonoidalCategory ℓD ℓD'}
+         (G H K : StrongMonoidalFunctor M N) where
+  private
+    module N = MonoidalCategory N
+    module G = StrongMonoidalFunctor G
+    module K = StrongMonoidalFunctor K
+  isMonoidalNat-seq : (σ : NatTrans G.F (H .StrongMonoidalFunctor.F))
+    (τ : NatTrans (H .StrongMonoidalFunctor.F) K.F)
+    → isMonoidalNat G H σ → isMonoidalNat H K τ
+    → isMonoidalNat G K (seqTrans σ τ)
+  isMonoidalNat-seq σ τ mσ mτ .fst =
+    sym (N.⋆Assoc _ _ _) ∙ cong₂ N._⋆_ (mσ .fst) refl ∙ mτ .fst
+  isMonoidalNat-seq σ τ mσ mτ .snd x y =
+    sym (N.⋆Assoc _ _ _)
+    ∙ cong₂ N._⋆_ (mσ .snd x y) refl
+    ∙ N.⋆Assoc _ _ _
+    ∙ cong₂ N._⋆_ refl (mτ .snd x y)
+    ∙ sym (N.⋆Assoc _ _ _)
+    ∙ cong₂ N._⋆_ (sym (N.─⊗─ .F-seq _ _)) refl
+
+-- ... and under whiskering by a strong monoidal functor.
+module _ {M : MonoidalCategory ℓC ℓC'} {N : MonoidalCategory ℓD ℓD'}
+         {E : MonoidalCategory ℓE ℓE'}
+         (K : StrongMonoidalFunctor N E)
+         (G H : StrongMonoidalFunctor M N) where
+  private
+    module E = MonoidalCategory E
+    module K = StrongMonoidalFunctor K
+  isMonoidalNat-∘ʳ : (σ : NatTrans (G .StrongMonoidalFunctor.F)
+                                   (H .StrongMonoidalFunctor.F))
+    → isMonoidalNat G H σ
+    → isMonoidalNat (K ∘Str G) (K ∘Str H) (K.F ∘ʳ σ)
+  isMonoidalNat-∘ʳ σ mσ .fst =
+    E.⋆Assoc _ _ _
+    ∙ cong₂ E._⋆_ refl (sym (K.F-seq _ _) ∙ cong K.F-hom (mσ .fst))
+  isMonoidalNat-∘ʳ σ mσ .snd x y =
+    E.⋆Assoc _ _ _
+    ∙ cong₂ E._⋆_ refl
+      (sym (K.F-seq _ _) ∙ cong K.F-hom (mσ .snd x y) ∙ K.F-seq _ _)
+    ∙ sym (E.⋆Assoc _ _ _)
+    ∙ cong₂ E._⋆_ (sym (K.μ .N-hom _)) refl
+    ∙ E.⋆Assoc _ _ _
+
+module _ {M : MonoidalCategory ℓC ℓC'} {N : MonoidalCategory ℓD ℓD'}
+         {E : MonoidalCategory ℓE ℓE'}
+         (K : StrongMonoidalFunctor M N)
+         (G H : StrongMonoidalFunctor N E) where
+  private
+    module E = MonoidalCategory E
+    module K = StrongMonoidalFunctor K
+    module G = StrongMonoidalFunctor G
+    module H = StrongMonoidalFunctor H
+  isMonoidalNat-∘ˡ : (σ : NatTrans G.F H.F)
+    → isMonoidalNat G H σ
+    → isMonoidalNat (G ∘Str K) (H ∘Str K) (σ ∘ˡ K.F)
+  isMonoidalNat-∘ˡ σ mσ .fst =
+    E.⋆Assoc _ _ _
+    ∙ cong₂ E._⋆_ refl (σ .N-hom _)
+    ∙ sym (E.⋆Assoc _ _ _)
+    ∙ cong₂ E._⋆_ (mσ .fst) refl
+  isMonoidalNat-∘ˡ σ mσ .snd x y =
+    E.⋆Assoc _ _ _
+    ∙ cong₂ E._⋆_ refl (σ .N-hom _)
+    ∙ sym (E.⋆Assoc _ _ _)
+    ∙ cong₂ E._⋆_ (mσ .snd _ _) refl
+    ∙ E.⋆Assoc _ _ _
+
 module _ (C : Category ℓC ℓC') where
   private module C = Category C
 
@@ -262,19 +357,11 @@ module _ (C : Category ℓC ℓC') where
             (λ x → ı≅ .trans .N-ob x , ı≅ .nIso x)
             (λ f → ı≅ .trans .N-hom f , tt)
 
-      -- A natural transformation between strong monoidal functors is
-      -- monoidal when it commutes with the ε and μ comparisons.
-      isMonoidalNat : NatTrans G.F H.F → Type (ℓ-max ℓC ℓD')
-      isMonoidalNat σ =
-        (G.ε ⋆⟨ M.C ⟩ σ .N-ob unit ≡ H.ε)
-        × (∀ x y → G.μ⟨ x , y ⟩ ⋆⟨ M.C ⟩ σ .N-ob (x ⊗ y)
-                 ≡ (σ .N-ob x M.⊗ₕ σ .N-ob y) ⋆⟨ M.C ⟩ H.μ⟨ x , y ⟩)
-
       -- 2-dimensional uniqueness: a monoidal natural transformation
       -- out of the free monoidal category is determined by its
       -- restriction along ηFree.
       uniq₂ : (σ τ : NatTrans G.F H.F)
-        → isMonoidalNat σ → isMonoidalNat τ
+        → isMonoidalNat G H σ → isMonoidalNat G H τ
         → (∀ c → σ .N-ob (↑ c) ≡ τ .N-ob (↑ c))
         → σ ≡ τ
       uniq₂ σ τ mσ mτ p↑ = makeNatTransPath (funExt go) where
@@ -289,7 +376,7 @@ module _ (C : Category ℓC ℓC') where
       -- The comparison produced by uniq is monoidal: its components
       -- at unit and at x ⊗ y are the ε and μ conjugates.
       uniq-isMonoidal : (ı≅ : (G.F ∘F ηFree) ≅ᶜ (H.F ∘F ηFree))
-        → isMonoidalNat (uniq ı≅ .trans)
+        → isMonoidalNat G H (uniq ı≅ .trans)
       uniq-isMonoidal ı≅ .fst =
         sym (M.⋆Assoc _ _ _)
         ∙ cong₂ M._⋆_ (G.ε-isIso .ret) refl
@@ -317,7 +404,7 @@ module _ (C : Category ℓC ℓC') where
           S = mkPropHomsSection hasPropHomsAC (β .N-ob) (β .N-hom)
 
       rec₂-isMonoidal : (β : NatTrans (G.F ∘F ηFree) (H.F ∘F ηFree))
-        → isMonoidalNat (rec₂ β)
+        → isMonoidalNat G H (rec₂ β)
       rec₂-isMonoidal β .fst =
         sym (M.⋆Assoc _ _ _)
         ∙ cong₂ M._⋆_ (G.ε-isIso .ret) refl
@@ -331,34 +418,6 @@ module _ (C : Category ℓC ℓC') where
         → ∀ c → rec₂ β .N-ob (↑ c) ≡ β .N-ob c
       rec₂-β β c = refl
 
-    module _ (G : StrongMonoidalFunctor FreeMonoidalOn M) where
-      private module G = StrongMonoidalFunctor G
-      isMonoidalNat-id : isMonoidalNat G G (idTrans G.F)
-      isMonoidalNat-id .fst = M.⋆IdR _
-      isMonoidalNat-id .snd x y =
-        M.⋆IdR _ ∙ sym (M.⋆IdL _)
-        ∙ cong₂ M._⋆_ (sym (M.─⊗─ .F-id)) refl
-
-    -- Monoidal natural transformations are closed under composition.
-    module _ (G H K : StrongMonoidalFunctor FreeMonoidalOn M) where
-      private
-        module G = StrongMonoidalFunctor G
-        module K = StrongMonoidalFunctor K
-      isMonoidalNat-seq : (σ : NatTrans G.F (H .StrongMonoidalFunctor.F))
-        (τ : NatTrans (H .StrongMonoidalFunctor.F) K.F)
-        → isMonoidalNat G H σ → isMonoidalNat H K τ
-        → isMonoidalNat G K (seqTrans σ τ)
-      isMonoidalNat-seq σ τ mσ mτ .fst =
-        sym (M.⋆Assoc _ _ _)
-        ∙ cong₂ M._⋆_ (mσ .fst) refl
-        ∙ mτ .fst
-      isMonoidalNat-seq σ τ mσ mτ .snd x y =
-        sym (M.⋆Assoc _ _ _)
-        ∙ cong₂ M._⋆_ (mσ .snd x y) refl
-        ∙ M.⋆Assoc _ _ _
-        ∙ cong₂ M._⋆_ refl (mτ .snd x y)
-        ∙ sym (M.⋆Assoc _ _ _)
-        ∙ cong₂ M._⋆_ (sym (M.─⊗─ .F-seq _ _)) refl
 
 -- Functoriality: T₁ F is the recursive extension of ↑ ∘ F.
 module _ {C : Category ℓC ℓC'} {D : Category ℓD ℓD'} (F : Functor C D) where
@@ -478,14 +537,14 @@ module _ {C : Category ℓC ℓC'} {D : Category ℓD ℓD'}
   -- T₂'s components are strict: T₁'s ε and μ are identities and
   -- T₂Motive's ⊗ᴰ is the tensor itself, with no lifts in between.
   T₂-isMonoidal : (β : NatTrans F₁ G₁)
-    → isMonoidalNat C (FreeMonoidalOn D) (T₁Str F₁) (T₁Str G₁) (T₂ β)
+    → isMonoidalNat (T₁Str F₁) (T₁Str G₁) (T₂ β)
   T₂-isMonoidal β .fst = FD.⋆IdL _
   T₂-isMonoidal β .snd x y = FD.⋆IdL _ ∙ sym (FD.⋆IdR _)
 
   -- Two monoidal natural transformations T₁ F₁ ⇒ T₁ G₁ agreeing on ↑
   -- are equal.
   T₂-uniq : (β : NatTrans F₁ G₁) (σ : NatTrans P Q)
-    → isMonoidalNat C (FreeMonoidalOn D) (T₁Str F₁) (T₁Str G₁) σ
+    → isMonoidalNat (T₁Str F₁) (T₁Str G₁) σ
     → (∀ c → σ .N-ob (↑ c) ≡ ↑ₘ (β .N-ob c))
     → σ ≡ T₂ β
   T₂-uniq β σ mσ p = uniq₂ C (FreeMonoidalOn D)
