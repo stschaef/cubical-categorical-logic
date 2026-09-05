@@ -152,80 +152,79 @@ module _ {ℓs ℓC ℓC' : Level} {C : Category ℓC ℓC'}
   (F : Functor C (SET ℓs)) (bpC : BinProducts C)
   (expC : AllExponentiable C bpC)
   (Fp : preservesProvidedBinProducts F bpC) where
-  private
-    module C = Category C
-    module ×C = BinProductsNotation bpC
-    module ⇒C = ExponentialsNotation bpC expC
-    module ⇒ue (c d : C .ob) =
-      ExponentialNotation.⇒ue (λ d' → bpC (d' , c)) (expC c d)
+  module C = Category C
+  module ×C = BinProductsNotation bpC
+  module ⇒C = ExponentialsNotation bpC expC
+  module ⇒ue (c d : C .ob) =
+    ExponentialNotation.⇒ue (λ d' → bpC (d' , c)) (expC c d)
 
-    Gl = ArtinGlue F
-    module Gl = Category Gl
+  Gl = ArtinGlue F
+  module Gl = Category Gl
 
-    img : (X Y : C .ob) → BinProduct (SET ℓs) (F ⟅ X ⟆ , F ⟅ Y ⟆)
-    img X Y = becomesUniversal→UniversalElement
-      (preservesBinProdCones F X Y) (Fp X Y)
-    module Img (X Y : C .ob) = BinProductNotation (img X Y)
+  img : (X Y : C .ob) → BinProduct (SET ℓs) (F ⟅ X ⟆ , F ⟅ Y ⟆)
+  img X Y = becomesUniversal→UniversalElement
+    (preservesBinProdCones F X Y) (Fp X Y)
+  module Img (X Y : C .ob) = BinProductNotation (img X Y)
 
-    one : hSet ℓs
-    one = Unit* , isSetUnit*
+  one : hSet ℓs
+  one = Unit* , isSetUnit*
 
-    pr : (X Y : C .ob) → ⟨ F ⟅ X ⟆ ⟩ → ⟨ F ⟅ Y ⟆ ⟩ → ⟨ Img.vert X Y ⟩
-    pr X Y x y = Img._,p_ X Y {Γ = one} (λ _ → x) (λ _ → y) tt*
+  pr : (X Y : C .ob) → ⟨ F ⟅ X ⟆ ⟩ → ⟨ F ⟅ Y ⟆ ⟩ → ⟨ Img.vert X Y ⟩
+  pr X Y x y = Img._,p_ X Y {Γ = one} (λ _ → x) (λ _ → y) tt*
 
-    prβ₁ : (X Y : C .ob) (x : ⟨ F ⟅ X ⟆ ⟩) (y : ⟨ F ⟅ Y ⟆ ⟩)
-      → (F ⟪ ×C.π₁ ⟫) (pr X Y x y) ≡ x
-    prβ₁ X Y x y = funExt⁻
-      (Img.×β₁ X Y {Γ = one} {f = λ _ → x} {g = λ _ → y}) tt*
+  prβ₁ : (X Y : C .ob) (x : ⟨ F ⟅ X ⟆ ⟩) (y : ⟨ F ⟅ Y ⟆ ⟩)
+    → (F ⟪ ×C.π₁ ⟫) (pr X Y x y) ≡ x
+  prβ₁ X Y x y = funExt⁻
+    (Img.×β₁ X Y {Γ = one} {f = λ _ → x} {g = λ _ → y}) tt*
 
-    prβ₂ : (X Y : C .ob) (x : ⟨ F ⟅ X ⟆ ⟩) (y : ⟨ F ⟅ Y ⟆ ⟩)
-      → (F ⟪ ×C.π₂ ⟫) (pr X Y x y) ≡ y
-    prβ₂ X Y x y = funExt⁻
-      (Img.×β₂ X Y {Γ = one} {f = λ _ → x} {g = λ _ → y}) tt*
+  prβ₂ : (X Y : C .ob) (x : ⟨ F ⟅ X ⟆ ⟩) (y : ⟨ F ⟅ Y ⟆ ⟩)
+    → (F ⟪ ×C.π₂ ⟫) (pr X Y x y) ≡ y
+  prβ₂ X Y x y = funExt⁻
+    (Img.×β₂ X Y {Γ = one} {f = λ _ → x} {g = λ _ → y}) tt*
 
-    prExt : (X Y : C .ob) {z w : ⟨ Img.vert X Y ⟩}
-      → (F ⟪ ×C.π₁ ⟫) z ≡ (F ⟪ ×C.π₁ ⟫) w
-      → (F ⟪ ×C.π₂ ⟫) z ≡ (F ⟪ ×C.π₂ ⟫) w
-      → z ≡ w
-    prExt X Y {z} {w} p q = funExt⁻
-      (Img.,p-extensionality X Y {Γ = one} {f = λ _ → z} {g = λ _ → w}
-        (funExt (λ _ → p)) (funExt (λ _ → q))) tt*
+  prExt : (X Y : C .ob) {z w : ⟨ Img.vert X Y ⟩}
+    → (F ⟪ ×C.π₁ ⟫) z ≡ (F ⟪ ×C.π₁ ⟫) w
+    → (F ⟪ ×C.π₂ ⟫) z ≡ (F ⟪ ×C.π₂ ⟫) w
+    → z ≡ w
+  prExt X Y {z} {w} p q = funExt⁻
+    (Img.,p-extensionality X Y {Γ = one} {f = λ _ → z} {g = λ _ → w}
+      (funExt (λ _ → p)) (funExt (λ _ → q))) tt*
 
-    prPoint : {S : hSet ℓs} (X Y : C .ob)
-      (f : ⟨ S ⟩ → ⟨ F ⟅ X ⟆ ⟩) (g : ⟨ S ⟩ → ⟨ F ⟅ Y ⟆ ⟩) (s : ⟨ S ⟩)
-      → Img._,p_ X Y f g s ≡ pr X Y (f s) (g s)
-    prPoint {S} X Y f g s = prExt X Y
-      ( funExt⁻ (Img.×β₁ X Y {Γ = S} {f = f} {g = g}) s
-      ∙ sym (prβ₁ X Y (f s) (g s)))
-      ( funExt⁻ (Img.×β₂ X Y {Γ = S} {f = f} {g = g}) s
-      ∙ sym (prβ₂ X Y (f s) (g s)))
+  prPoint : {S : hSet ℓs} (X Y : C .ob)
+    (f : ⟨ S ⟩ → ⟨ F ⟅ X ⟆ ⟩) (g : ⟨ S ⟩ → ⟨ F ⟅ Y ⟆ ⟩) (s : ⟨ S ⟩)
+    → Img._,p_ X Y f g s ≡ pr X Y (f s) (g s)
+  prPoint {S} X Y f g s = prExt X Y
+    ( funExt⁻ (Img.×β₁ X Y {Γ = S} {f = f} {g = g}) s
+    ∙ sym (prβ₁ X Y (f s) (g s)))
+    ( funExt⁻ (Img.×β₂ X Y {Γ = S} {f = f} {g = g}) s
+    ∙ sym (prβ₂ X Y (f s) (g s)))
 
-    tapp : {X Y : C .ob} → ⟨ F ⟅ ⇒C._⇒_ X Y ⟆ ⟩ → ⟨ F ⟅ X ⟆ ⟩
-      → ⟨ F ⟅ Y ⟆ ⟩
-    tapp {X} {Y} k x = (F ⟪ ⇒C.app ⟫) (pr (⇒C._⇒_ X Y) X k x)
+  tapp : {X Y : C .ob} → ⟨ F ⟅ ⇒C._⇒_ X Y ⟆ ⟩ → ⟨ F ⟅ X ⟆ ⟩
+    → ⟨ F ⟅ Y ⟆ ⟩
+  tapp {X} {Y} k x = (F ⟪ ⇒C.app ⟫) (pr (⇒C._⇒_ X Y) X k x)
 
-    tappNat : {Z X Y : C .ob} (m : C [ ×C._×_ Z X , Y ])
-      (z : ⟨ F ⟅ Z ⟆ ⟩) (x : ⟨ F ⟅ X ⟆ ⟩)
-      → (F ⟪ m ⟫) (pr Z X z x) ≡ tapp ((F ⟪ ⇒C.lda m ⟫) z) x
-    tappNat {Z} {X} {Y} m z x =
-        cong (λ n → (F ⟪ n ⟫) (pr Z X z x)) (sym (⇒ue.β X Y {Z} {m}))
-      ∙ funExt⁻ (F .F-seq _ _) (pr Z X z x)
-      ∙ cong (F ⟪ ⇒C.app ⟫) step
-      where
-      step : (F ⟪ ×C._,p_ (×C.π₁ C.⋆ ⇒C.lda m) ×C.π₂ ⟫) (pr Z X z x)
-           ≡ pr (⇒C._⇒_ X Y) X ((F ⟪ ⇒C.lda m ⟫) z) x
-      step = prExt _ _
-        ( funExt⁻ (sym (F .F-seq _ _)) _
-        ∙ cong (λ n → (F ⟪ n ⟫) (pr Z X z x)) ×C.×β₁
-        ∙ funExt⁻ (F .F-seq _ _) _
-        ∙ cong (F ⟪ ⇒C.lda m ⟫) (prβ₁ Z X z x)
-        ∙ sym (prβ₁ _ _ _ _))
-        ( funExt⁻ (sym (F .F-seq _ _)) _
-        ∙ cong (λ n → (F ⟪ n ⟫) (pr Z X z x)) ×C.×β₂
-        ∙ prβ₂ Z X z x
-        ∙ sym (prβ₂ _ _ _ _))
+  tappNat : {Z X Y : C .ob} (m : C [ ×C._×_ Z X , Y ])
+    (z : ⟨ F ⟅ Z ⟆ ⟩) (x : ⟨ F ⟅ X ⟆ ⟩)
+    → (F ⟪ m ⟫) (pr Z X z x) ≡ tapp ((F ⟪ ⇒C.lda m ⟫) z) x
+  tappNat {Z} {X} {Y} m z x =
+      cong (λ n → (F ⟪ n ⟫) (pr Z X z x)) (sym (⇒ue.β X Y {Z} {m}))
+    ∙ funExt⁻ (F .F-seq _ _) (pr Z X z x)
+    ∙ cong (F ⟪ ⇒C.app ⟫) step
+    where
+    step : (F ⟪ ×C._,p_ (×C.π₁ C.⋆ ⇒C.lda m) ×C.π₂ ⟫) (pr Z X z x)
+         ≡ pr (⇒C._⇒_ X Y) X ((F ⟪ ⇒C.lda m ⟫) z) x
+    step = prExt _ _
+      ( funExt⁻ (sym (F .F-seq _ _)) _
+      ∙ cong (λ n → (F ⟪ n ⟫) (pr Z X z x)) ×C.×β₁
+      ∙ funExt⁻ (F .F-seq _ _) _
+      ∙ cong (F ⟪ ⇒C.lda m ⟫) (prβ₁ Z X z x)
+      ∙ sym (prβ₁ _ _ _ _))
+      ( funExt⁻ (sym (F .F-seq _ _)) _
+      ∙ cong (λ n → (F ⟪ n ⟫) (pr Z X z x)) ×C.×β₂
+      ∙ prβ₂ Z X z x
+      ∙ sym (prβ₂ _ _ _ _))
 
-    module Ds = Category (SET ℓs)
+  module Ds = Category (SET ℓs)
 
   bpGl : BinProducts Gl
   bpGl = glueBinProducts F bpC BinProductsSET Fp

@@ -7,6 +7,8 @@
 module Gluing.Bicategorical.BoolNatCanonicity where
 
 open import Cubical.Foundations.Prelude
+open import Cubical.Data.Bool
+open import Cubical.Data.Nat
 open import Cubical.Data.Quiver.Base
 
 open import Cubical.Categories.Category
@@ -82,3 +84,51 @@ _ = SET ℓ-zero
 -- `π₂ ∘F S ≡ Id` that reading canonical forms back off the glue
 -- needs.  A strict section exists only through `elimLocal`, whose
 -- statement is displayed.
+
+-- The syntactic data the canonicity statements are about.
+[bool] : Type ℓ-zero
+[bool] = FREECCC.Hom[ ⊤ , ↑ bool ]
+
+[t] [f] : [bool]
+[t] = ↑ₑ ×⇒QUIVER tr
+[f] = ↑ₑ ×⇒QUIVER fl
+
+[nat] : Type ℓ-zero
+[nat] = FREECCC.Hom[ ⊤ , ↑ nat ]
+
+[ze] : [nat]
+[ze] = ↑ₑ ×⇒QUIVER ze
+
+[su] : FREECCC.Hom[ ↑ nat , ↑ nat ]
+[su] = ↑ₑ ×⇒QUIVER su
+
+＂_＂ : ℕ → [nat]
+＂ zero ＂ = [ze]
+＂ suc n ＂ = ＂ n ＂ ⋆ₑ [su]
+
+{-
+  What a natural isomorphism `π₂ ∘F S ≅ Id` would buy.  Its component
+  at `⊤` is the identity, and its component `η` at `↑ nat` satisfies
+  the two naturality squares below; those already force `η` to fix
+  every numeral, so canonicity transfers through a `NatIso` and does
+  not need the strict equality `π₂ ∘F S ≡ Id`.
+-}
+module _ (η : FREECCC.Hom[ ↑ nat , ↑ nat ])
+  (ηze : [ze] ⋆ₑ η ≡ [ze])
+  (ηsu : [su] ⋆ₑ η ≡ η ⋆ₑ [su]) where
+
+  numeralsFixed : (n : ℕ) → ＂ n ＂ ⋆ₑ η ≡ ＂ n ＂
+  numeralsFixed zero = ηze
+  numeralsFixed (suc n) =
+      FREECCC.⋆Assoc _ _ _
+    ∙ cong (＂ n ＂ ⋆ₑ_) ηsu
+    ∙ sym (FREECCC.⋆Assoc _ _ _)
+    ∙ cong (_⋆ₑ [su]) (numeralsFixed n)
+
+module _ (θ : FREECCC.Hom[ ↑ bool , ↑ bool ])
+  (θtr : [t] ⋆ₑ θ ≡ [t]) (θfl : [f] ⋆ₑ θ ≡ [f]) where
+
+  booleansFixed : (b : Bool) → (if b then [t] else [f]) ⋆ₑ θ
+                             ≡ (if b then [t] else [f])
+  booleansFixed true = θtr
+  booleansFixed false = θfl
