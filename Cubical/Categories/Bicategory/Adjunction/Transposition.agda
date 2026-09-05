@@ -26,74 +26,80 @@ private
 open NatIso
 open Cubical.Categories.Category.isIso
 
-module _ {C : Bicategory ℓ ℓ' ℓ''} (A : Adjunction C) where
+module _ (C : Bicategory ℓ ℓ' ℓ'') where
   private
     module C = Bicategory C
-  open AdjunctionNotation A
 
-  -- The unit and counit of `(_ ⋆₁ f) ⊣ (_ ⋆₁ u)` on hom-categories.
-  ηw : {e : C.0Cell} (x : C.1Cell e c) → C.2Cell x ((x C.⋆₁ f) C.⋆₁ u)
-  ηw x = C.ρ⁻ x C.⋆₂ (x C.◁w η) C.⋆₂ C.α⁻ x f u
+  {- Whiskering the unit and counit uses neither zigzag, and the
+     whiskered left zigzag uses only the left one, so this module is
+     over the cells rather than over an `Adjunction`. -}
+  module _ {c d : C.0Cell} {f : C.1Cell c d} {u : C.1Cell d c}
+    (η : C.2Cell C.id₁ (f C.⋆₁ u)) (ε : C.2Cell (u C.⋆₁ f) C.id₁) where
 
-  -- `ε` acting on the left is `εAct` at the opposite bicategory.
-  εw : {e : C.0Cell} (y : C.1Cell e d) → C.2Cell ((y C.⋆₁ u) C.⋆₁ f) y
-  εw = εAct (C ^opᴮ) ε
+    -- The unit and counit of `(_ ⋆₁ f) ⊣ (_ ⋆₁ u)` on hom-categories.
+    ηw : {e : C.0Cell} (x : C.1Cell e c) → C.2Cell x ((x C.⋆₁ f) C.⋆₁ u)
+    ηw x = C.ρ⁻ x C.⋆₂ (x C.◁w η) C.⋆₂ C.α⁻ x f u
 
-  εwNat : {e : C.0Cell} {m n : C.1Cell e d} (θ : C.2Cell m n)
-    → ((θ C.▷w u) C.▷w f) C.⋆₂ εw n ≡ εw m C.⋆₂ θ
-  εwNat = εActNat (C ^opᴮ) ε
+    -- `ε` acting on the left is `εAct` at the opposite bicategory.
+    εw : {e : C.0Cell} (y : C.1Cell e d) → C.2Cell ((y C.⋆₁ u) C.⋆₁ f) y
+    εw = εAct (C ^opᴮ) ε
 
-  ηwNat : {e : C.0Cell} {m n : C.1Cell e c} (θ : C.2Cell m n)
-    → ηw m C.⋆₂ ((θ C.▷w f) C.▷w u) ≡ θ C.⋆₂ ηw n
-  ηwNat {m = m} {n = n} θ =
-      C.⋆₂Assoc _ _ _
-    ∙ C.⟨⟩⋆₂⟨ C.⋆₂Assoc _ _ _ ⟩
-    ∙ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ sym (α⁻natL C θ f u) ⟩ ⟩
-    ∙ C.⟨⟩⋆₂⟨ sym (C.⋆₂Assoc _ _ _) ⟩
-    ∙ C.⟨⟩⋆₂⟨ C.⟨ sym (▷◁exch C θ η) ⟩⋆₂⟨⟩ ⟩
-    ∙ C.⟨⟩⋆₂⟨ C.⋆₂Assoc _ _ _ ⟩
-    ∙ sym (C.⋆₂Assoc _ _ _)
-    ∙ C.⟨ sym (ρ⁻-nat C θ) ⟩⋆₂⟨⟩
-    ∙ C.⋆₂Assoc _ _ _
+    εwNat : {e : C.0Cell} {m n : C.1Cell e d} (θ : C.2Cell m n)
+      → ((θ C.▷w u) C.▷w f) C.⋆₂ εw n ≡ εw m C.⋆₂ θ
+    εwNat = εActNat (C ^opᴮ) ε
 
-  -- The zigzag, whiskered by a 1-cell on the left.
-  whiskerZigzagL : {e : C.0Cell} (x : C.1Cell e c)
-    → (ηw x C.▷w f) C.⋆₂ εw (x C.⋆₁ f) ≡ C.id₂
-  whiskerZigzagL {e} x =
-      C.⟨ ▷wSeq C _ _ f ⟩⋆₂⟨⟩
-    ∙ C.⋆₂Assoc _ _ _
-    ∙ C.⟨⟩⋆₂⟨ tri ⟩
-    ∙ sym (▷wSeq C _ _ f)
-    ∙ C.⟨ C.ρU e c .nIso (x , tt*) .sec ⟩▷ f
-    ∙ C.▷wId f
-    where
-    -- `ε` absorbed, leaving the unwhiskered zigzag under `x ◁w _`.
-    mid :   (C.α⁻ x f u C.▷w f) C.⋆₂ εw (x C.⋆₁ f)
-          ≡ C.α⁺ x (f C.⋆₁ u) f C.⋆₂ (x C.◁w Gf)
-    mid =
-        sym (C.⋆₂Assoc _ _ _)
-      ∙ C.⟨ sym (pentP4 C x f u f) ⟩⋆₂⟨⟩
-      ∙ C.⋆₂Assoc _ _ _
+    ηwNat : {e : C.0Cell} {m n : C.1Cell e c} (θ : C.2Cell m n)
+      → ηw m C.⋆₂ ((θ C.▷w f) C.▷w u) ≡ θ C.⋆₂ ηw n
+    ηwNat {m = m} {n = n} θ =
+        C.⋆₂Assoc _ _ _
       ∙ C.⟨⟩⋆₂⟨ C.⋆₂Assoc _ _ _ ⟩
-      ∙ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ sym (C.⋆₂Assoc _ _ _)
-                       ∙ C.⟨ sym (α⁻natR C x f ε) ⟩⋆₂⟨⟩
-                       ∙ C.⋆₂Assoc _ _ _
-                       ∙ C.⟨⟩⋆₂⟨ α⁻ρ◁ C x f ⟩
-                       ∙ sym (◁wSeq C x _ _) ⟩ ⟩
-      ∙ C.⟨⟩⋆₂⟨ sym (◁wSeq C x _ _) ⟩
-
-    tri :   (((x C.◁w η) C.⋆₂ C.α⁻ x f u) C.▷w f) C.⋆₂ εw (x C.⋆₁ f)
-          ≡ C.ρ⁺ x C.▷w f
-    tri =
-        C.⟨ ▷wSeq C _ _ f ⟩⋆₂⟨⟩
-      ∙ C.⋆₂Assoc _ _ _
-      ∙ C.⟨⟩⋆₂⟨ mid ⟩
+      ∙ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ sym (α⁻natL C θ f u) ⟩ ⟩
+      ∙ C.⟨⟩⋆₂⟨ sym (C.⋆₂Assoc _ _ _) ⟩
+      ∙ C.⟨⟩⋆₂⟨ C.⟨ sym (▷◁exch C θ η) ⟩⋆₂⟨⟩ ⟩
+      ∙ C.⟨⟩⋆₂⟨ C.⋆₂Assoc _ _ _ ⟩
       ∙ sym (C.⋆₂Assoc _ _ _)
-      ∙ C.⟨ α⁺natM C x η f ⟩⋆₂⟨⟩
+      ∙ C.⟨ sym (ρ⁻-nat C θ) ⟩⋆₂⟨⟩
       ∙ C.⋆₂Assoc _ _ _
-      ∙ C.⟨⟩⋆₂⟨ sym (◁wSeq C x _ _) ⟩
-      ∙ C.⟨⟩⋆₂⟨ x C.◁⟨ zigzagL⁺ ⟩ ⟩
-      ∙ C.triangle e c d x f
+
+    -- The zigzag, whiskered by a 1-cell on the left.
+    module _ (zz : (η C.▷w f) C.⋆₂ εw f ≡ C.λ⁺ f) where
+      whiskerZigzagL : {e : C.0Cell} (x : C.1Cell e c)
+        → (ηw x C.▷w f) C.⋆₂ εw (x C.⋆₁ f) ≡ C.id₂
+      whiskerZigzagL {e} x =
+          C.⟨ ▷wSeq C _ _ f ⟩⋆₂⟨⟩
+        ∙ C.⋆₂Assoc _ _ _
+        ∙ C.⟨⟩⋆₂⟨ tri ⟩
+        ∙ sym (▷wSeq C _ _ f)
+        ∙ C.⟨ C.ρU e c .nIso (x , tt*) .sec ⟩▷ f
+        ∙ C.▷wId f
+        where
+        -- `ε` absorbed, leaving the unwhiskered zigzag under `x ◁w _`.
+        mid :   (C.α⁻ x f u C.▷w f) C.⋆₂ εw (x C.⋆₁ f)
+              ≡ C.α⁺ x (f C.⋆₁ u) f C.⋆₂ (x C.◁w εw f)
+        mid =
+            sym (C.⋆₂Assoc _ _ _)
+          ∙ C.⟨ sym (pentP4 C x f u f) ⟩⋆₂⟨⟩
+          ∙ C.⋆₂Assoc _ _ _
+          ∙ C.⟨⟩⋆₂⟨ C.⋆₂Assoc _ _ _ ⟩
+          ∙ C.⟨⟩⋆₂⟨ C.⟨⟩⋆₂⟨ sym (C.⋆₂Assoc _ _ _)
+                           ∙ C.⟨ sym (α⁻natR C x f ε) ⟩⋆₂⟨⟩
+                           ∙ C.⋆₂Assoc _ _ _
+                           ∙ C.⟨⟩⋆₂⟨ α⁻ρ◁ C x f ⟩
+                           ∙ sym (◁wSeq C x _ _) ⟩ ⟩
+          ∙ C.⟨⟩⋆₂⟨ sym (◁wSeq C x _ _) ⟩
+
+        tri :   (((x C.◁w η) C.⋆₂ C.α⁻ x f u) C.▷w f) C.⋆₂ εw (x C.⋆₁ f)
+              ≡ C.ρ⁺ x C.▷w f
+        tri =
+            C.⟨ ▷wSeq C _ _ f ⟩⋆₂⟨⟩
+          ∙ C.⋆₂Assoc _ _ _
+          ∙ C.⟨⟩⋆₂⟨ mid ⟩
+          ∙ sym (C.⋆₂Assoc _ _ _)
+          ∙ C.⟨ α⁺natM C x η f ⟩⋆₂⟨⟩
+          ∙ C.⋆₂Assoc _ _ _
+          ∙ C.⟨⟩⋆₂⟨ sym (◁wSeq C x _ _) ⟩
+          ∙ C.⟨⟩⋆₂⟨ x C.◁⟨ zz ⟩ ⟩
+          ∙ C.triangle e c d x f
 
 {- The other whiskered zigzag is the first one at the co-dual, where
    the unit and counit swap; only the nesting has to be redone. -}
@@ -101,24 +107,26 @@ module _ {C : Bicategory ℓ ℓ' ℓ''} (A : Adjunction C) where
   private
     module C = Bicategory C
   open AdjunctionNotation A
+  private
+    module coA = AdjunctionNotation (coAdjunction A)
 
   whiskerZigzagR : {e : C.0Cell} (y : C.1Cell e d)
-    → ηw A (y C.⋆₁ u) C.⋆₂ (εw A y C.▷w u) ≡ C.id₂
+    → ηw C η ε (y C.⋆₁ u) C.⋆₂ (εw C η ε y C.▷w u) ≡ C.id₂
   whiskerZigzagR y =
       C.⟨ sym (C.⋆₂Assoc _ _ _) ⟩⋆₂⟨⟩
     ∙ C.⟨⟩⋆₂⟨ C.⟨ sym (C.⋆₂Assoc _ _ _) ⟩▷ u ⟩
-    ∙ whiskerZigzagL (coAdjunction A) y
+    ∙ whiskerZigzagL (C ^coᴮ) coA.η coA.ε coA.zigzagL⁺ y
 
   {- Mates: transposition across the adjunction.  `transpose` is the
      unit followed by the 2-cell, `transpose⁻` the 2-cell followed by
      the counit, and the whiskered zigzags make them inverse. -}
   transpose : {e : C.0Cell} {x : C.1Cell e c} {y : C.1Cell e d}
     → C.2Cell (x C.⋆₁ f) y → C.2Cell x (y C.⋆₁ u)
-  transpose {x = x} θ = ηw A x C.⋆₂ (θ C.▷w u)
+  transpose {x = x} θ = ηw C η ε x C.⋆₂ (θ C.▷w u)
 
   transpose⁻ : {e : C.0Cell} {x : C.1Cell e c} {y : C.1Cell e d}
     → C.2Cell x (y C.⋆₁ u) → C.2Cell (x C.⋆₁ f) y
-  transpose⁻ {y = y} φ = (φ C.▷w f) C.⋆₂ εw A y
+  transpose⁻ {y = y} φ = (φ C.▷w f) C.⋆₂ εw C η ε y
 
   -- Transposition is natural in both variables.
   transposeNatL : {e : C.0Cell} {x x' : C.1Cell e c} {y : C.1Cell e d}
@@ -127,7 +135,7 @@ module _ {C : Bicategory ℓ ℓ' ℓ''} (A : Adjunction C) where
   transposeNatL σ θ =
       C.⟨⟩⋆₂⟨ ▷wSeq C _ _ u ⟩
     ∙ sym (C.⋆₂Assoc _ _ _)
-    ∙ C.⟨ ηwNat A σ ⟩⋆₂⟨⟩
+    ∙ C.⟨ ηwNat C η ε σ ⟩⋆₂⟨⟩
     ∙ C.⋆₂Assoc _ _ _
 
   transposeNatR : {e : C.0Cell} {x : C.1Cell e c} {y y' : C.1Cell e d}
@@ -144,16 +152,16 @@ module _ {C : Bicategory ℓ ℓ' ℓ''} (A : Adjunction C) where
   transposeIso {y = y} .Iso.sec φ =
       C.⟨⟩⋆₂⟨ ▷wSeq C _ _ u ⟩
     ∙ sym (C.⋆₂Assoc _ _ _)
-    ∙ C.⟨ ηwNat A φ ⟩⋆₂⟨⟩
+    ∙ C.⟨ ηwNat C η ε φ ⟩⋆₂⟨⟩
     ∙ C.⋆₂Assoc _ _ _
     ∙ C.⟨⟩⋆₂⟨ whiskerZigzagR y ⟩
     ∙ C.⋆₂IdR _
   transposeIso {x = x} .Iso.ret θ =
       C.⟨ ▷wSeq C _ _ f ⟩⋆₂⟨⟩
     ∙ C.⋆₂Assoc _ _ _
-    ∙ C.⟨⟩⋆₂⟨ εwNat A θ ⟩
+    ∙ C.⟨⟩⋆₂⟨ εwNat C η ε θ ⟩
     ∙ sym (C.⋆₂Assoc _ _ _)
-    ∙ C.⟨ whiskerZigzagL A x ⟩⋆₂⟨⟩
+    ∙ C.⟨ whiskerZigzagL C η ε zigzagL⁺ x ⟩⋆₂⟨⟩
     ∙ C.⋆₂IdL _
 
 -- The same bijection for precomposition, at the opposite bicategory.
