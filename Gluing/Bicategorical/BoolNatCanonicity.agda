@@ -79,15 +79,12 @@ _ = SET ℓ-zero
 
 -- Canonicity over this glue is run in
 -- `Gluing.Bicategorical.CCCCanonicity`, through the same structure
--- forded over the syntax in `Gluing.Bicategorical.Section`.
---
--- It does not follow from `rec` with plain categories alone:
--- `FreeCartesianClosedCategory`'s recursor produces a functor into
--- `GLUE`, but the only uniqueness principle for functors out of it
--- (`FreeCCCFunctor≅`) yields a `NatIso`, not the equality
--- `π₂ ∘F S ≡ Id` that reading canonical forms back off the glue
--- needs.  A strict section exists only through `elimLocal`, whose
--- statement is displayed.
+-- forded over the syntax in `Gluing.Bicategorical.Section`, and in
+-- `Gluing.Bicategorical.RecCanonicity` with plain categories only:
+-- `rec` into `GLUE` plus `FreeCCCFunctor≅`.  The latter yields a
+-- `NatIso π₂ ∘F S ≅ Id` rather than the equality `π₂ ∘F S ≡ Id`, and
+-- the `NatIso` already suffices -- a strict section still exists only
+-- through `elimLocal`, whose statement is displayed.
 
 -- The syntactic data the canonicity statements are about.
 [bool] : Type ℓ-zero

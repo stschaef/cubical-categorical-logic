@@ -254,12 +254,6 @@ module _ (Q : ×⇒Quiver ℓQ ℓQ') where
     (⇒-iso : ∀ {A B} → CatIso D (F ⟅ A ⟆) (G ⟅ A ⟆)
                        → CatIso D (F ⟅ B ⟆) (G ⟅ B ⟆)
                        → CatIso D (F ⟅ A ⇒ B ⟆) (G ⟅ A ⇒ B ⟆))
-    (⇒-lam : ∀ {A B Γ} (f : CatIso D (F ⟅ A ⟆) (G ⟅ A ⟆))
-                        (g : CatIso D (F ⟅ B ⟆) (G ⟅ B ⟆))
-                        (γ : CatIso D (F ⟅ Γ ⟆) (G ⟅ Γ ⟆))
-             → (h : Expr (Γ × A) B)
-             → (D ._⋆_ (F ⟪ lam' h ⟫) (⇒-iso f g .fst))
-               ≡ (D ._⋆_ (γ .fst) (G ⟪ lam' h ⟫)))
     where
     private
       F,G-IsoC : Categoryᴰ |FreeCartesianClosedCategory| _ _
@@ -386,6 +380,15 @@ module _ (Q : ×⇒Quiver ℓQ ℓQ') where
                  ≡ CCᴰF,G-IsoC .CartesianCategoryᴰ.bpᴰ
                      (⇒-iso f g) f .fst .fst
                    D.⋆ G ⟪ eval' ⟫)
+      (⇒-lam : ∀ {A B Γ} (f : CatIso D (F ⟅ A ⟆) (G ⟅ A ⟆))
+                          (g : CatIso D (F ⟅ B ⟆) (G ⟅ B ⟆))
+                          (γ : CatIso D (F ⟅ Γ ⟆) (G ⟅ Γ ⟆))
+               → (h : Expr (Γ × A) B)
+               → F ⟪ h ⟫ D.⋆ g .fst
+                 ≡ CCᴰF,G-IsoC .CartesianCategoryᴰ.bpᴰ γ f .fst .fst
+                   D.⋆ G ⟪ h ⟫
+               → F ⟪ lam' h ⟫ D.⋆ ⇒-iso f g .fst
+                 ≡ γ .fst D.⋆ G ⟪ lam' h ⟫)
       where
 
       CCCᴰF,G-IsoC : CartesianClosedCategoryᴰ FreeCartesianClosedCategory _ _
@@ -395,7 +398,7 @@ module _ (Q : ×⇒Quiver ℓQ ℓQ') where
         where
         isUniv : isUniversalᴰ F,G-IsoC _ _
           (FreeCartesianClosedCategory .exps A B) (⇒-eval f g , tt)
-        isUniv Γ Γᴰ .inv u uᴰ .fst = ⇒-lam f g Γᴰ u
+        isUniv Γ Γᴰ .inv u uᴰ .fst = ⇒-lam f g Γᴰ u (uᴰ .fst)
         isUniv Γ Γᴰ .inv _ _ .snd = tt
         isUniv Γ Γᴰ .rightInv _ _ =
           isProp→PathP (λ _ → isPropΣ (D.isSetHom _ _) λ _ → isPropUnit) _ _
