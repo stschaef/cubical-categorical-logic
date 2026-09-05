@@ -21,11 +21,13 @@ open import Cubical.Categories.NaturalTransformation
 import      Cubical.Categories.Instances.BinProduct as BP
 open import Cubical.Categories.Instances.BinProduct.Monoidal
 open import Cubical.Categories.Monoidal
+open import Cubical.Categories.Instances.BinProduct.More
 open import Cubical.Categories.Monoidal.Functor
 
 open import Cubical.Categories.Displayed.HLevels
 open import Cubical.Categories.Displayed.Monoidal.Base
 open import Cubical.Categories.Displayed.Instances.Reindex.Monoidal
+open import Cubical.Categories.Displayed.Fibration.IsoFibration
 import Cubical.Categories.Displayed.Instances.Arrow.Base as Arrow
 open import Cubical.Categories.Displayed.Instances.Arrow.Properties
 
@@ -33,6 +35,8 @@ private
   variable
     ℓC ℓC' ℓD ℓD' ℓDᴰ ℓDᴰ' ℓS ℓR : Level
 
+open Category
+open isIso
 open MonoidalCategoryᴰ
 open TensorStrᴰ
 open MonoidalStrᴰ
@@ -87,3 +91,65 @@ module _ {M : MonoidalCategory ℓC ℓC'} {N : MonoidalCategory ℓD ℓD'}
   IsoComma =
     reindex (Iso N) (G ,F H)
       (Arrow.hasPropHomsIso N.C) (isIsoFibrationIso N.C)
+
+-- The same for the full arrow category, whose sections are ordinary
+-- (not necessarily invertible) monoidal natural transformations.
+module _ (M : MonoidalCategory ℓC ℓC') where
+  private
+    module M = MonoidalCategory M
+  Arrowᴹ : MonoidalCategoryᴰ (M ×M M) ℓC' ℓC'
+  Arrowᴹ .Cᴰ = Arrow.Arrow M.C
+  Arrowᴹ .monstrᴰ = TensorPropᴰ→TensorStrᴰ (M ×M M) (Arrowᴹ .Cᴰ)
+    hasPropHomsCᴰ
+    MP
+    where
+      hasPropHomsCᴰ = Arrow.hasPropHomsArrow M.C
+      open MonoidalPropᴰ
+      MP : MonoidalPropᴰ (M ×M M) (Arrow.Arrow M.C)
+      MP .tenstrᴰ .unitᴰ = M.id
+      MP .tenstrᴰ .─⊗ᴰ─ = mkPropHomsFunctor hasPropHomsCᴰ
+        (λ { (f , g) → f M.⊗ₕ g })
+        (λ { (f-sq , g-sq) →
+          sym (M.─⊗─ .F-seq _ _)
+          ∙ cong₂ M._⊗ₕ_ f-sq g-sq
+          ∙ M.─⊗─ .F-seq _ _ })
+      MP .MonoidalPropᴰ.αᴰ⟨_,_,_⟩ _ _ _ = sym (M.α .trans .N-hom _)
+      MP .MonoidalPropᴰ.α⁻¹ᴰ⟨_,_,_⟩ _ _ _ =
+        sym (symNatIso M.α .trans .N-hom _)
+      MP .MonoidalPropᴰ.ηᴰ⟨_⟩ _ = sym (M.η .trans .N-hom _)
+      MP .MonoidalPropᴰ.η⁻¹ᴰ⟨_⟩ _ = sym (symNatIso M.η .trans .N-hom _)
+      MP .MonoidalPropᴰ.ρᴰ⟨_⟩ _ = sym (M.ρ .trans .N-hom _)
+      MP .MonoidalPropᴰ.ρ⁻¹ᴰ⟨_⟩ _ = sym (symNatIso M.ρ .trans .N-hom _)
+
+-- Lifting an iso of pairs along the arrow bundle: conjugate by it.
+-- Only the base iso's laws are used, so this is `isIsoFibrationIso`
+-- with the displayed invertibility forgotten.
+module _ (C : Category ℓC ℓC') where
+  isIsoFibrationArrow : isWeakIsoFibration (Arrow.Arrow C)
+  isIsoFibrationArrow {c = x , y}{c' = x' , y'} f fg = record
+    { f*cᴰ = x≅x' .fst ⋆⟨ C ⟩ (f ⋆⟨ C ⟩ y'≅y .fst)
+    ; π = sym (C .⋆IdR _)
+      ∙ C .⋆Assoc _ _ _
+      ∙ cong₂ (seq' C) refl
+        (cong₂ (seq' C) refl (sym (y'≅y .snd .ret)) ∙ sym (C .⋆Assoc _ _ _))
+      ∙ sym (C .⋆Assoc _ _ _)
+    ; σ = sym (C .⋆Assoc _ _ _)
+      ∙ cong₂ (comp' C) refl (x≅x' .snd .sec)
+      ∙ C .⋆IdL _
+    }
+    where
+      x≅x' = SplitCatIso× C C fg .fst
+      y'≅y = invIso (SplitCatIso× C C fg .snd)
+
+-- The comma monoidal category of two strong monoidal functors: its
+-- sections along a functor are monoidal natural transformations.
+module _ {M : MonoidalCategory ℓC ℓC'} {N : MonoidalCategory ℓD ℓD'}
+         (G H : StrongMonoidalFunctor M N)
+  where
+  private
+    module N = MonoidalCategory N
+
+  ArrowComma : MonoidalCategoryᴰ M ℓD' ℓD'
+  ArrowComma =
+    reindex (Arrowᴹ N) (G ,F H)
+      (Arrow.hasPropHomsArrow N.C) (isIsoFibrationArrow N.C)

@@ -4,6 +4,7 @@ module Cubical.Categories.Instances.Free.Monoidal.OnCategory where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Data.Unit
+open import Cubical.Data.Sigma
 
 open import Cubical.Categories.Category.Base
 open import Cubical.Categories.Isomorphism
@@ -261,6 +262,104 @@ module _ (C : Category ℓC ℓC') where
             (λ x → ı≅ .trans .N-ob x , ı≅ .nIso x)
             (λ f → ı≅ .trans .N-hom f , tt)
 
+      -- A natural transformation between strong monoidal functors is
+      -- monoidal when it commutes with the ε and μ comparisons.
+      isMonoidalNat : NatTrans G.F H.F → Type (ℓ-max ℓC ℓD')
+      isMonoidalNat σ =
+        (G.ε ⋆⟨ M.C ⟩ σ .N-ob unit ≡ H.ε)
+        × (∀ x y → G.μ⟨ x , y ⟩ ⋆⟨ M.C ⟩ σ .N-ob (x ⊗ y)
+                 ≡ (σ .N-ob x M.⊗ₕ σ .N-ob y) ⋆⟨ M.C ⟩ H.μ⟨ x , y ⟩)
+
+      -- 2-dimensional uniqueness: a monoidal natural transformation
+      -- out of the free monoidal category is determined by its
+      -- restriction along ηFree.
+      uniq₂ : (σ τ : NatTrans G.F H.F)
+        → isMonoidalNat σ → isMonoidalNat τ
+        → (∀ c → σ .N-ob (↑ c) ≡ τ .N-ob (↑ c))
+        → σ ≡ τ
+      uniq₂ σ τ mσ mτ p↑ = makeNatTransPath (funExt go) where
+        go : ∀ x → σ .N-ob x ≡ τ .N-ob x
+        go (↑ c) = p↑ c
+        go unit = ⋆CancelL G.ε-Iso (mσ .fst ∙ sym (mτ .fst))
+        go (x ⊗ y) = ⋆CancelL (G.μ⟨ x , y ⟩ , G.μ-isIso (x , y))
+          (mσ .snd x y
+          ∙ cong₂ M._⋆_ (cong₂ M._⊗ₕ_ (go x) (go y)) refl
+          ∙ sym (mτ .snd x y))
+
+      -- The comparison produced by uniq is monoidal: its components
+      -- at unit and at x ⊗ y are the ε and μ conjugates.
+      uniq-isMonoidal : (ı≅ : (G.F ∘F ηFree) ≅ᶜ (H.F ∘F ηFree))
+        → isMonoidalNat (uniq ı≅ .trans)
+      uniq-isMonoidal ı≅ .fst =
+        sym (M.⋆Assoc _ _ _)
+        ∙ cong₂ M._⋆_ (G.ε-isIso .ret) refl
+        ∙ M.⋆IdL _ ∙ M.⋆IdL _
+      uniq-isMonoidal ı≅ .snd x y =
+        sym (M.⋆Assoc _ _ _)
+        ∙ cong₂ M._⋆_ (G.μ-isIso _ .ret) refl
+        ∙ M.⋆IdL _
+
+      -- 2-dimensional recursion: every natural transformation between
+      -- the restrictions extends to a monoidal one.  Unlike uniq this
+      -- needs no invertibility, since ArrowComma is the comma object
+      -- for arbitrary 2-cells.
+      private
+        module AC = MonoidalCategoryᴰ (ArrowComma G H)
+        hasPropHomsAC : hasPropHoms AC.Cᴰ
+        hasPropHomsAC f = hasPropHomsArrow M.C _
+
+      rec₂ : (β : NatTrans (G.F ∘F ηFree) (H.F ∘F ηFree))
+        → NatTrans G.F H.F
+      rec₂ β = ArrowReflection (GlobalSectionReindex→Section _ _
+        (elim (ArrowComma G H) S))
+        where
+          S : Section ηFree AC.Cᴰ
+          S = mkPropHomsSection hasPropHomsAC (β .N-ob) (β .N-hom)
+
+      rec₂-isMonoidal : (β : NatTrans (G.F ∘F ηFree) (H.F ∘F ηFree))
+        → isMonoidalNat (rec₂ β)
+      rec₂-isMonoidal β .fst =
+        sym (M.⋆Assoc _ _ _)
+        ∙ cong₂ M._⋆_ (G.ε-isIso .ret) refl
+        ∙ M.⋆IdL _ ∙ M.⋆IdL _
+      rec₂-isMonoidal β .snd x y =
+        sym (M.⋆Assoc _ _ _)
+        ∙ cong₂ M._⋆_ (G.μ-isIso _ .ret) refl
+        ∙ M.⋆IdL _
+
+      rec₂-β : (β : NatTrans (G.F ∘F ηFree) (H.F ∘F ηFree))
+        → ∀ c → rec₂ β .N-ob (↑ c) ≡ β .N-ob c
+      rec₂-β β c = refl
+
+    module _ (G : StrongMonoidalFunctor FreeMonoidalOn M) where
+      private module G = StrongMonoidalFunctor G
+      isMonoidalNat-id : isMonoidalNat G G (idTrans G.F)
+      isMonoidalNat-id .fst = M.⋆IdR _
+      isMonoidalNat-id .snd x y =
+        M.⋆IdR _ ∙ sym (M.⋆IdL _)
+        ∙ cong₂ M._⋆_ (sym (M.─⊗─ .F-id)) refl
+
+    -- Monoidal natural transformations are closed under composition.
+    module _ (G H K : StrongMonoidalFunctor FreeMonoidalOn M) where
+      private
+        module G = StrongMonoidalFunctor G
+        module K = StrongMonoidalFunctor K
+      isMonoidalNat-seq : (σ : NatTrans G.F (H .StrongMonoidalFunctor.F))
+        (τ : NatTrans (H .StrongMonoidalFunctor.F) K.F)
+        → isMonoidalNat G H σ → isMonoidalNat H K τ
+        → isMonoidalNat G K (seqTrans σ τ)
+      isMonoidalNat-seq σ τ mσ mτ .fst =
+        sym (M.⋆Assoc _ _ _)
+        ∙ cong₂ M._⋆_ (mσ .fst) refl
+        ∙ mτ .fst
+      isMonoidalNat-seq σ τ mσ mτ .snd x y =
+        sym (M.⋆Assoc _ _ _)
+        ∙ cong₂ M._⋆_ (mσ .snd x y) refl
+        ∙ M.⋆Assoc _ _ _
+        ∙ cong₂ M._⋆_ refl (mτ .snd x y)
+        ∙ sym (M.⋆Assoc _ _ _)
+        ∙ cong₂ M._⋆_ (sym (M.─⊗─ .F-seq _ _)) refl
+
 -- Functoriality: T₁ F is the recursive extension of ↑ ∘ F.
 module _ {C : Category ℓC ℓC'} {D : Category ℓD ℓD'} (F : Functor C D) where
   T₁Str : StrongMonoidalFunctor (FreeMonoidalOn C) (FreeMonoidalOn D)
@@ -375,6 +474,22 @@ module _ {C : Category ℓC ℓC'} {D : Category ℓD ℓD'}
       S = mkPropHomsSection hasPropHomsAᴰ
         (λ x → ↑ₘ (β .N-ob x))
         (λ f → sym (↑ₘSeq _ _) ∙ cong ↑ₘ (β .N-hom f) ∙ ↑ₘSeq _ _)
+
+  -- T₂'s components are strict: T₁'s ε and μ are identities and
+  -- T₂Motive's ⊗ᴰ is the tensor itself, with no lifts in between.
+  T₂-isMonoidal : (β : NatTrans F₁ G₁)
+    → isMonoidalNat C (FreeMonoidalOn D) (T₁Str F₁) (T₁Str G₁) (T₂ β)
+  T₂-isMonoidal β .fst = FD.⋆IdL _
+  T₂-isMonoidal β .snd x y = FD.⋆IdL _ ∙ sym (FD.⋆IdR _)
+
+  -- Two monoidal natural transformations T₁ F₁ ⇒ T₁ G₁ agreeing on ↑
+  -- are equal.
+  T₂-uniq : (β : NatTrans F₁ G₁) (σ : NatTrans P Q)
+    → isMonoidalNat C (FreeMonoidalOn D) (T₁Str F₁) (T₁Str G₁) σ
+    → (∀ c → σ .N-ob (↑ c) ≡ ↑ₘ (β .N-ob c))
+    → σ ≡ T₂ β
+  T₂-uniq β σ mσ p = uniq₂ C (FreeMonoidalOn D)
+    (T₁Str F₁) (T₁Str G₁) σ (T₂ β) mσ (T₂-isMonoidal β) p
 
 module _ {C : Category ℓC ℓC'} where
   MonObInd : ∀ {ℓ} (Pr : MonOb C → Type ℓ)
