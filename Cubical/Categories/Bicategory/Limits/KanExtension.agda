@@ -7,8 +7,9 @@
   `BiuniversalElement`: it is a `UniversalElement` one dimension down,
   of a presheaf on the hom-category `B [ b , c ]`.  `RanPsh j f` sends
   `g : b → c` to the set of 2-cells `j ⋆₁ g ⇒ f`; its universal
-  element is `(Ran j f , ε)`.  Left Kan extensions are right Kan
-  extensions in `B ^coᴮ`.
+  element is `(Ran j f , ε)`.  That presheaf and its notation come
+  from `Limits/Extension.agda`: a Ran is a right adjoint to `precomp
+  j`.  Left Kan extensions are right Kan extensions in `B ^coᴮ`.
 -}
 module Cubical.Categories.Bicategory.Limits.KanExtension where
 
@@ -27,6 +28,7 @@ open import Cubical.Categories.Presheaf.Representable
 open import Cubical.Categories.Presheaf.Representable.More
 
 open import Cubical.Categories.Bicategory.Base
+open import Cubical.Categories.Bicategory.Limits.Extension
 open import Cubical.Categories.Bicategory.Properties
 open import Cubical.Categories.Bicategory.Properties.Coherence
 open import Cubical.Categories.Bicategory.Constructions.Co
@@ -48,15 +50,10 @@ module _ (B : Bicategory ℓ ℓ' ℓ'') where
   module _ {a b c : B.0Cell} (j : B.1Cell a b) (f : B.1Cell a c) where
     -- g ↦ 2-cells j ⋆₁ g ⇒ f, contravariant by whiskering with j
     RanPsh : Presheaf B.Hom[ b , c ] ℓ''
-    RanPsh .F-ob g = B.2Cell (j B.⋆₁ g) f , B.isSet2Cell
-    RanPsh .F-hom α θ = (j B.◁w α) B.⋆₂ θ
-    RanPsh .F-id = funExt λ θ →
-      cong (B._⋆₂ θ) (B.◁wId j) ∙ B.⋆₂IdL θ
-    RanPsh .F-seq α γ = funExt λ θ →
-      cong (B._⋆₂ θ) (◁wSeq B j γ α) ∙ B.⋆₂Assoc _ _ _
+    RanPsh = RanPshᴮ B j f
 
     Ranᴮ : Type (ℓ-max ℓ' ℓ'')
-    Ranᴮ = UniversalElement B.Hom[ b , c ] RanPsh
+    Ranᴮ = RightExtensionᴮ B j f
 
   -- all right Kan extensions along a fixed j, and along everything
   hasRansAlongᴮ : {a b : B.0Cell} (j : B.1Cell a b) → Type _
@@ -70,7 +67,7 @@ module RanᴮNotation {B : Bicategory ℓ ℓ' ℓ''}
   {f : Bicategory.1Cell B a c} (R : Ranᴮ B j f) where
   private
     module B = Bicategory B
-  open UniversalElementNotation R public
+  open RightExtensionᴮNotation R public
 
   ran : B.1Cell b c
   ran = vertex
@@ -81,7 +78,7 @@ module RanᴮNotation {B : Bicategory ℓ ℓ' ℓ''}
 
   -- the comparison map, of which `universal` says it is an equivalence
   ranCompare : {g : B.1Cell b c} → B.2Cell g ran → B.2Cell (j B.⋆₁ g) f
-  ranCompare α = (j B.◁w α) B.⋆₂ ranε
+  ranCompare = compare
 
   ranIntro : {g : B.1Cell b c} → B.2Cell (j B.⋆₁ g) f → B.2Cell g ran
   ranIntro = intro
@@ -101,10 +98,10 @@ module RanᴮNotation {B : Bicategory ℓ ℓ' ℓ''}
   -- the analogue of `ff`: the comparison is an equivalence at every
   -- probe 1-cell, and everything above is derived from it
   ffRan : (g : B.1Cell b c) → isEquiv (ranCompare {g})
-  ffRan g = universal g
+  ffRan = ff
 
   ranIso : (g : B.1Cell b c) → Iso (B.2Cell g ran) (B.2Cell (j B.⋆₁ g) f)
-  ranIso g = universalIso g
+  ranIso = compareIso
 
   -- the counit whiskered by a 1-cell out of c, i.e. the candidate
   -- counit exhibiting `ran ⋆₁ m` as a Ran of `f ⋆₁ m`
@@ -121,8 +118,8 @@ module _ (B : Bicategory ℓ ℓ' ℓ'') where
   isAbsoluteRanᴮ : {a b c : B.0Cell} {j : B.1Cell a b} {f : B.1Cell a c}
     → Ranᴮ B j f → Type (ℓ-max ℓ (ℓ-max ℓ' ℓ''))
   isAbsoluteRanᴮ {b = b} {c} {j} {f} R = {d : B.0Cell} (m : B.1Cell c d)
-    → isUniversal B.Hom[ b , d ] (RanPsh B j (f B.⋆₁ m))
-        (RanᴮNotation.ran R B.⋆₁ m) (RanᴮNotation.ranεPost R m)
+    → isRightExtensionᴮ B j (RanᴮNotation.ran R B.⋆₁ m)
+        (RanᴮNotation.ranεPost R m)
 
   -- Ran along the identity is the 1-cell itself, with counit λ⁺.
   ranId : {a c : B.0Cell} (f : B.1Cell a c) → Ranᴮ B B.id₁ f
@@ -248,9 +245,7 @@ module _ (B : Bicategory ℓ ℓ' ℓ'') where
     -- `k ⋆₁ ran` is the right Kan extension of `q ⋆₁ f` along `p`
     isPointwiseAtᴮ : Type (ℓ-max ℓ' ℓ'')
     isPointwiseAtᴮ =
-      isUniversal B.Hom[ x , c ]
-        (RanPsh B K.commaπ₁ᴮ (K.commaπ₂ᴮ B.⋆₁ f))
-        (k B.⋆₁ R.ran) ranCommaCounit
+      isRightExtensionᴮ B K.commaπ₁ᴮ (k B.⋆₁ R.ran) ranCommaCounit
 
   isPointwiseRanᴮ : {a b c : B.0Cell} {j : B.1Cell a b} {f : B.1Cell a c}
     (R : Ranᴮ B j f)
