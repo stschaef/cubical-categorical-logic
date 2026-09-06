@@ -11,6 +11,11 @@
   the `CAT` comma object `Commaᴮ` on the nose.  So `rec` into it uses
   the bicategorical limit directly: no displayed category, no
   `Section`, no `SETᴰ`, no `reindex` anywhere below.
+
+  The doctrine-generic half of the argument lives in
+  `Gluing.Bicategorical.CanonicityCore`; what remains here is the
+  interpretation, the strictness of `T` for each former, and the
+  refutation of the uniqueness principle's old `⇒-lam`.
 -}
 module Gluing.Bicategorical.RecCanonicity where
 
@@ -44,6 +49,7 @@ open import Cubical.Categories.Instances.Free.CartesianClosedCategory.Forded
   as FreeCCC
 
 open import Gluing.Bicategorical.BoolNatCanonicity
+open import Gluing.Bicategorical.CanonicityCore
 import Gluing.Canonicity as GC
 
 open Category
@@ -55,8 +61,11 @@ open UniversalElement
 
 module GLUE = CartesianClosedCategory GLUE
 
-fromBool : Bool → [bool]
-fromBool b = if b then [t] else [f]
+-- the cartesian closed lemmas the uniqueness principle consumes,
+-- instantiated at the syntax
+module CORE = Exp FREECCC
+open CORE using (pl; pb; plId; pbId; module ⇒At)
+module TERM = BoolNat {C = FREECCC.C} FREECCC.term
 
 -- the interpretation lands in the comma category: a set, a syntactic
 -- object, and the map picking out the canonical forms
@@ -115,11 +124,10 @@ evalNat-＂ suc n ＂ = cong suc evalNat-＂ n ＂
 
 {-
   What initiality is needed for, and all it is needed for.  Given the
-  natural isomorphism `T ≅ Id`, canonicity follows: naturality at the
-  generators pins the component at `↑ nat` down to something that
-  fixes every numeral, and at `↑ bool` to something that fixes both
-  booleans (`numeralsFixed` / `booleansFixed`).  `ηT`, below, supplies
-  it.
+  natural isomorphism `T ≅ Id`, naturality at `⊤` and the comma
+  category's first projection reify every global point at a generating
+  sort; `CanonicityCore`'s `Canonicity` then concludes.  `ηT`, below,
+  supplies the isomorphism.
 -}
 module Canonicity (η : NatIso T (Id {C = FREECCC.C})) where
   private
@@ -134,48 +142,28 @@ module Canonicity (η : NatIso T (Id {C = FREECCC.C})) where
     natAt e = η .trans .N-hom e
             ∙ cong₂ _⋆ₑ_ η⊤≡id refl ∙ FREECCC.⋆IdL e
 
-    numAt : (e : [nat])
-      → ＂ (S ⟪ e ⟫) .fst .fst FREECCC.id ＂ ≡ (T ⟪ e ⟫)
-    numAt e = sym (funExt⁻ ((S ⟪ e ⟫) .snd) FREECCC.id)
-            ∙ FREECCC.⋆IdL ((T ⟪ e ⟫))
+    reifyNat : (e : [nat]) → Σ[ n ∈ ℕ ] ＂ n ＂ ⋆ₑ ηnat ≡ e
+    reifyNat e = (S ⟪ e ⟫) .fst .fst FREECCC.id
+      , cong₂ _⋆ₑ_ (sym (funExt⁻ ((S ⟪ e ⟫) .snd) FREECCC.id)
+                    ∙ FREECCC.⋆IdL (T ⟪ e ⟫)) refl
+      ∙ natAt e
 
-    boolAt : (e : [bool])
-      → fromBool ((S ⟪ e ⟫) .fst .fst FREECCC.id) ≡ (T ⟪ e ⟫)
-    boolAt e = sym (funExt⁻ ((S ⟪ e ⟫) .snd) FREECCC.id)
-             ∙ FREECCC.⋆IdL ((T ⟪ e ⟫))
+    reifyBool : (e : [bool]) → Σ[ b ∈ Bool ] fromBool b ⋆ₑ ηbool ≡ e
+    reifyBool e = (S ⟪ e ⟫) .fst .fst FREECCC.id
+      , cong₂ _⋆ₑ_ (sym (funExt⁻ ((S ⟪ e ⟫) .snd) FREECCC.id)
+                    ∙ FREECCC.⋆IdL (T ⟪ e ⟫)) refl
+      ∙ natAt e
 
-  canonicalize-nat : (e : [nat]) → fiber ＂_＂ e
-  canonicalize-nat e = (S ⟪ e ⟫) .fst .fst FREECCC.id
-    , sym (numeralsFixed ηnat (natAt [ze]) (η .trans .N-hom [su]) _)
-    ∙ cong₂ _⋆ₑ_ (numAt e) refl ∙ natAt e
-
-  canonicalize-bool : (e : [bool]) → (e ≡ [t]) ⊎ (e ≡ [f])
-  canonicalize-bool e = go ((S ⟪ e ⟫) .fst .fst FREECCC.id) refl
-    where
-    key : (b : Bool) → (S ⟪ e ⟫) .fst .fst FREECCC.id ≡ b
-      → e ≡ fromBool b
-    key b p = sym (natAt e)
-      ∙ cong₂ _⋆ₑ_ (sym (sym (cong fromBool p) ∙ boolAt e)) refl
-      ∙ booleansFixed ηbool (natAt [t]) (natAt [f]) b
-
-    go : (b : Bool) → (S ⟪ e ⟫) .fst .fst FREECCC.id ≡ b
-      → (e ≡ [t]) ⊎ (e ≡ [f])
-    go true p = inl (key true p)
-    go false p = inr (key false p)
-
-  canonicity-bool : Iso [bool] Bool
-  canonicity-bool = GC.BoolIso.canonicity-bool [t] [f] evalBool refl refl
-    canonicalize-bool
-
-  canonicity-nat : Iso [nat] ℕ
-  canonicity-nat = GC.NatIso.canonicity-nat ＂_＂ evalNat evalNat-＂_＂
-    canonicalize-nat
+  open GENS.Canonicity ηnat ηbool (natAt [ze]) (η .trans .N-hom [su])
+    (natAt [t]) (natAt [f]) reifyNat reifyBool
+    evalBool refl refl evalNat evalNat-＂_＂ public
 
 
 -- `T` preserves the whole cartesian closed structure DEFINITIONALLY:
 -- `S`'s object action is the glue's chosen structure and `projSyn`
 -- reads off its syntactic component, which is the corresponding
--- syntactic former.
+-- syntactic former.  This is what lets the generic lemmas of
+-- `CanonicityCore` be applied at `T ⟅ - ⟆` with no comparison map.
 private
   T-⊤ : T ⟅ CCCExpr.⊤ ⟆ ≡ CCCExpr.⊤
   T-⊤ = refl
@@ -222,231 +210,21 @@ private
   Id-1 = preserveOnePreservesAll FREECCC.C FREECCC.C Id
     FREECCC1 (FREECCC1 .snd)
 
-  -- the two half-maps out of a product, and the presheaf action on
-  -- the exponential presheaf, spelled out
-  pl : ∀ {X Y A} → FREECCC.Hom[ X , Y ]
-     → FREECCC.Hom[ CCCExpr._×_ X A , CCCExpr._×_ Y A ]
-  pl {X = X} {Y = Y} {A = A} m = FREECCC._,p_ {a = Y} {b = A}
-    (FREECCC.π₁ {a = X} {b = A} ⋆ₑ m) (FREECCC.π₂ {a = X} {b = A})
-
-  pr : ∀ {X A B} → FREECCC.Hom[ A , B ]
-     → FREECCC.Hom[ CCCExpr._×_ X A , CCCExpr._×_ X B ]
-  pr {X = X} {A = A} {B = B} n = FREECCC._,p_ {a = X} {b = B}
-    (FREECCC.π₁ {a = X} {b = A}) (FREECCC.π₂ {a = X} {b = A} ⋆ₑ n)
-
-  pb : ∀ {X Y A B} → FREECCC.Hom[ X , Y ] → FREECCC.Hom[ A , B ]
-     → FREECCC.Hom[ CCCExpr._×_ X A , CCCExpr._×_ Y B ]
-  pb {X = X} {Y = Y} {A = A} {B = B} m n = FREECCC._,p_ {a = Y} {b = B}
-    (FREECCC.π₁ {a = X} {b = A} ⋆ₑ m) (FREECCC.π₂ {a = X} {b = A} ⋆ₑ n)
-
-  pl⋆pl : ∀ {X Y Z A} (m : FREECCC.Hom[ X , Y ]) (m' : FREECCC.Hom[ Y , Z ])
-    → pl {A = A} m ⋆ₑ pl {A = A} m' ≡ pl {A = A} (m ⋆ₑ m')
-  pl⋆pl m m' = FREECCC.,p-extensionality
-    ( FREECCC.⋆Assoc _ _ _ ∙ FREECCC.⟨ refl ⟩⋆⟨ FREECCC.×β₁ ⟩
-    ∙ sym (FREECCC.⋆Assoc _ _ _) ∙ FREECCC.⟨ FREECCC.×β₁ ⟩⋆⟨ refl ⟩
-    ∙ FREECCC.⋆Assoc _ _ _ ∙ sym FREECCC.×β₁)
-    ( FREECCC.⋆Assoc _ _ _ ∙ FREECCC.⟨ refl ⟩⋆⟨ FREECCC.×β₂ ⟩
-    ∙ FREECCC.×β₂ ∙ sym FREECCC.×β₂)
-
-  pr⋆pr : ∀ {X A B C} (u : FREECCC.Hom[ A , B ]) (v : FREECCC.Hom[ B , C ])
-    → pr {X = X} u ⋆ₑ pr {X = X} v ≡ pr {X = X} (u ⋆ₑ v)
-  pr⋆pr u v = FREECCC.,p-extensionality
-    ( FREECCC.⋆Assoc _ _ _ ∙ FREECCC.⟨ refl ⟩⋆⟨ FREECCC.×β₁ ⟩
-    ∙ FREECCC.×β₁ ∙ sym FREECCC.×β₁)
-    ( FREECCC.⋆Assoc _ _ _ ∙ FREECCC.⟨ refl ⟩⋆⟨ FREECCC.×β₂ ⟩
-    ∙ sym (FREECCC.⋆Assoc _ _ _) ∙ FREECCC.⟨ FREECCC.×β₂ ⟩⋆⟨ refl ⟩
-    ∙ FREECCC.⋆Assoc _ _ _ ∙ sym FREECCC.×β₂)
-
-  plId : ∀ {X A} → pl {X = X} {A = A} FREECCC.id ≡ FREECCC.id
-  plId = FREECCC.,p-extensionality
-    (FREECCC.×β₁ ∙ FREECCC.⋆IdR _ ∙ sym (FREECCC.⋆IdL _))
-    (FREECCC.×β₂ ∙ sym (FREECCC.⋆IdL _))
-
-  prId : ∀ {X A} → pr {X = X} {A = A} FREECCC.id ≡ FREECCC.id
-  prId = FREECCC.,p-extensionality
-    (FREECCC.×β₁ ∙ sym (FREECCC.⋆IdL _))
-    (FREECCC.×β₂ ∙ FREECCC.⋆IdR _ ∙ sym (FREECCC.⋆IdL _))
-
-  pl⋆pr : ∀ {X Y A B} (m : FREECCC.Hom[ X , Y ]) (n : FREECCC.Hom[ A , B ])
-    → pl {A = A} m ⋆ₑ pr {X = Y} n ≡ pb m n
-  pl⋆pr m n = FREECCC.,p-extensionality
-    ( FREECCC.⋆Assoc _ _ _ ∙ FREECCC.⟨ refl ⟩⋆⟨ FREECCC.×β₁ ⟩
-    ∙ FREECCC.×β₁ ∙ sym FREECCC.×β₁)
-    ( FREECCC.⋆Assoc _ _ _ ∙ FREECCC.⟨ refl ⟩⋆⟨ FREECCC.×β₂ ⟩
-    ∙ sym (FREECCC.⋆Assoc _ _ _) ∙ FREECCC.⟨ FREECCC.×β₂ ⟩⋆⟨ refl ⟩
-    ∙ sym FREECCC.×β₂)
-
-  pr⋆pl : ∀ {X Y A B} (m : FREECCC.Hom[ X , Y ]) (n : FREECCC.Hom[ A , B ])
-    → pr {X = X} n ⋆ₑ pl {A = B} m ≡ pb m n
-  pr⋆pl m n = FREECCC.,p-extensionality
-    ( FREECCC.⋆Assoc _ _ _ ∙ FREECCC.⟨ refl ⟩⋆⟨ FREECCC.×β₁ ⟩
-    ∙ sym (FREECCC.⋆Assoc _ _ _) ∙ FREECCC.⟨ FREECCC.×β₁ ⟩⋆⟨ refl ⟩
-    ∙ sym FREECCC.×β₁)
-    ( FREECCC.⋆Assoc _ _ _ ∙ FREECCC.⟨ refl ⟩⋆⟨ FREECCC.×β₂ ⟩
-    ∙ FREECCC.×β₂ ∙ sym FREECCC.×β₂)
-
-  pr⋆pb : ∀ {X Y A B C} (m : FREECCC.Hom[ X , Y ])
-    (n : FREECCC.Hom[ A , B ]) (n' : FREECCC.Hom[ B , C ])
-    → pr {X = X} n ⋆ₑ pb m n' ≡ pb m (n ⋆ₑ n')
-  pr⋆pb m n n' = FREECCC.,p-extensionality
-    ( FREECCC.⋆Assoc _ _ _ ∙ FREECCC.⟨ refl ⟩⋆⟨ FREECCC.×β₁ ⟩
-    ∙ sym (FREECCC.⋆Assoc _ _ _) ∙ FREECCC.⟨ FREECCC.×β₁ ⟩⋆⟨ refl ⟩
-    ∙ sym FREECCC.×β₁)
-    ( FREECCC.⋆Assoc _ _ _ ∙ FREECCC.⟨ refl ⟩⋆⟨ FREECCC.×β₂ ⟩
-    ∙ sym (FREECCC.⋆Assoc _ _ _) ∙ FREECCC.⟨ FREECCC.×β₂ ⟩⋆⟨ refl ⟩
-    ∙ FREECCC.⋆Assoc _ _ _ ∙ sym FREECCC.×β₂)
-
-  pbId : ∀ {X Y A} (m : FREECCC.Hom[ X , Y ])
-    → pb {A = A} m FREECCC.id ≡ pl m
-  pbId m = FREECCC.,p-extensionality
-    (FREECCC.×β₁ ∙ sym FREECCC.×β₁)
-    (FREECCC.×β₂ ∙ FREECCC.⋆IdR _ ∙ sym FREECCC.×β₂)
-
-  appOf : ∀ {X A B} → FREECCC.Hom[ X , CCCExpr._⇒_ A B ]
-        → FREECCC.Hom[ CCCExpr._×_ X A , B ]
-  appOf m = pl m ⋆ₑ FREECCC.app
-
-  ldaβ : ∀ {X A B} (h : FREECCC.Hom[ CCCExpr._×_ X A , B ])
-    → appOf (FREECCC.lda {c = A} {d = B} h) ≡ h
-  ldaβ {A = A} {B = B} h = FREECCC.⇒ue.β A B
-
-  ldaExt : ∀ {X A B} {m n : FREECCC.Hom[ X , CCCExpr._⇒_ A B ]}
-    → appOf m ≡ appOf n → m ≡ n
-  ldaExt {A = A} {B = B} = FREECCC.⇒ue.extensionality A B
-
-  appOfSeq : ∀ {X Y A B} (m : FREECCC.Hom[ X , Y ])
-    (n : FREECCC.Hom[ Y , CCCExpr._⇒_ A B ])
-    → appOf (m ⋆ₑ n) ≡ pl m ⋆ₑ appOf n
-  appOfSeq m n = cong (FREECCC._⋆ FREECCC.app) (sym (pl⋆pl m n))
-               ∙ FREECCC.⋆Assoc _ _ _
-
-  -- the action of the internal hom on a pair of maps
-  conj : ∀ {A B A' B'} → FREECCC.Hom[ A' , A ] → FREECCC.Hom[ B , B' ]
-       → FREECCC.Hom[ CCCExpr._⇒_ A B , CCCExpr._⇒_ A' B' ]
-  conj {A = A} {B = B} {A' = A'} {B' = B'} u v =
-    FREECCC.lda {c = A'} {d = B'}
-      ((pr {X = CCCExpr._⇒_ A B} u ⋆ₑ FREECCC.app {c = A} {d = B}) ⋆ₑ v)
-
-  conj⋆conj : ∀ {A B A' B' A'' B''}
-    (u : FREECCC.Hom[ A' , A ]) (v : FREECCC.Hom[ B , B' ])
-    (u' : FREECCC.Hom[ A'' , A' ]) (v' : FREECCC.Hom[ B' , B'' ])
-    → conj u v ⋆ₑ conj u' v' ≡ conj (u' ⋆ₑ u) (v ⋆ₑ v')
-  conj⋆conj u v u' v' = ldaExt
-    ( appOfSeq (conj u v) (conj u' v')
-    ∙ FREECCC.⟨ refl ⟩⋆⟨ ldaβ _ ⟩
-    ∙ sym (FREECCC.⋆Assoc _ _ _)
-    ∙ FREECCC.⟨ sym (FREECCC.⋆Assoc _ _ _) ⟩⋆⟨ refl ⟩
-    ∙ FREECCC.⟨ FREECCC.⟨ pl⋆pr (conj u v) u'
-                        ∙ sym (pr⋆pl (conj u v) u') ⟩⋆⟨ refl ⟩ ⟩⋆⟨ refl ⟩
-    ∙ FREECCC.⟨ FREECCC.⋆Assoc _ _ _ ⟩⋆⟨ refl ⟩
-    ∙ FREECCC.⟨ FREECCC.⟨ refl ⟩⋆⟨ ldaβ _ ⟩ ⟩⋆⟨ refl ⟩
-    ∙ FREECCC.⟨ sym (FREECCC.⋆Assoc _ _ _) ⟩⋆⟨ refl ⟩
-    ∙ FREECCC.⟨ FREECCC.⟨ sym (FREECCC.⋆Assoc _ _ _) ⟩⋆⟨ refl ⟩ ⟩⋆⟨ refl ⟩
-    ∙ FREECCC.⟨ FREECCC.⟨ FREECCC.⟨ pr⋆pr u' u ⟩⋆⟨ refl ⟩ ⟩⋆⟨ refl ⟩ ⟩⋆⟨ refl ⟩
-    ∙ FREECCC.⋆Assoc _ _ _
-    ∙ sym (ldaβ _))
-
-  conjId : ∀ {A B} → conj (FREECCC.id {x = A}) (FREECCC.id {x = B})
-                   ≡ FREECCC.id
-  conjId = ldaExt
-    ( ldaβ _ ∙ FREECCC.⋆IdR _ ∙ FREECCC.⟨ prId ⟩⋆⟨ refl ⟩ ∙ FREECCC.⋆IdL _
-    ∙ sym (FREECCC.⋆IdL _) ∙ FREECCC.⟨ sym plId ⟩⋆⟨ refl ⟩)
-
-  module ⇒At {A B : FREECCC.C .ob}
-    (f : CatIso FREECCC.C (T ⟅ A ⟆) A)
-    (g : CatIso FREECCC.C (T ⟅ B ⟆) B) where
-
-    TA = T ⟅ A ⟆
-    TB = T ⟅ B ⟆
-    ff = f .fst
-    fi = f .snd .isIso.inv
-    gf = g .fst
-    gi = g .snd .isIso.inv
-
-    E : FREECCC.Hom[ CCCExpr._⇒_ TA TB , CCCExpr._⇒_ A B ]
-    E = conj fi gf
-
-    Einv : FREECCC.Hom[ CCCExpr._⇒_ A B , CCCExpr._⇒_ TA TB ]
-    Einv = conj ff gi
-
-    expIso : CatIso FREECCC.C (T ⟅ CCCExpr._⇒_ A B ⟆) (CCCExpr._⇒_ A B)
-    expIso = E , isiso Einv
-      ( conj⋆conj ff gi fi gf
-      ∙ cong₂ (conj {A = A} {B = B} {A' = A} {B' = B})
-          (f .snd .isIso.sec) (g .snd .isIso.sec)
-      ∙ conjId)
-      ( conj⋆conj fi gf ff gi
-      ∙ cong₂ (conj {A = TA} {B = TB} {A' = TA} {B' = TB})
-          (f .snd .isIso.ret) (g .snd .isIso.ret)
-      ∙ conjId)
-
-    evalSq : FREECCC.app {c = TA} {d = TB} ⋆ₑ gf
-           ≡ pb E ff ⋆ₑ FREECCC.app {c = A} {d = B}
-    evalSq =
-        FREECCC.⟨ sym (FREECCC.⋆IdL _) ⟩⋆⟨ refl ⟩
-      ∙ FREECCC.⟨ FREECCC.⟨ sym prId ⟩⋆⟨ refl ⟩ ⟩⋆⟨ refl ⟩
-      ∙ FREECCC.⟨ FREECCC.⟨ cong prTA (sym (f .snd .isIso.ret)) ⟩⋆⟨ refl ⟩
-                ⟩⋆⟨ refl ⟩
-      ∙ FREECCC.⟨ FREECCC.⟨ sym (pr⋆pr ff fi) ⟩⋆⟨ refl ⟩ ⟩⋆⟨ refl ⟩
-      ∙ FREECCC.⟨ FREECCC.⋆Assoc _ _ _ ⟩⋆⟨ refl ⟩
-      ∙ FREECCC.⋆Assoc _ _ _
-      ∙ FREECCC.⟨ refl ⟩⋆⟨ sym (ldaβ _) ⟩
-      ∙ sym (FREECCC.⋆Assoc _ _ _)
-      ∙ FREECCC.⟨ pr⋆pl E ff ⟩⋆⟨ refl ⟩
-      where
-      prTA : FREECCC.Hom[ TA , TA ]
-        → FREECCC.Hom[ CCCExpr._×_ (CCCExpr._⇒_ TA TB) TA
-                     , CCCExpr._×_ (CCCExpr._⇒_ TA TB) TA ]
-      prTA = pr {X = CCCExpr._⇒_ TA TB} {A = TA} {B = TA}
-
-    lamSq : ∀ {Γ} (γ : CatIso FREECCC.C (T ⟅ Γ ⟆) Γ)
-      (h : FREECCC.Hom[ CCCExpr._×_ Γ A , B ])
-      → T ⟪ h ⟫ ⋆ₑ gf ≡ pb (γ .fst) ff ⋆ₑ h
-      → T ⟪ FREECCC.lda {c = A} {d = B} h ⟫ ⋆ₑ E
-        ≡ γ .fst ⋆ₑ FREECCC.lda {c = A} {d = B} h
-    lamSq {Γ = Γ} γ h sq = ldaExt
-      ( appOfSeq (FREECCC.lda {c = TA} {d = TB} (T ⟪ h ⟫)) E
-      ∙ FREECCC.⟨ refl ⟩⋆⟨ ldaβ _ ⟩
-      ∙ sym (FREECCC.⋆Assoc _ _ _)
-      ∙ FREECCC.⟨ sym (FREECCC.⋆Assoc _ _ _) ⟩⋆⟨ refl ⟩
-      ∙ FREECCC.⟨ FREECCC.⟨ pl⋆pr _ fi ∙ sym (pr⋆pl _ fi) ⟩⋆⟨ refl ⟩
-                ⟩⋆⟨ refl ⟩
-      ∙ FREECCC.⟨ FREECCC.⋆Assoc _ _ _ ⟩⋆⟨ refl ⟩
-      ∙ FREECCC.⟨ FREECCC.⟨ refl ⟩⋆⟨ ldaβ (T ⟪ h ⟫) ⟩ ⟩⋆⟨ refl ⟩
-      ∙ FREECCC.⋆Assoc _ _ _
-      ∙ FREECCC.⟨ refl ⟩⋆⟨ sq ⟩
-      ∙ sym (FREECCC.⋆Assoc _ _ _)
-      ∙ FREECCC.⟨ pr⋆pb (γ .fst) fi ff ⟩⋆⟨ refl ⟩
-      ∙ FREECCC.⟨ cong pbγ (f .snd .isIso.sec) ⟩⋆⟨ refl ⟩
-      ∙ FREECCC.⟨ pbId (γ .fst) ⟩⋆⟨ refl ⟩
-      ∙ FREECCC.⟨ refl ⟩⋆⟨ sym (ldaβ h) ⟩
-      ∙ sym (appOfSeq (γ .fst) (FREECCC.lda {c = A} {d = B} h)))
-      where
-      pbγ : FREECCC.Hom[ A , A ]
-        → FREECCC.Hom[ CCCExpr._×_ (T ⟅ Γ ⟆) A , CCCExpr._×_ Γ A ]
-      pbγ z = pb (γ .fst) z
-
   ⇒-isoT : ∀ {A B} → CatIso FREECCC.C (T ⟅ A ⟆) A
          → CatIso FREECCC.C (T ⟅ B ⟆) B
          → CatIso FREECCC.C (T ⟅ CCCExpr._⇒_ A B ⟆) (CCCExpr._⇒_ A B)
   ⇒-isoT f g = ⇒At.expIso f g
 
-  genSq⊤ : (u : FREECCC.Hom[ CCCExpr.⊤ , CCCExpr.⊤ ]) {X : FREECCC.C .ob}
-    (e : FREECCC.Hom[ CCCExpr.⊤ , X ])
-    → e ⋆ₑ FREECCC.id ≡ u ⋆ₑ e
-  genSq⊤ u e = FREECCC.⋆IdR _
-    ∙ sym (cong₂ _⋆ₑ_ (GC.⊤→⊤IsId FREECCC.term u) refl ∙ FREECCC.⋆IdL e)
-
 -- The uniqueness principle, discharged for `T`.
 ηT : NatIso T (Id {C = FREECCC.C})
 ηT = FreeCCCFunctor≅ ×⇒QUIVER TCart IdCart T-1 Id-1 ⇒-isoT
   (λ f g → ⇒At.evalSq f g)
-  (λ f g γ h sq → ⇒At.lamSq f g γ h sq)
+  (λ f g γ h sq → ⇒At.lamSq f g γ h (T ⟪ h ⟫) sq)
   (mkElimInterpᴰ
     (λ { bool → idCatIso ; nat → idCatIso })
-    (λ { tr → genSq⊤ _ (↑ₑ ×⇒QUIVER tr) , tt
-       ; fl → genSq⊤ _ (↑ₑ ×⇒QUIVER fl) , tt
-       ; ze → genSq⊤ _ (↑ₑ ×⇒QUIVER ze) , tt
+    (λ { tr → TERM.genSq⊤ _ (↑ₑ ×⇒QUIVER tr) , tt
+       ; fl → TERM.genSq⊤ _ (↑ₑ ×⇒QUIVER fl) , tt
+       ; ze → TERM.genSq⊤ _ (↑ₑ ×⇒QUIVER ze) , tt
        ; su → (FREECCC.⋆IdR _ ∙ sym (FREECCC.⋆IdL _)) , tt }))
 
 -- ... so the canonicity theorems are unconditional.
@@ -586,4 +364,4 @@ module _ (⇒iso : {A B : FREECCC.C .ob}
 -- the instance `ηT` runs on.
 private
   ⇒LamHolds : ⇒LamFixed ⇒-isoT
-  ⇒LamHolds f g γ h sq = ⇒At.lamSq f g γ h sq
+  ⇒LamHolds f g γ h sq = ⇒At.lamSq f g γ h (T ⟪ h ⟫) sq

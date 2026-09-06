@@ -23,6 +23,7 @@ open import Cubical.Categories.Instances.Free.CartesianClosedCategory.Quiver
 open import Cubical.Categories.Instances.Free.CartesianClosedCategory.Forded
 
 open import Gluing.Bicategorical.Artin
+open import Gluing.Bicategorical.CanonicityCore
 
 open Category
 open QuiverOver
@@ -103,33 +104,17 @@ _ = SET ℓ-zero
 [su] : FREECCC.Hom[ ↑ nat , ↑ nat ]
 [su] = ↑ₑ ×⇒QUIVER su
 
-＂_＂ : ℕ → [nat]
-＂ zero ＂ = [ze]
-＂ suc n ＂ = ＂ n ＂ ⋆ₑ [su]
-
 {-
   What a natural isomorphism `π₂ ∘F S ≅ Id` would buy.  Its component
-  at `⊤` is the identity, and its component `η` at `↑ nat` satisfies
-  the two naturality squares below; those already force `η` to fix
-  every numeral, so canonicity transfers through a `NatIso` and does
-  not need the strict equality `π₂ ∘F S ≡ Id`.
+  at `⊤` is the identity, and its component at `↑ nat` satisfies the
+  two naturality squares that `numeralsFixed` consumes; those already
+  force it to fix every numeral, so canonicity transfers through a
+  `NatIso` and does not need the strict equality `π₂ ∘F S ≡ Id`.
+  Numerals, `fromBool` and the two "fixed" lemmas are generic in the
+  category and its generators, so they come from `CanonicityCore`.
 -}
-module _ (η : FREECCC.Hom[ ↑ nat , ↑ nat ])
-  (ηze : [ze] ⋆ₑ η ≡ [ze])
-  (ηsu : [su] ⋆ₑ η ≡ η ⋆ₑ [su]) where
+module GENS = BoolNat.Gens {C = FREECCC.C} FREECCC.term
+  (↑ nat) (↑ bool) [t] [f] [ze] [su]
 
-  numeralsFixed : (n : ℕ) → ＂ n ＂ ⋆ₑ η ≡ ＂ n ＂
-  numeralsFixed zero = ηze
-  numeralsFixed (suc n) =
-      FREECCC.⋆Assoc _ _ _
-    ∙ cong (＂ n ＂ ⋆ₑ_) ηsu
-    ∙ sym (FREECCC.⋆Assoc _ _ _)
-    ∙ cong (_⋆ₑ [su]) (numeralsFixed n)
-
-module _ (θ : FREECCC.Hom[ ↑ bool , ↑ bool ])
-  (θtr : [t] ⋆ₑ θ ≡ [t]) (θfl : [f] ⋆ₑ θ ≡ [f]) where
-
-  booleansFixed : (b : Bool) → (if b then [t] else [f]) ⋆ₑ θ
-                             ≡ (if b then [t] else [f])
-  booleansFixed true = θtr
-  booleansFixed false = θfl
+open GENS public
+  using (＂_＂; fromBool; numeralsFixed; booleansFixed)
