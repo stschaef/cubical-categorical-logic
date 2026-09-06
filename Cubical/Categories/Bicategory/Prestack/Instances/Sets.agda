@@ -1,7 +1,6 @@
 {-# OPTIONS --lossy-unification #-}
 {- The prestack of families of sets, and its Grothendieck construction. -}
-module Cubical.Categories.Bicategory.Prestack.Examples.Sets where
-
+module Cubical.Categories.Bicategory.Prestack.Instances.Sets where
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Structure

@@ -50,60 +50,8 @@ module _ {C : Category ℓ ℓ'} (P : Prestack (LocallyDiscrete C) ℓp ℓp') w
     module F = Fibers ∫P
   open PrestackNotation {B = LocallyDiscrete C} P
 
-  -- postcomposing with a fibrewise iso is a bijection on displayed homs
-  private
-    postIso : {Γ : C.ob} {Γᴰ a b : p[ Γ ]} (m : CatIso P⟨ Γ ⟩ a b)
-      → Iso (P⟨ Γ ⟩ [ Γᴰ , a ]) (P⟨ Γ ⟩ [ Γᴰ , b ])
-    postIso m .Iso.fun h = h Pᶜ.⋆ m .fst
-    postIso m .Iso.inv h = h Pᶜ.⋆ m .snd .isIso.inv
-    postIso m .Iso.sec h = Pᶜ.⋆Assoc _ _ _
-      ∙ cong (h Pᶜ.⋆_) (m .snd .isIso.sec) ∙ Pᶜ.⋆IdR h
-    postIso m .Iso.ret h = Pᶜ.⋆Assoc _ _ _
-      ∙ cong (h Pᶜ.⋆_) (m .snd .isIso.ret) ∙ Pᶜ.⋆IdR h
-
-  -- `∫Pre P` is always a fibration: the lift of `f` at `yᴰ` is `f ⋆ᴾ yᴰ`
-  module _ {x y : C.ob} (f : C [ x , y ]) (yᴰ : p[ y ]) where
-    private
-      Q : Presheafⱽ y ∫P ℓp'
-      Q = ∫P [-][-, yᴰ ]
-      module Q = PresheafᴰNotation ∫P (C [-, y ]) Q
-
-      Spec : Presheafⱽ x ∫P ℓp'
-      Spec = CartesianLiftPshSpec (C [-, y ]) ∫P Q f
-      module Spec = PresheafᴰNotation ∫P (C [-, x ]) Spec
-
-      ε : ∫P.Hom[ f ][ f ⋆ᴾ yᴰ , yᴰ ]
-      ε = Pᶜ.id
-
-      elem : Spec.p[ C.id ][ f ⋆ᴾ yᴰ ]
-      elem = F.reind (sym (C.⋆IdL f)) ε
-
-      key : (Γ : C.ob) (Γᴰ : p[ Γ ]) (g : C [ Γ , x ])
-        (gᴰ : ∫P.Hom[ g ][ Γᴰ , f ⋆ᴾ yᴰ ])
-        → yoRecⱽ Spec elem .N-ob (Γ , Γᴰ , g) gᴰ
-          ≡ postIso (⋆ᴾAssoc g f yᴰ) .Iso.fun gᴰ
-      key Γ Γᴰ g gᴰ = F.rectify (F.≡out
-          ( (F.≡in (cong (λ e → Q .F-hom (g , gᴰ , e) elem)
-                     (C.isSetHom _ _ _ (cong (g C.⋆_) (C.⋆IdL f)))))
-          ∙ Q.⋆ᴰ-reind gᴰ (cong (g C.⋆_) (C.⋆IdL f)) elem
-          ∙ F.reind-filler⁻ refl
-          ∙ F.⟨ refl ⟩⋆⟨ F.reind-filler⁻ (sym (C.⋆IdL f)) ⟩))
-        ∙ cong (gᴰ Pᶜ.⋆_)
-            (cong (Pᶜ._⋆ ⋆ᴾAssoc g f yᴰ .fst) (reind g .F-id)
-             ∙ Pᶜ.⋆IdL _)
-
-    ∫PreCartesianLift : CartesianLift ∫P f yᴰ
-    ∫PreCartesianLift = REPRⱽ lift'
-      where
-      lift' : UniversalElementⱽ' ∫P x Spec
-      lift' .vertexⱽ = f ⋆ᴾ yᴰ
-      lift' .elementⱽ = elem
-      lift' .universalⱽ (Γ , Γᴰ , g) =
-        subst isIsoFun (sym (funExt (key Γ Γᴰ g)))
-          (IsoToIsIso (postIso (⋆ᴾAssoc g f yᴰ)))
-
-  ∫PreFibration : isFibration ∫P
-  ∫PreFibration yᴰ _ f = ∫PreCartesianLift f yᴰ
+  -- `∫Pre P` is a fibration for any prestack; see
+  -- `Prestack.Grothendieck.∫PreFibration`.
 
   -- fibrewise terminal objects, preserved by reindexing
   module _ (term : (x : C.ob) → Terminal P⟨ x ⟩)
@@ -182,6 +130,12 @@ module _ {C : Category ℓ ℓ'} (P : Prestack (LocallyDiscrete C) ℓp ℓp') w
         subst isIsoFun (sym (funExt (key Γ Γᴰ g)))
           (isEquivToIsIso _ (presBP g aᴰ bᴰ Γᴰ))
 
+  -- REVIEW how does this relate instead to a pseudofunctor
+  -- into cartesian categories? That would be a nice presentation/equivalence to
+  -- show
+  -- Same for any of these structures. Whenever we can show that something is a
+  -- (pseudo)functor into a nice structured (bi)category, that's a good thing
+
   -- the whole vertical cartesian structure at once
   ∫PreCartesianCategoryⱽ :
     (term : (x : C.ob) → Terminal P⟨ x ⟩)
@@ -193,4 +147,4 @@ module _ {C : Category ℓ ℓ'} (P : Prestack (LocallyDiscrete C) ℓp ℓp') w
     → CartesianCategoryⱽ C ℓp ℓp'
   ∫PreCartesianCategoryⱽ term presTerm bp presBP = cartesiancategoryⱽ
     ∫P (∫PreTerminalsⱽ term presTerm) (∫PreBinProductsⱽ bp presBP)
-    ∫PreFibration
+    (∫PreFibration P)
