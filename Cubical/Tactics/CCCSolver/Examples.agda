@@ -36,35 +36,55 @@ private
 -- Solved by the macro
 --------------------------------------------------------------------
 
-module _ (𝕊 : SolvableCCC ℓD ℓD') where
-  private
-    module 𝓓 = CartesianClosedCategory (SolvableCCC.ccc 𝕊)
+module Examples (𝕊 : SolvableCCC ℓD ℓD') where
+  open CartesianClosedCategory (SolvableCCC.ccc 𝕊)
 
-  module _ (a : 𝓓.ob) (f : 𝓓.Hom[ a , a ]) where
-    ⇒η : 𝓓.lda {c = a} {d = a} (𝓓.app {c = a} {d = a}) ≡ 𝓓.id
-    ⇒η = solveCCC! 𝕊
+  -- product beta
+  _ : ∀ {a b} {f : Hom[ a , b ]} → (f ,p id) ⋆ π₁ ≡ f
+  _ = solveCCC! 𝕊
 
-    ×η : 𝓓._,p_ {a = a} {b = a} 𝓓.π₁ 𝓓.π₂ ≡ 𝓓.id
-    ×η = solveCCC! 𝕊
+  -- product eta
+  _ : ∀ {a b} → (π₁ ,p π₂) ≡ id {x = a × b}
+  _ = solveCCC! 𝕊
 
-    ×β : 𝓓._,p_ {a = a} {b = a} f 𝓓.id 𝓓.⋆ 𝓓.π₁ ≡ f
-    ×β = solveCCC! 𝕊
+  -- exponential eta
+  _ : ∀ {a b} → lda app ≡ id {x = a ⇒ b}
+  _ = solveCCC! 𝕊
 
-    swap𝓓 : 𝓓.Hom[ a 𝓓.× a , a 𝓓.× a ]
-    swap𝓓 = 𝓓._,p_ {a = a} {b = a} 𝓓.π₂ 𝓓.π₁
+  -- the swap is an involution
+  _ : ∀ {a} → (π₂ ,p π₁) ⋆ (π₂ ,p π₁) ≡ id {x = a × a}
+  _ = solveCCC! 𝕊
 
-    swap-invol : swap𝓓 𝓓.⋆ swap𝓓 ≡ 𝓓.id
-    swap-invol = solveCCC! 𝕊
+  -- a nest of identities, in the spirit of the category solver
+  _ : ∀ {a b} {f : Hom[ a , b ]}
+    → id ⋆ ((id ⋆ id ⋆ f) ⋆ id) ≡ (id ⋆ id) ⋆ (id ⋆ f)
+  _ = solveCCC! 𝕊
 
-    -- used inside an `≡⟨ ⟩` chain, exactly as `solveCat!` is
-    swap³ : (swap𝓓 𝓓.⋆ swap𝓓) 𝓓.⋆ swap𝓓 ≡ swap𝓓
-    swap³ =
-      (swap𝓓 𝓓.⋆ swap𝓓) 𝓓.⋆ swap𝓓
-        ≡⟨ solveCCC! 𝕊 ⟩
-      𝓓.id 𝓓.⋆ swap𝓓
-        ≡⟨ 𝓓.⋆IdL swap𝓓 ⟩
-      swap𝓓 ∎
+  -- pairing commutes past the swap
+  _ : ∀ {a b c} {f : Hom[ c , a ]} {g : Hom[ c , b ]}
+    → (f ,p g) ⋆ (π₂ ,p π₁) ≡ (g ,p f)
+  _ = solveCCC! 𝕊
 
+  -- pair, swap twice, project: the swaps cancel
+  _ : ∀ {a b} {h : Hom[ a , b ]}
+    → (id ,p h) ⋆ ((π₂ ,p π₁) ⋆ ((π₂ ,p π₁) ⋆ π₁)) ≡ (id ,p h) ⋆ π₁
+  _ = solveCCC! 𝕊
+
+  -- BETA THROUGH AN EXPONENTIAL: abstract `f` over the terminal
+  -- object, weaken it back along `!t`, and apply it to the argument
+  _ : ∀ {a b} {f : Hom[ a , b ]}
+    → ((!t ⋆ lda (π₂ ⋆ f)) ,p id) ⋆ app ≡ f
+  _ = solveCCC! 𝕊
+
+  -- UNDER A BINDER: the constant function `lda π₁`, applied to
+  -- anything, is the identity
+  _ : ∀ {a b} {g : Hom[ a , b ]} → (lda π₁ ,p g) ⋆ app ≡ id
+  _ = solveCCC! 𝕊
+
+  -- UNDER TWO BINDERS: `K = \x. \y. x`, applied twice, likewise
+  _ : ∀ {a b} {g : Hom[ a , b ]}
+    → (((lda (lda (π₁ ⋆ π₁)) ,p g) ⋆ app) ,p g) ⋆ app ≡ id
+  _ = solveCCC! 𝕊
 
 --------------------------------------------------------------------
 -- Solved by calling the solver by hand.
