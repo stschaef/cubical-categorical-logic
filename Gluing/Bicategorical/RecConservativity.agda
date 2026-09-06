@@ -65,76 +65,6 @@ open UniversalElement
 open CartesianCategory using (C; term; bp)
 open CartesianClosedCategory using (CC; exps)
 
--- Pullbacks of presheaves are pointwise.  The generic Artin
--- exponential needs them; `SET`'s are already in the library.
-module _ (B : Category ℓC ℓC') (ℓP : Level) where
-  private
-    module _ {L M R : Presheaf B ℓP}
-      (f : PshHomStrict L M) (g : PshHomStrict R M) where
-      private
-        module L = PresheafNotation L
-        module M = PresheafNotation M
-        module R = PresheafNotation R
-
-      carrier : Presheaf B ℓP
-      carrier .F-ob c =
-        (Σ[ p ∈ L.p[ c ] × R.p[ c ] ]
-           f .N-ob c (p .fst) ≡ g .N-ob c (p .snd))
-        , isSetΣ (isSet× L.isSetPsh R.isSetPsh)
-            (λ _ → isProp→isSet (M.isSetPsh _ _))
-      carrier .F-hom h (p , e) =
-        ((h L.⋆ p .fst) , (h R.⋆ p .snd))
-        , sym (f .N-hom _ _ h (p .fst) _ refl)
-          ∙ cong (h M.⋆_) e
-          ∙ g .N-hom _ _ h (p .snd) _ refl
-      carrier .F-id = funExt λ p →
-        Σ≡Prop (λ _ → M.isSetPsh _ _)
-          (ΣPathP (L.⋆IdL (p .fst .fst) , R.⋆IdL (p .fst .snd)))
-      carrier .F-seq h h' = funExt λ p →
-        Σ≡Prop (λ _ → M.isSetPsh _ _)
-          (ΣPathP ( L.⋆Assoc h' h (p .fst .fst)
-                  , R.⋆Assoc h' h (p .fst .snd)))
-
-      pj : PshHomStrict carrier M
-      pj .N-ob c p = f .N-ob c (p .fst .fst)
-      pj .N-hom c c' h p' p e =
-        f .N-hom c c' h _ _ (cong (λ z → z .fst .fst) e)
-
-      pr₁ : PshHomStrict carrier L
-      pr₁ .N-ob c p = p .fst .fst
-      pr₁ .N-hom c c' h p' p e = cong (λ z → z .fst .fst) e
-
-      pr₂ : PshHomStrict carrier R
-      pr₂ .N-ob c p = p .fst .snd
-      pr₂ .N-hom c c' h p' p e = cong (λ z → z .fst .snd) e
-
-      pshPullback : Pullback (PRESHEAF B ℓP) f g
-      pshPullback .vertex = carrier , pj
-      pshPullback .element =
-        (pr₁ , makePshHomStrictPath refl)
-        , (pr₂ , makePshHomStrictPath (funExt₂ λ c p → sym (p .snd)))
-      pshPullback .universal (U , h) = isIsoToIsEquiv
-        ( (λ x →
-             pshhom
-               (λ c z →
-                 ( x .fst .fst .N-ob c z , x .snd .fst .N-ob c z)
-                 , (λ i → x .fst .snd i .N-ob c z)
-                   ∙ (λ i → x .snd .snd (~ i) .N-ob c z))
-               (λ c c' m z' z e → Σ≡Prop (λ _ → M.isSetPsh _ _)
-                 (ΣPathP ( x .fst .fst .N-hom c c' m z' z e
-                         , x .snd .fst .N-hom c c' m z' z e)))
-           , makePshHomStrictPath refl ∙ x .fst .snd)
-        , (λ x → ΣPathP
-            ( Σ≡Prop (λ _ → isSetPshHomStrict _ _ _ _)
-                (makePshHomStrictPath refl)
-            , Σ≡Prop (λ _ → isSetPshHomStrict _ _ _ _)
-                (makePshHomStrictPath refl)))
-        , (λ k → Σ≡Prop (λ _ → isSetPshHomStrict _ _ _ _)
-            (makePshHomStrictPath (funExt₂ λ c z →
-              Σ≡Prop (λ _ → M.isSetPsh _ _) refl))))
-
-  PSHPullbacks : Pullbacks (PRESHEAF B ℓP)
-  PSHPullbacks f g = pshPullback f g
 
 module _ (Q : Quiver ℓQ ℓQ') where
   private
@@ -179,12 +109,13 @@ module _ (Q : Quiver ℓQ ℓQ') where
   -- the glue is the comma category `PSH ↓ nerve`, cartesian closed by
   -- the generic construction, whose carrier is a presheaf pullback
   GLUE : CartesianClosedCategory _ _
-  GLUE .CC .C = Artin.GlCCC FREECCC PSH nerve (PSHPullbacks FREE ℓ) nerve-bp
+  GLUE .CC .C =
+    Artin.GlCCC FREECCC PSH nerve (Artin.PSHPullbacks FREE ℓ) nerve-bp
   GLUE .CC .term = Artin.glueTerminal' nerve FREECCC.term
   GLUE .CC .bp =
-    Artin.bpGlCCC FREECCC PSH nerve (PSHPullbacks FREE ℓ) nerve-bp
+    Artin.bpGlCCC FREECCC PSH nerve (Artin.PSHPullbacks FREE ℓ) nerve-bp
   GLUE .exps =
-    Artin.glueExponentials' FREECCC PSH nerve (PSHPullbacks FREE ℓ)
+    Artin.glueExponentials' FREECCC PSH nerve (Artin.PSHPullbacks FREE ℓ)
       nerve-bp
 
   private module GLUE = CartesianClosedCategory GLUE
