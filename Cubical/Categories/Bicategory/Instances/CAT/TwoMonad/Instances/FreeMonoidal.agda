@@ -8,7 +8,7 @@
   equation between such cells is `uniq₂`, so it is checked only at
   `↑`, where all the components are identities.
 -}
-module Cubical.Categories.Bicategory.Instances.CAT.TwoMonads.FreeMonoidal
+module Cubical.Categories.Bicategory.Instances.CAT.TwoMonad.Instances.FreeMonoidal
   where
 
 open import Cubical.Foundations.Prelude

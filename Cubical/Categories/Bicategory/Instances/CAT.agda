@@ -10,11 +10,11 @@ open import Cubical.Categories.Instances.Terminal
 
 open import Cubical.Categories.Bicategory.Base
 open import Cubical.Categories.Bicategory.Instances.CAT.Base public
-open import Cubical.Categories.Bicategory.Instances.CAT.LeftUnitor public
-open import Cubical.Categories.Bicategory.Instances.CAT.RightUnitor public
-open import Cubical.Categories.Bicategory.Instances.CAT.Associator public
-open import Cubical.Categories.Bicategory.Instances.CAT.Triangle public
-open import Cubical.Categories.Bicategory.Instances.CAT.Pentagon public
+open import Cubical.Categories.Bicategory.Instances.CAT.Coherence.LeftUnitor public
+open import Cubical.Categories.Bicategory.Instances.CAT.Coherence.RightUnitor public
+open import Cubical.Categories.Bicategory.Instances.CAT.Coherence.Associator public
+open import Cubical.Categories.Bicategory.Instances.CAT.Coherence.Triangle public
+open import Cubical.Categories.Bicategory.Instances.CAT.Coherence.Pentagon public
 
 private
   variable

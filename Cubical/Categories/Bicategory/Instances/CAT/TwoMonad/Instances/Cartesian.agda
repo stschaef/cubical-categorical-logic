@@ -8,7 +8,7 @@
   and comparisons are identities, and the two sides differ only in how
   they are bracketed.
 -}
-module Cubical.Categories.Bicategory.Instances.CAT.TwoMonads.Cartesian
+module Cubical.Categories.Bicategory.Instances.CAT.TwoMonad.Instances.Cartesian
   where
 
 open import Cubical.Foundations.Prelude

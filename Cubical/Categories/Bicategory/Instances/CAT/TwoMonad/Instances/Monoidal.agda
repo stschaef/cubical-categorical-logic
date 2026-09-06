@@ -9,7 +9,7 @@
   is not wanted here: it is exactly what would turn the three laws
   into transport squares.  See `Monoidal.Strict.Forded`.
 -}
-module Cubical.Categories.Bicategory.Instances.CAT.TwoMonads.Monoidal where
+module Cubical.Categories.Bicategory.Instances.CAT.TwoMonad.Instances.Monoidal where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Data.Sigma

@@ -1,5 +1,9 @@
 -- A 1-category as a bicategory with only identity 2-cells.
 module Cubical.Categories.Bicategory.Instances.LocallyDiscrete where
+-- REVIEW
+-- Also try a version of this with Eq rather than Path
+-- Put this in Instances.LocallyDiscrete.Base
+-- Put the path one in Instances.LocallyDiscrete.Eq
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.HLevels

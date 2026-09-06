@@ -9,7 +9,7 @@
   must preserve the finite coproducts, since maps out of a coproduct
   are what get determined.
 -}
-module Cubical.Categories.Bicategory.Instances.CAT.TwoMonads.Cocartesian
+module Cubical.Categories.Bicategory.Instances.CAT.TwoMonad.Instances.Cocartesian
   where
 
 open import Cubical.Foundations.Prelude

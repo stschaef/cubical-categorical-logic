@@ -17,8 +17,6 @@ open NatTrans
 open NatIso
 open isIso
 
--- `UnitCategory` has `Hom[_,_] = Unit*`, so every unit and
--- associativity equation below is `refl`.
 module _ (ℓ ℓ' ℓ'' : Level) where
 
   TerminalBicategory : Bicategory ℓ ℓ' ℓ''

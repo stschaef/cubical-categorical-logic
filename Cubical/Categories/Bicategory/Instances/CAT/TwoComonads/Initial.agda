@@ -3,7 +3,7 @@
   The initial 2-comonad on CAT: `T C` is the empty category.  An
   initial 0-cell of CAT is a terminal 0-cell of `CAT ^opᴮ`, and
   `TwoComonad K = TwoMonad (K ^opᴮ)`, so this is the constant 2-monad
-  of `Limits.Terminal.TwoMonad` at that vertex.  The terminal 2-monad
+  of `TwoMonad.Constant` at that vertex.  The terminal 2-monad
   itself does *not* dualise: a counit would need `𝟙 → X`.
 -}
 module Cubical.Categories.Bicategory.Instances.CAT.TwoComonads.Initial where
@@ -25,7 +25,7 @@ open import Cubical.Categories.Bicategory.Constructions.Op
 open import Cubical.Categories.Bicategory.Prestack.Base
 open import Cubical.Categories.Bicategory.Universal.Base
 open import Cubical.Categories.Bicategory.Limits.Terminal
-open import Cubical.Categories.Bicategory.Limits.Terminal.TwoMonad
+open import Cubical.Categories.Bicategory.TwoMonad.Constant
 open import Cubical.Categories.Bicategory.TwoMonad.Base
 open import Cubical.Categories.Bicategory.TwoComonad
 

@@ -5,7 +5,7 @@
   Terminality makes `Hom[ x , t ]` locally contractible, so every
   2-cell in sight is `!₂` and every law is `isProp2`.
 -}
-module Cubical.Categories.Bicategory.Limits.Terminal.TwoMonad where
+module Cubical.Categories.Bicategory.TwoMonad.Constant where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.HLevels

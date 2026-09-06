@@ -3,11 +3,7 @@
   The terminal 2-monad on CAT: the constant 2-monad at CAT's terminal
   0-cell, so `T C` is the unit category.
 -}
--- REVIEW
--- move into TwoMonad.Terminal
--- or move into TwoMonad.Constant
--- Rename the Instances.CAT.TwoMonads directory to Instances.CAT.TwoMonad.Instances
-module Cubical.Categories.Bicategory.Instances.CAT.TwoMonads where
+module Cubical.Categories.Bicategory.Instances.CAT.TwoMonad.Terminal where
 
 open import Cubical.Foundations.Prelude
 
@@ -20,7 +16,7 @@ open import Cubical.Categories.Bicategory.Instances.CAT.Limits.Terminal
 open import Cubical.Categories.Bicategory.Instances.CAT.Limits.Product
 open import Cubical.Categories.Bicategory.Instances.CAT.Limits.PIE
 open import Cubical.Categories.Bicategory.Functor.Pseudo
-open import Cubical.Categories.Bicategory.Limits.Terminal.TwoMonad
+open import Cubical.Categories.Bicategory.TwoMonad.Constant
 open import Cubical.Categories.Bicategory.TwoMonad.Base
 
 private

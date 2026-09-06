@@ -14,7 +14,7 @@
   is strictly functorial on 0- and 1-cells, and only the (invisible)
   functor laws differ, exactly as in `TwoMonads.Monoidal`.
 -}
-module Cubical.Categories.Bicategory.Instances.CAT.TwoMonads.Reader where
+module Cubical.Categories.Bicategory.Instances.CAT.TwoMonad.Instances.Reader where
 
 open import Cubical.Foundations.Prelude
 
