@@ -244,7 +244,6 @@ module _ {C : Category ℓ ℓ'} (P : Prestack (LocallyDiscrete C) ℓp ℓp')
     private
       Q : Presheafⱽ y ∫P ℓp'
       Q = ∫P [-][-, yᴰ ]
-      module Q = PresheafᴰNotation ∫P (C [-, y ]) Q
 
       Spec : Presheafⱽ x ∫P ℓp'
       Spec = CartesianLiftPshSpec (C [-, y ]) ∫P Q f
@@ -260,11 +259,10 @@ module _ {C : Category ℓ ℓ'} (P : Prestack (LocallyDiscrete C) ℓp ℓp')
         (gᴰ : ∫P.Hom[ g ][ Γᴰ , f ⋆ᴾ yᴰ ])
         → yoRecⱽ Spec elem .N-ob (Γ , Γᴰ , g) gᴰ
           ≡ postIso (⋆ᴾAssoc g f yᴰ) .Iso.fun gᴰ
+      -- `Spec`'s action is the hom-presheaf's `reind`; strip it, then
+      -- replace `elem` by `ε` using `θPathP`
       key Γ Γᴰ g gᴰ = F.rectify (F.≡out
-          ( (F.≡in (cong (λ e → Q .F-hom (g , gᴰ , e) elem)
-                     (C.isSetHom _ _ _ (cong (g C.⋆_) (C.⋆IdL f)))))
-          ∙ Q.⋆ᴰ-reind gᴰ (cong (g C.⋆_) (C.⋆IdL f)) elem
-          ∙ F.reind-filler⁻ refl
+          ( F.reind-filler⁻ _
           ∙ F.⟨ refl ⟩⋆⟨ sym (F.≡in (θPathP (sym (C.⋆IdL f)) yᴰ)) ⟩))
         ∙ cong (gᴰ Pᶜ.⋆_)
             (cong (Pᶜ._⋆ ⋆ᴾAssoc g f yᴰ .fst) (reind g .F-id)
@@ -276,9 +274,13 @@ module _ {C : Category ℓ ℓ'} (P : Prestack (LocallyDiscrete C) ℓp ℓp')
       lift' : UniversalElementⱽ' ∫P x Spec
       lift' .vertexⱽ = f ⋆ᴾ yᴰ
       lift' .elementⱽ = elem
-      lift' .universalⱽ (Γ , Γᴰ , g) =
-        subst isIsoFun (sym (funExt (key Γ Γᴰ g)))
-          (IsoToIsIso (postIso (⋆ᴾAssoc g f yᴰ)))
+      lift' .universalⱽ (Γ , Γᴰ , g) .fst =
+        postIso (⋆ᴾAssoc g f yᴰ) .Iso.inv
+      lift' .universalⱽ (Γ , Γᴰ , g) .snd .fst b =
+        key Γ Γᴰ g _ ∙ postIso (⋆ᴾAssoc g f yᴰ) .Iso.sec b
+      lift' .universalⱽ (Γ , Γᴰ , g) .snd .snd a =
+        cong (postIso (⋆ᴾAssoc g f yᴰ) .Iso.inv) (key Γ Γᴰ g a)
+        ∙ postIso (⋆ᴾAssoc g f yᴰ) .Iso.ret a
 
   ∫PreFibration : isFibration ∫P
   ∫PreFibration yᴰ _ f = ∫PreCartesianLift f yᴰ
