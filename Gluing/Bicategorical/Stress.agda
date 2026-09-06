@@ -15,44 +15,51 @@
   and it is what the import graph alone costs.  MUT/GC/res are the
   GHC runtime's mutator time, collector time and peak residency.
 
-  Every row is a STRUCTURAL check, `nf f ≡ literal`, except the one
-  row marked `size`; see the paragraph below for what that is and
-  why it is weaker.
+  EVERY check here and in the file is STRUCTURAL: a computed normal
+  form against a written-out literal, `nf e ≡ nfCh k`, closed by
+  `refl`.  Nothing is certified by a size comparison; a size
+  equality is not the theorem, since two distinct normal forms can
+  have the same size.  Comparing two COMPUTED normal forms to each
+  other is the thing that diverges, which is also why `solveCCC!`
+  is not used here -- the literal is always on one side.
 
-    check                          wall     MUT     GC    max res
-    base (imports only)             4.0s    3.0s   0.7s    0.6 GB
-    numerals c0 c3 c5               4.3s      --     --        --
-    add 2 3 = 5                     4.6s      --     --        --
-    mul 2 3 = 6                     4.7s      --     --        --
-    twice ⋆ twice = four            4.6s      --     --        --
-    c 1597                          5.7s    3.9s   1.5s    0.8 GB
-    add 800 797 = 1597              5.5s    3.9s   1.5s    0.8 GB
-    mul 40 40 = 1600                5.6s    4.0s   1.5s    0.8 GB
-    swap-iterate 17 at N × N        3.9s    3.1s   0.7s    0.6 GB
-    fib 10 = 55                     5.1s      --     --        --
-    fib 12 = 144                    5.8s    3.5s   1.8s    1.5 GB
-    fib 14 = 377                    7.1s    4.1s   2.8s    1.5 GB
-    fib 15 = 610                   11.8s    5.5s   5.1s    2.9 GB
-    fib 15, size only     (size)    9.6s    5.0s   4.0s    2.7 GB
-    fib 16 = 987                   27.5s   10.6s  10.7s    5.7 GB
-    fib 17 = 1597                  32.1s   12.1s  12.9s    5.6 GB
-    fib 18 = 2584                 111.7s      --     --        --
-    fib 19 = 4181                 >600s (killed)
+    check                     struct    wall     MUT     GC  max res
+    base (imports only)          --     4.0s    3.0s   0.7s   0.6 GB
+    numerals c0 c3 c5           yes     4.3s      --     --       --
+    add 2 3 = 5                 yes     4.6s      --     --       --
+    mul 2 3 = 6                 yes     4.7s      --     --       --
+    twice ⋆ twice = four        yes     4.6s      --     --       --
+    c 1597                      yes     5.7s    3.9s   1.5s   0.8 GB
+    add 800 797 = 1597          yes     5.5s    3.9s   1.5s   0.8 GB
+    mul 40 40 = 1600            yes     5.6s    4.0s   1.5s   0.8 GB
+    swap-iterate 17 at N × N    yes     3.9s    3.1s   0.7s   0.6 GB
+    fib 10 = 55                 yes     5.1s      --     --       --
+    fib 12 = 144                yes     5.8s    3.5s   1.8s   1.5 GB
+    fib 14 = 377                yes     7.1s    4.1s   2.8s   1.5 GB
+    fib 15 = 610                yes    11.8s    5.5s   5.1s   2.9 GB
+    fib 16 = 987                yes    27.5s   10.6s  10.7s   5.7 GB
+    fib 17 = 1597               yes    32.1s   12.1s  12.9s   5.6 GB
+    fib 18 = 2584               yes   111.7s      --     --       --
+    fib 19 = 4181               yes   >600s, killed
 
-  WHAT IS SLOW.  Not the conversion checker.  The instrument is a
-  size comparison: `sizeNf (nf (fib 15)) ≡ sizeNf (nfCh 610)` forces
-  exactly the same normal form but then compares two natural
-  numbers instead of two type-indexed trees.  Its mutator time is
-  unchanged, 5.0s against 5.5s, so the tree comparison contributes
-  nothing and all of the cost is evaluating `normalize`.
+  WHAT IS IN THE FILE.  Rungs up to and including `fib 14`.  `fib
+  16` is under the 30s cap but its 23.5s over base would roughly
+  double `make check`, and its 5.7 GB peak is hostile to a parallel
+  build, so it is recorded and not kept.  `fib 17` at 32.1s is over
+  the cap.  `fib 18` and `fib 19` are far over.  None of these is
+  softened to a size check to get it back in: a rung that is
+  honestly missing beats one that looks verified and is not.
 
-  A size comparison is STRICTLY WEAKER than structural equality --
-  distinct normal forms can have the same size -- so it is used only
-  as an instrument and never as the statement of an arithmetic fact.
-  Every arithmetic claim in the table and in this file is checked
-  structurally.
+  WHAT IS SLOW.  Not the conversion checker.  The instrument for
+  that was a size comparison, `sizeNf (nf (fib 15)) ≡ sizeNf (nfCh
+  610)`: it forces exactly the same normal form but then compares
+  two natural numbers instead of two type-indexed trees.  Its
+  mutator time was 5.0s against the structural check's 5.5s, so
+  comparing the trees contributes nothing and all of the cost is
+  evaluating `normalize`.  That instrument was measured and removed;
+  it proves nothing about arithmetic and is not left behind.
 
-  Nor is it the size of the ANSWER, and nor is it the depth of
+  Nor is the cost the size of the ANSWER, and nor is it the depth of
   `reify`: a numeral with 1597 applications costs 1.4s over base
   whether it is written out, added or multiplied, and iterating a
   non-growing function 17 times at the pair type `N × N` -- which
@@ -67,11 +74,6 @@
   definition reduces and the mutator time itself grows about
   linearly in the node count -- the normalizer is retaining a
   megabyte of glue per node it emits.
-
-  Only the checks that run in about a second over base are kept
-  below -- `fib 10` is the last rung in the file -- since this file
-  is rebuilt by every `make check`.  Everything from `fib 12` up was
-  measured and removed.
 -}
 module Gluing.Bicategorical.Stress where
 
@@ -255,6 +257,16 @@ private
   _ : nf (fib 10) ≡ nfCh 55
   _ = refl
 
+  _ : nf (fib 12) ≡ nfCh 144
+  _ = refl
+
+  _ : nf (fib 14) ≡ nfCh 377
+  _ = refl
+
+  -- `fib 14` is the last rung kept.  `fib 15` (11.8s, 2.9 GB) is
+  -- under the 30s cap but adds ~8s to every `make check`; from here
+  -- up the table in the header is the record.
+
 --------------------------------------------------------------------
 -- Iterating a NON-growing function at the same pair type, to show
 -- that the depth of `reify` is not what costs: seventeen swaps are
@@ -267,30 +279,4 @@ private
     pv = 𝒞.π₂
 
   _ : nf ((Num.ch P 17 ·ₐ swapP ·ₐ start) 𝒞.⋆ 𝒞.π₁) ≡ nfCh 1
-  _ = refl
-
---------------------------------------------------------------------
--- The size of a normal form, used to separate the normalizer from
--- the conversion checker: `sizeNf (nf f) ≡ sizeNf lit` forces the
--- whole normal form but compares two numerals, not two indexed
--- trees, and costs the same.
---------------------------------------------------------------------
-
-  sizeNe : {Γ : Ctx} {A : Ty} → Ne Γ A → ℕ
-  sizeNf : {Γ : Ctx} {A : Ty} → Nf Γ A → ℕ
-
-  sizeNe (var _) = 1
-  sizeNe (appₙ n m) = suc (sizeNe n + sizeNf m)
-  sizeNe (π₁ₙ n) = suc (sizeNe n)
-  sizeNe (π₂ₙ n) = suc (sizeNe n)
-  sizeNe (genₙ _ m) = suc (sizeNf m)
-
-  sizeNf (ne n) = sizeNe n
-  sizeNf ttₙ = 1
-  sizeNf (pairₙ m₁ m₂) = suc (sizeNf m₁ + sizeNf m₂)
-  sizeNf (lamₙ m) = suc (sizeNf m)
-
-  -- WEAKER than the structural check of `fib 10` above, which is
-  -- what actually certifies the arithmetic; this one only measures.
-  _ : sizeNf (nf (fib 10)) ≡ sizeNf (nfCh 55)
   _ = refl
