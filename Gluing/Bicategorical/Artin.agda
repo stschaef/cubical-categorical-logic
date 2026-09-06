@@ -119,6 +119,32 @@ module _ {ℓB ℓB' : Level} (B : Category ℓB ℓB') (ℓP : Level) where
   PSHPullbacks : Pullbacks (PRESHEAF B ℓP)
   PSHPullbacks f g = pshPullback f g
 
+-- `PullbackNotation.pbIntro` is `opaque`, so a morphism built with it
+-- is stuck: no amount of evaluation reveals its components.  The
+-- glued exponential below is built by a pullback introduction, so it
+-- would never compute.  This is the same definition, transparently;
+-- only the laws stay opaque, and those are paths in a set.
+module PbIntro {ℓB ℓB' : Level} {B : Category ℓB ℓB'}
+  {l m r : B .ob} {f : B [ l , m ]} {g : B [ r , m ]}
+  (pb : Pullback B f g) where
+  private
+    module B = Category B
+    module bp = BinProductNotation pb
+    module pbn = PullbackNotation pb
+
+  intro : ∀ {Γ} (f' : B [ Γ , l ]) (g' : B [ Γ , r ])
+    → f' B.⋆ f ≡ g' B.⋆ g → B [ Γ , pbn.vert ]
+  intro f' g' e = ((f' , e) bp.,p (g' , refl)) .fst
+
+  opaque
+    β₁ : ∀ {Γ} {f' : B [ Γ , l ]} {g' : B [ Γ , r ]}
+      {e : f' B.⋆ f ≡ g' B.⋆ g} → intro f' g' e B.⋆ pbn.pbπ₁ ≡ f'
+    β₁ = cong fst bp.×β₁
+
+    β₂ : ∀ {Γ} {f' : B [ Γ , l ]} {g' : B [ Γ , r ]}
+      {e : f' B.⋆ f ≡ g' B.⋆ g} → intro f' g' e B.⋆ pbn.pbπ₂ ≡ g'
+    β₂ = cong fst bp.×β₂
+
 module _ {ℓC ℓC' ℓD ℓD' : Level}
   {C : Category ℓC ℓC'} {D : Category ℓD ℓD'} (F : Functor C D) where
   private
@@ -587,6 +613,7 @@ module _ {ℓC ℓC' ℓD ℓD' : Level}
        𝒟.⋆ F ⟪ 𝒞.app {c = X} {d = Y} ⟫)
 
     module Ep = PullbackNotation (pbD φ ψ)
+    module EpI = PbIntro (pbD φ ψ)
 
     expOb : GlCCC.ob
     expOb = (Ep.vert , W) , Ep.pbπ₂
@@ -693,9 +720,10 @@ module _ {ℓC ℓC' ℓD ℓD' : Level}
 
         ldaGl : GlCCC [ w , expOb ]
         ldaGl =
-          ( Ep.pbIntro (𝒟.lda {c = A} {d = B} mD) (δ 𝒟.⋆ F ⟪ nC ⟫) agree
+          ( EpI.intro (𝒟.lda {c = A} {d = B} mD)
+              (δ 𝒟.⋆ F ⟪ nC ⟫) agree
           , nC )
-          , sym Ep.pbβ₂
+          , sym EpI.β₂
 
       πw : GlCCC [ bpGlCCC (w , u) .vertex , w ]
       πw = ×GlCCC.π₁ {a = w} {b = u}
@@ -733,7 +761,7 @@ module _ {ℓC ℓC' ℓD ℓD' : Level}
         (ΣPathP
           ( cong (𝒟._⋆ appD) (pullD (ldaGl m))
             ∙ sym (ExpD.appOfSeq _ Ep.pbπ₁)
-            ∙ cong ExpD.appOf Ep.pbβ₁
+            ∙ cong ExpD.appOf EpI.β₁
             ∙ ExpD.ldaβ (m .fst .fst)
           , cong (𝒞._⋆ 𝒞.app {c = X} {d = Y}) (pullC (ldaGl m))
             ∙ ExpC.ldaβ (m .fst .snd)))
@@ -748,12 +776,12 @@ module _ {ℓC ℓC' ℓD ℓD' : Level}
 
         dPart : ldaGl (pull l GlCCC.⋆ appGl) .fst .fst ≡ l .fst .fst
         dPart = Ep.pbExtensionality
-          ( Ep.pbβ₁
+          ( EpI.β₁
           ∙ cong (𝒟.lda {c = A} {d = B})
               ( cong (𝒟._⋆ appD) (pullD l)
               ∙ sym (ExpD.appOfSeq (l .fst .fst) Ep.pbπ₁))
           ∙ ExpD.ldaExt (ExpD.ldaβ _))
-          ( Ep.pbβ₂
+          ( EpI.β₂
           ∙ cong (λ z → δ 𝒟.⋆ F ⟪ z ⟫) cPart
           ∙ l .snd)
 

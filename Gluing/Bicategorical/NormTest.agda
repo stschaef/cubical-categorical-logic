@@ -98,21 +98,39 @@ private
   _ : Tob (A ⇒ᵗ A) ≡ A ⇒ᵗ A
   _ = refl
 
-  -- HIGHER ORDER DOES NOT REDUCE, and the obstruction is precise.
-  -- `nfTwice` is well-typed, and `T` computes on objects at every
-  -- type (both probes above are `refl`), but asking for its value
-  -- gets stuck at
-  --
-  --   PullbackNotation.pbIntro (Artin.PSHPullbacks Ren _)
-  --
-  -- The exponential's glue object is a pullback in presheaves, and
-  -- `PSHPullbacks`'s `universal` is given as
-  -- `isIsoToIsEquiv (inv , sec , ret)` fully inlined -- which it has
-  -- to be, since a `where`-block joins the same mutual block and the
-  -- termination checker rejects it.  That packaging is opaque, so
-  -- `pbIntro` never unfolds.
-  --
-  -- In `SET` the Artin exponential's pullback degenerates to a
-  -- Σ-type over a proposition, which does compute; the generic
-  -- construction over an abstract `Pullbacks` does not.  A pointwise
-  -- presheaf pullback with a transparent `pbIntro` should restore it.
+  -- higher order: `twice` normalizes to `\f. \x. f (f x)`
+  _ : nfTwice
+    ≡ lamₙ (ne (appₙ (var (inr (inl refl)))
+             (ne (appₙ (var (inr (inl refl)))
+               (ne (var (inl refl)))))))
+  _ = refl
+
+  -- Church one, at the same type: a DIFFERENT normal form, so the
+  -- check above is discriminating and not vacuous.
+  once : 𝒞.Hom[ A ⇒ᵗ A , A ⇒ᵗ A ]
+  once = 𝒞.lda fx
+
+  nfOnce : Nf (Tob (A ⇒ᵗ A) ∷ []) (Tob (A ⇒ᵗ A))
+  nfOnce = normalize Q isSetOb isSetMor once
+
+  _ : nfOnce
+    ≡ lamₙ (ne (appₙ (var (inr (inl refl))) (ne (var (inl refl)))))
+  _ = refl
+
+  -- a generator under a binder: `\f. g (f x)` -- eta-expanded, so
+  -- the argument is the bound variable
+  gafter : 𝒞.Hom[ A ⇒ᵗ A , A ⇒ᵗ A ]
+  gafter = 𝒞.lda (fx 𝒞.⋆ g)
+
+  _ : normalize Q isSetOb isSetMor gafter
+    ≡ lamₙ (ne (genₙ tt
+        (ne (appₙ (var (inr (inl refl))) (ne (var (inl refl)))))))
+  _ = refl
+
+  -- two nested binders: `K = \x. \y. x`, reaching under both
+  konst : 𝒞.Hom[ A , A ⇒ᵗ (A ⇒ᵗ A) ]
+  konst = 𝒞.lda (𝒞.lda (𝒞.π₁ 𝒞.⋆ 𝒞.π₁))
+
+  _ : normalize Q isSetOb isSetMor konst
+    ≡ lamₙ (lamₙ (ne (var (inr (inr (inl refl))))))
+  _ = refl
