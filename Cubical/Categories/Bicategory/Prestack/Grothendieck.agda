@@ -248,6 +248,9 @@ module _ {C : Category ℓ ℓ'} (P : Prestack (LocallyDiscrete C) ℓp ℓp')
       ε : ∫P.Hom[ f ][ f ⋆ᴾ yᴰ , yᴰ ]
       ε = Pᶜ.id
 
+      -- REVIEW use the prestack's action on homs here, not a subst;
+      -- `elem = θ (sym (C.⋆IdL f)) yᴰ` typechecks, but `key` below is
+      -- written against the subst form and needs rewriting to match
       elem : Spec.p[ C.id ][ f ⋆ᴾ yᴰ ]
       elem = F.reind (sym (C.⋆IdL f)) ε
 
