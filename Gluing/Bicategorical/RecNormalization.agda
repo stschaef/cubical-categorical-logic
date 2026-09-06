@@ -30,6 +30,8 @@ open import Cubical.Data.Sigma
 open import Cubical.Data.Sum
 open import Cubical.Data.List hiding ([_])
 open import Cubical.Data.Unit
+open import Cubical.Data.Empty using (⊥)
+open import Cubical.Relation.Nullary.Base using (¬_)
 
 open import Cubical.Categories.Category renaming (isIso to isIsoC)
 open import Cubical.Categories.Functor
@@ -595,6 +597,55 @@ module _ (Q : Quiver ℓQ ℓQ') (isSetOb : isSet (Q .fst))
     soundnessAll =
       sym (fromPathP nfPath) ∙ cong tp (soundness f) ∙ fromPathP sqPath
 
+  -- CANCELLATION.  `π₂ : ⟦ X ∷ [] ⟧c → X` is a split epi: `⟨ !t , id ⟩`
+  -- is a section of it, by the product beta law.  So it cancels on
+  -- the left, and soundness alone decides equality of morphisms.
+  module _ {X Y : Ty} where
+    private
+      sec₂ : 𝒞.Hom[ X , ⟦ X ∷ [] ⟧c ]
+      sec₂ = 𝒞._,p_ {a = ⊤ᵗ} {b = X} 𝒞.!t 𝒞.id
+
+      sec₂β : sec₂ 𝒞.⋆ 𝒞.π₂ {a = ⊤ᵗ} {b = X} ≡ 𝒞.id
+      sec₂β = 𝒞.×β₂
+
+    π₂-cancel : {f h : 𝒞.Hom[ X , Y ]}
+      → 𝒞.π₂ {a = ⊤ᵗ} {b = X} 𝒞.⋆ f ≡ 𝒞.π₂ {a = ⊤ᵗ} {b = X} 𝒞.⋆ h
+      → f ≡ h
+    π₂-cancel {f} {h} p =
+        sym (𝒞.⋆IdL f)
+      ∙ cong (λ z → z 𝒞.⋆ f) (sym sec₂β)
+      ∙ 𝒞.⋆Assoc _ _ _
+      ∙ cong (λ z → sec₂ 𝒞.⋆ z) p
+      ∙ sym (𝒞.⋆Assoc _ _ _)
+      ∙ cong (λ z → z 𝒞.⋆ h) sec₂β
+      ∙ 𝒞.⋆IdL h
+
+  -- THE SOLVER.  Equal normal forms mean equal morphisms.  `T` is
+  -- faithful because `T-hom` identifies `T ⟪ f ⟫` with `f` over
+  -- `T-ob`, so the equation transports back from `T`'s image.
+  --
+  -- This is stated for `normalize`, not `normalizeAll`: the latter
+  -- transports along `T-ob` in the INDEX of `Nf`, and transport in
+  -- an index does not reduce even when the path is `refl`, so
+  -- `normalizeAll f ≡ normalizeAll h` is never closed by `refl`.
+  module _ {A B : Ty} where
+    private
+      tp : 𝒞.Hom[ T ⟅ A ⟆ , T ⟅ B ⟆ ] → 𝒞.Hom[ A , B ]
+      tp = transport (λ i → 𝒞.Hom[ T-ob A i , T-ob B i ])
+
+    solve : (f h : 𝒞.Hom[ A , B ]) → normalize f ≡ normalize h → f ≡ h
+    solve f h p =
+        sym (fromPathP (T-hom f))
+      ∙ cong tp (π₂-cancel
+          ( sym (soundness f)
+          ∙ cong (⌜_⌝nf {Γ = T ⟅ A ⟆ ∷ []} {A = T ⟅ B ⟆}) p
+          ∙ soundness h))
+      ∙ fromPathP (T-hom h)
+
+    -- COMPLETENESS is free: `normalize` is a function.
+    complete : {f h : 𝒞.Hom[ A , B ]} → f ≡ h → normalize f ≡ normalize h
+    complete = cong (normalize {A} {B})
+
 
 --------------------------------------------------------------------
 -- The normalizer computes.  A walking-arrow quiver and `refl`
@@ -710,3 +761,91 @@ private
   _ : normalize Q isSetOb isSetMor konst
     ≡ lamₙ (lamₙ (ne (var (inr (inr (inl refl))))))
   _ = refl
+
+--------------------------------------------------------------------
+-- The SOLVER, on actual equations of the free cartesian closed
+-- category.  Each is discharged by `solve! f h refl`: the two sides
+-- have the same normal form, so soundness plus cancellation of the
+-- split epi `π₂` and faithfulness of `T` prove them equal.
+--------------------------------------------------------------------
+
+private
+  solve! : {X Y : Ty} (f h : 𝒞.Hom[ X , Y ])
+    → normalize Q isSetOb isSetMor f ≡ normalize Q isSetOb isSetMor h
+    → f ≡ h
+  solve! = solve Q isSetOb isSetMor
+
+  -- (1) product beta: `⟨ g , id ⟩ ⋆ π₁ ≡ g`
+  _ : redex ≡ g
+  _ = solve! redex g refl
+
+  -- (2) product eta: `⟨ π₁ , π₂ ⟩ ≡ id`
+  ×η : 𝒞.Hom[ A ×ᵗ A , A ×ᵗ A ]
+  ×η = 𝒞._,p_ {a = A} {b = A} 𝒞.π₁ 𝒞.π₂
+
+  _ : ×η ≡ 𝒞.id
+  _ = solve! ×η 𝒞.id refl
+
+  -- (3) exponential eta: `lda app ≡ id` at `A ⇒ A`
+  _ : once ≡ 𝒞.id
+  _ = solve! once 𝒞.id refl
+
+  -- (4) the swap on `A × A` is an involution
+  swap : 𝒞.Hom[ A ×ᵗ A , A ×ᵗ A ]
+  swap = 𝒞._,p_ {a = A} {b = A} 𝒞.π₂ 𝒞.π₁
+
+  _ : swap 𝒞.⋆ swap ≡ 𝒞.id
+  _ = solve! (swap 𝒞.⋆ swap) 𝒞.id refl
+
+  -- (5) CHURCH ARITHMETIC: two composed with itself is four.  The
+  -- two sides are visibly different syntax: a composite of two
+  -- lambdas on the left, one lambda with four nested applications
+  -- on the right.
+  fffx : 𝒞.Hom[ (A ⇒ᵗ A) ×ᵗ A , A ]
+  fffx = 𝒞._,p_ 𝒞.π₁ ffx 𝒞.⋆ 𝒞.app
+
+  ffffx : 𝒞.Hom[ (A ⇒ᵗ A) ×ᵗ A , A ]
+  ffffx = 𝒞._,p_ 𝒞.π₁ fffx 𝒞.⋆ 𝒞.app
+
+  four : 𝒞.Hom[ A ⇒ᵗ A , A ⇒ᵗ A ]
+  four = 𝒞.lda ffffx
+
+  -- Both sides reduce to this literal, each in seconds; comparing
+  -- the two COMPUTATIONS to each other directly does not terminate,
+  -- so the equation is routed through the literal.
+  nfFour : Nf (Tob (A ⇒ᵗ A) ∷ []) (Tob (A ⇒ᵗ A))
+  nfFour =
+    lamₙ (ne (appₙ (var (inr (inl refl)))
+      (ne (appₙ (var (inr (inl refl)))
+        (ne (appₙ (var (inr (inl refl)))
+          (ne (appₙ (var (inr (inl refl)))
+            (ne (var (inl refl)))))))))))
+
+  twice⋆twice≡nfFour : normalize Q isSetOb isSetMor (twice 𝒞.⋆ twice)
+    ≡ nfFour
+  twice⋆twice≡nfFour = refl
+
+  four≡nfFour : normalize Q isSetOb isSetMor four ≡ nfFour
+  four≡nfFour = refl
+
+  _ : twice 𝒞.⋆ twice ≡ four
+  _ = solve! (twice 𝒞.⋆ twice) four
+        (twice⋆twice≡nfFour ∙ sym four≡nfFour)
+
+  -- (6) the generator, moved across a beta redex
+  gg-redex : 𝒞.Hom[ A , A ]
+  gg-redex = 𝒞._,p_ {a = A} {b = A} (g 𝒞.⋆ g) 𝒞.id 𝒞.⋆ 𝒞.π₁
+
+  _ : gg-redex ≡ redex 𝒞.⋆ g
+  _ = solve! gg-redex (redex 𝒞.⋆ g) refl
+
+  -- (7) THE NEGATIVE DIRECTION.  Completeness is free -- `normalize`
+  -- is a function -- so distinct normal forms REFUTE an equation.
+  -- Church one and Church two differ already at the second
+  -- application, which one pattern match detects.
+  Church1? : Nf (Tob (A ⇒ᵗ A) ∷ []) (Tob (A ⇒ᵗ A)) → Type
+  Church1? (lamₙ (ne (appₙ _ (ne (var _))))) = Unit
+  Church1? _ = ⊥
+
+  ¬once≡twice : ¬ (once ≡ twice)
+  ¬once≡twice p = subst Church1? (complete Q isSetOb isSetMor p) tt

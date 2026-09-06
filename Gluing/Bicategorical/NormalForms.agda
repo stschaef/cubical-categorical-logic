@@ -20,6 +20,8 @@ open import Cubical.Data.W.Indexed
 open import Cubical.Data.Sigma renaming (_×_ to _×ₛ_)
 open import Cubical.Data.List hiding ([_])
 open import Cubical.Data.Quiver.Base
+open import Cubical.Relation.Nullary.Base
+open import Cubical.Relation.Nullary.Properties
 
 open import Cubical.Categories.Category
 open import Cubical.Categories.Limits.Cartesian.Base
@@ -106,6 +108,33 @@ module NF (Q : Quiver ℓQ ℓQ') (isSetOb : isSet (Q .fst)) where
   isSetTy : isSet Ty
   isSetTy A B = isOfHLevelRetract 1 (encode A B) (decode A B)
     (decodeEncode A B) (isPropCover A B)
+
+  -- The same encoding decides equality of types, given decidable
+  -- equality of the quiver's vertices.
+  private
+    decCover : Discrete (Q .fst) → (A B : Ty) → Dec (Cover A B)
+    decCover d (↑ o) (↑ o') = d o o'
+    decCover d (↑ o) (A' ×ᵗ B') = no Empty.rec*
+    decCover d (↑ o) ⊤ᵗ = no Empty.rec*
+    decCover d (↑ o) (A' ⇒ᵗ B') = no Empty.rec*
+    decCover d (A ×ᵗ B) (↑ o') = no Empty.rec*
+    decCover d (A ×ᵗ B) (A' ×ᵗ B') =
+      Dec× (decCover d A A') (decCover d B B')
+    decCover d (A ×ᵗ B) ⊤ᵗ = no Empty.rec*
+    decCover d (A ×ᵗ B) (A' ⇒ᵗ B') = no Empty.rec*
+    decCover d ⊤ᵗ (↑ o') = no Empty.rec*
+    decCover d ⊤ᵗ (A' ×ᵗ B') = no Empty.rec*
+    decCover d ⊤ᵗ ⊤ᵗ = yes tt*
+    decCover d ⊤ᵗ (A' ⇒ᵗ B') = no Empty.rec*
+    decCover d (A ⇒ᵗ B) (↑ o') = no Empty.rec*
+    decCover d (A ⇒ᵗ B) (A' ×ᵗ B') = no Empty.rec*
+    decCover d (A ⇒ᵗ B) ⊤ᵗ = no Empty.rec*
+    decCover d (A ⇒ᵗ B) (A' ⇒ᵗ B') =
+      Dec× (decCover d A A') (decCover d B B')
+
+  discreteTy : Discrete (Q .fst) → Discrete Ty
+  discreteTy d A B = mapDec (decode A B)
+    (λ ¬c p → ¬c (encode A B p)) (decCover d A B)
 
   Ctx : Type ℓQ
   Ctx = List Ty
