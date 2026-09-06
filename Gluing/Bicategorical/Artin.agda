@@ -22,6 +22,8 @@ open import Cubical.Categories.Displayed.Instances.Dialgebras
 open import Cubical.Categories.Instances.Sets
 open import Cubical.Categories.Instances.Sets.Properties
 open import Cubical.Categories.Exponentials.Small
+open import Cubical.Categories.Limits.CartesianClosed.Base
+open import Cubical.Categories.Limits.Pullback.Alt
 open import Cubical.Categories.Limits.Terminal
 open import Cubical.Categories.Limits.Terminal.More
 open import Cubical.Categories.Limits.BinProduct.More
@@ -30,6 +32,7 @@ open import Cubical.Categories.Presheaf.Representable.More
 open import Cubical.Categories.Presheaf.Constructions.Reindex
 
 open import Gluing.Bicategorical.Comma
+open import Gluing.Bicategorical.CanonicityCore using (module Exp)
 
 private
   variable
@@ -435,3 +438,251 @@ module _ {ℓ ℓ' : Level} {C D : Category (ℓ-max ℓ ℓ') ℓ'}
   (F : Functor C D) where
   ArtinGlue≡Commaᴮ : ArtinGlue F ≡ glueCat {ℓ = ℓ} {ℓ' = ℓ'} F
   ArtinGlue≡Commaᴮ = refl
+
+{-
+  Exponentials, generically.  `SET`'s subset carrier above is the
+  special case of the classical construction in which the pullback is
+  a Σ-type: in general the carrier is the pullback in `D` of
+      A ⇒ B --(A ⇒ β)--> A ⇒ F Y <--ψ-- F (X ⇒ Y),
+  so `D` needs pullbacks on top of its cartesian closed structure and
+  `F` still needs to preserve binary products.  The point-free
+  λ-calculus this runs on is `CanonicityCore.Exp`, written for the
+  canonicity comparison isomorphisms and reused here verbatim.
+-}
+module _ {ℓC ℓC' ℓD ℓD' : Level}
+  (𝒞 : CartesianClosedCategory ℓC ℓC')
+  (𝒟 : CartesianClosedCategory ℓD ℓD')
+  (F : Functor (CartesianClosedCategory.C 𝒞)
+               (CartesianClosedCategory.C 𝒟))
+  (pbD : Pullbacks (CartesianClosedCategory.C 𝒟))
+  (Fp : preservesProvidedBinProducts F (CartesianClosedCategory.bp 𝒞))
+  where
+  private
+    module 𝒞 = CartesianClosedCategory 𝒞
+    module 𝒟 = CartesianClosedCategory 𝒟
+    module ExpC = Exp 𝒞
+    module ExpD = Exp 𝒟
+
+  GlCCC : Category _ _
+  GlCCC = ArtinGlue F
+
+  private module GlCCC = Category GlCCC
+
+  bpGlCCC : BinProducts GlCCC
+  bpGlCCC = glueBinProducts F 𝒞.bp 𝒟.bp Fp
+
+  private
+    module ×GlCCC = BinProductsNotation bpGlCCC
+
+    imgOb : (X Y : 𝒞.ob) → BinProduct 𝒟.C (F ⟅ X ⟆ , F ⟅ Y ⟆)
+    imgOb X Y = becomesUniversal→UniversalElement
+      (preservesBinProdCones F X Y) (Fp X Y)
+
+    module ImgOb (X Y : 𝒞.ob) = BinProductNotation (imgOb X Y)
+
+    imgSeq : ∀ {X Y : 𝒞.ob} {Γ Δ : 𝒟.ob} (m : 𝒟.Hom[ Γ , Δ ])
+      (a : 𝒟.Hom[ Δ , F ⟅ X ⟆ ]) (b : 𝒟.Hom[ Δ , F ⟅ Y ⟆ ])
+      → m 𝒟.⋆ ImgOb._,p_ X Y a b
+        ≡ ImgOb._,p_ X Y (m 𝒟.⋆ a) (m 𝒟.⋆ b)
+    imgSeq {X = X} {Y = Y} m a b = sym (ImgOb.,p≡ X Y
+      (sym (𝒟.⋆Assoc _ _ _ ∙ cong (m 𝒟.⋆_) (ImgOb.×β₁ X Y)))
+      (sym (𝒟.⋆Assoc _ _ _ ∙ cong (m 𝒟.⋆_) (ImgOb.×β₂ X Y))))
+
+  glueExponentials' : AllExponentiable GlCCC bpGlCCC
+  glueExponentials' ((A , X) , α) ((B , Y) , β) = ue
+    where
+    u : GlCCC.ob
+    u = (A , X) , α
+
+    v : GlCCC.ob
+    v = (B , Y) , β
+
+    W : 𝒞.ob
+    W = 𝒞._⇒_ X Y
+
+    φ : 𝒟.Hom[ 𝒟._⇒_ A B , 𝒟._⇒_ A (F ⟅ Y ⟆) ]
+    φ = 𝒟.lda {c = A} {d = F ⟅ Y ⟆} (𝒟.app {c = A} {d = B} 𝒟.⋆ β)
+
+    ψ : 𝒟.Hom[ F ⟅ W ⟆ , 𝒟._⇒_ A (F ⟅ Y ⟆) ]
+    ψ = 𝒟.lda {c = A} {d = F ⟅ Y ⟆}
+      (ImgOb._,p_ W X (𝒟.π₁ {a = F ⟅ W ⟆} {b = A})
+        (𝒟.π₂ {a = F ⟅ W ⟆} {b = A} 𝒟.⋆ α)
+       𝒟.⋆ F ⟪ 𝒞.app {c = X} {d = Y} ⟫)
+
+    module Ep = PullbackNotation (pbD φ ψ)
+
+    expOb : GlCCC.ob
+    expOb = (Ep.vert , W) , Ep.pbπ₂
+
+    appφ : ExpD.appOf φ ≡ 𝒟.app {c = A} {d = B} 𝒟.⋆ β
+    appφ = ExpD.ldaβ _
+
+    appψ : ExpD.appOf ψ
+      ≡ ImgOb._,p_ W X (𝒟.π₁ {a = F ⟅ W ⟆} {b = A})
+          (𝒟.π₂ {a = F ⟅ W ⟆} {b = A} 𝒟.⋆ α)
+        𝒟.⋆ F ⟪ 𝒞.app {c = X} {d = Y} ⟫
+    appψ = ExpD.ldaβ _
+
+    γE : 𝒟.Hom[ 𝒟._×_ Ep.vert A , F ⟅ 𝒞._×_ W X ⟆ ]
+    γE = ImgOb._,p_ W X
+      (𝒟.π₁ {a = Ep.vert} {b = A} 𝒟.⋆ Ep.pbπ₂)
+      (𝒟.π₂ {a = Ep.vert} {b = A} 𝒟.⋆ α)
+
+    appD : 𝒟.Hom[ 𝒟._×_ Ep.vert A , B ]
+    appD = ExpD.appOf Ep.pbπ₁
+
+    γE≡ : γE ≡ ExpD.pl Ep.pbπ₂
+      𝒟.⋆ ImgOb._,p_ W X (𝒟.π₁ {a = F ⟅ W ⟆} {b = A})
+            (𝒟.π₂ {a = F ⟅ W ⟆} {b = A} 𝒟.⋆ α)
+    γE≡ = ImgOb.⟨_⟩,p⟨_⟩ W X (sym 𝒟.×β₁)
+            (sym (sym (𝒟.⋆Assoc _ _ _) ∙ cong (𝒟._⋆ α) 𝒟.×β₂))
+        ∙ sym (imgSeq (ExpD.pl Ep.pbπ₂) _ _)
+
+    appSq : γE 𝒟.⋆ F ⟪ 𝒞.app {c = X} {d = Y} ⟫ ≡ appD 𝒟.⋆ β
+    appSq =
+        cong (𝒟._⋆ F ⟪ 𝒞.app {c = X} {d = Y} ⟫) γE≡
+      ∙ 𝒟.⋆Assoc _ _ _
+      ∙ cong (ExpD.pl Ep.pbπ₂ 𝒟.⋆_) (sym appψ)
+      ∙ sym (ExpD.appOfSeq Ep.pbπ₂ ψ)
+      ∙ cong ExpD.appOf (sym Ep.pbCommutes)
+      ∙ ExpD.appOfSeq Ep.pbπ₁ φ
+      ∙ cong (ExpD.pl Ep.pbπ₁ 𝒟.⋆_) appφ
+      ∙ sym (𝒟.⋆Assoc _ _ _)
+
+    appGl : GlCCC [ bpGlCCC (expOb , u) .vertex , v ]
+    appGl = (appD , 𝒞.app {c = X} {d = Y}) , appSq
+
+    module At (G : 𝒟.ob) (Z : 𝒞.ob) (δ : 𝒟.Hom[ G , F ⟅ Z ⟆ ]) where
+      w : GlCCC.ob
+      w = (G , Z) , δ
+
+      γW : 𝒟.Hom[ 𝒟._×_ G A , F ⟅ 𝒞._×_ Z X ⟆ ]
+      γW = ImgOb._,p_ Z X
+        (𝒟.π₁ {a = G} {b = A} 𝒟.⋆ δ)
+        (𝒟.π₂ {a = G} {b = A} 𝒟.⋆ α)
+
+      module _ (m : GlCCC [ bpGlCCC (w , u) .vertex , v ]) where
+        private
+          mD = m .fst .fst
+          mC = m .fst .snd
+
+          nC : 𝒞.Hom[ Z , W ]
+          nC = 𝒞.lda {c = X} {d = Y} mC
+
+          key : γW 𝒟.⋆ F ⟪ ExpC.pl nC ⟫
+            ≡ ImgOb._,p_ W X
+                (𝒟.π₁ {a = G} {b = A} 𝒟.⋆ (δ 𝒟.⋆ F ⟪ nC ⟫))
+                (𝒟.π₂ {a = G} {b = A} 𝒟.⋆ α)
+          key = ImgOb.,p-extensionality W X
+            ( 𝒟.⋆Assoc _ _ _
+            ∙ cong (γW 𝒟.⋆_)
+                (sym (F .F-seq _ _) ∙ cong (F .F-hom) 𝒞.×β₁
+                 ∙ F .F-seq _ _)
+            ∙ sym (𝒟.⋆Assoc _ _ _)
+            ∙ cong (𝒟._⋆ F ⟪ nC ⟫) (ImgOb.×β₁ Z X)
+            ∙ 𝒟.⋆Assoc _ _ _
+            ∙ sym (ImgOb.×β₁ W X))
+            ( 𝒟.⋆Assoc _ _ _
+            ∙ cong (γW 𝒟.⋆_)
+                (sym (F .F-seq _ _) ∙ cong (F .F-hom) 𝒞.×β₂)
+            ∙ ImgOb.×β₂ Z X
+            ∙ sym (ImgOb.×β₂ W X))
+
+          lhsAt : ExpD.appOf (𝒟.lda {c = A} {d = B} mD 𝒟.⋆ φ) ≡ mD 𝒟.⋆ β
+          lhsAt =
+              ExpD.appOfSeq (𝒟.lda {c = A} {d = B} mD) φ
+            ∙ cong (ExpD.pl (𝒟.lda {c = A} {d = B} mD) 𝒟.⋆_) appφ
+            ∙ sym (𝒟.⋆Assoc _ _ _)
+            ∙ cong (𝒟._⋆ β) (ExpD.ldaβ mD)
+
+          rhsAt : ExpD.appOf ((δ 𝒟.⋆ F ⟪ nC ⟫) 𝒟.⋆ ψ) ≡ mD 𝒟.⋆ β
+          rhsAt =
+              ExpD.appOfSeq (δ 𝒟.⋆ F ⟪ nC ⟫) ψ
+            ∙ cong (ExpD.pl (δ 𝒟.⋆ F ⟪ nC ⟫) 𝒟.⋆_) appψ
+            ∙ sym (𝒟.⋆Assoc _ _ _)
+            ∙ cong (𝒟._⋆ F ⟪ 𝒞.app {c = X} {d = Y} ⟫)
+                ( imgSeq (ExpD.pl (δ 𝒟.⋆ F ⟪ nC ⟫)) _ _
+                ∙ ImgOb.⟨_⟩,p⟨_⟩ W X 𝒟.×β₁
+                    (sym (𝒟.⋆Assoc _ _ _) ∙ cong (𝒟._⋆ α) 𝒟.×β₂)
+                ∙ sym key)
+            ∙ 𝒟.⋆Assoc _ _ _
+            ∙ cong (γW 𝒟.⋆_)
+                (sym (F .F-seq _ _) ∙ cong (F .F-hom) (ExpC.ldaβ mC))
+            ∙ m .snd
+
+          agree : 𝒟.lda {c = A} {d = B} mD 𝒟.⋆ φ
+            ≡ (δ 𝒟.⋆ F ⟪ nC ⟫) 𝒟.⋆ ψ
+          agree = ExpD.ldaExt (lhsAt ∙ sym rhsAt)
+
+        ldaGl : GlCCC [ w , expOb ]
+        ldaGl =
+          ( Ep.pbIntro (𝒟.lda {c = A} {d = B} mD) (δ 𝒟.⋆ F ⟪ nC ⟫) agree
+          , nC )
+          , sym Ep.pbβ₂
+
+      πw : GlCCC [ bpGlCCC (w , u) .vertex , w ]
+      πw = ×GlCCC.π₁ {a = w} {b = u}
+
+      πu : GlCCC [ bpGlCCC (w , u) .vertex , u ]
+      πu = ×GlCCC.π₂ {a = w} {b = u}
+
+      pull : GlCCC [ w , expOb ]
+        → GlCCC [ bpGlCCC (w , u) .vertex , bpGlCCC (expOb , u) .vertex ]
+      pull l = ×GlCCC._,p_ {a = expOb} {b = u} (πw GlCCC.⋆ l) πu
+
+      pullD : (l : GlCCC [ w , expOb ])
+        → pull l .fst .fst ≡ ExpD.pl (l .fst .fst)
+      pullD l = 𝒟.,p-extensionality
+        ( cong (λ n → n .fst .fst) (×GlCCC.×β₁ {a = expOb} {b = u}
+            {f = πw GlCCC.⋆ l} {g = πu})
+        ∙ sym 𝒟.×β₁)
+        ( cong (λ n → n .fst .fst) (×GlCCC.×β₂ {a = expOb} {b = u}
+            {f = πw GlCCC.⋆ l} {g = πu})
+        ∙ sym 𝒟.×β₂)
+
+      pullC : (l : GlCCC [ w , expOb ])
+        → pull l .fst .snd ≡ ExpC.pl (l .fst .snd)
+      pullC l = 𝒞.,p-extensionality
+        ( cong (λ n → n .fst .snd) (×GlCCC.×β₁ {a = expOb} {b = u}
+            {f = πw GlCCC.⋆ l} {g = πu})
+        ∙ sym 𝒞.×β₁)
+        ( cong (λ n → n .fst .snd) (×GlCCC.×β₂ {a = expOb} {b = u}
+            {f = πw GlCCC.⋆ l} {g = πu})
+        ∙ sym 𝒞.×β₂)
+
+      secGl : (m : GlCCC [ bpGlCCC (w , u) .vertex , v ])
+        → pull (ldaGl m) GlCCC.⋆ appGl ≡ m
+      secGl m = Σ≡Prop (λ _ → 𝒟.isSetHom _ _)
+        (ΣPathP
+          ( cong (𝒟._⋆ appD) (pullD (ldaGl m))
+            ∙ sym (ExpD.appOfSeq _ Ep.pbπ₁)
+            ∙ cong ExpD.appOf Ep.pbβ₁
+            ∙ ExpD.ldaβ (m .fst .fst)
+          , cong (𝒞._⋆ 𝒞.app {c = X} {d = Y}) (pullC (ldaGl m))
+            ∙ ExpC.ldaβ (m .fst .snd)))
+
+      retGl : (l : GlCCC [ w , expOb ]) → ldaGl (pull l GlCCC.⋆ appGl) ≡ l
+      retGl l = Σ≡Prop (λ _ → 𝒟.isSetHom _ _) (ΣPathP (dPart , cPart))
+        where
+        cPart : ldaGl (pull l GlCCC.⋆ appGl) .fst .snd ≡ l .fst .snd
+        cPart = cong (𝒞.lda {c = X} {d = Y})
+                  ( cong (𝒞._⋆ 𝒞.app {c = X} {d = Y}) (pullC l))
+              ∙ ExpC.ldaExt (ExpC.ldaβ (ExpC.appOf (l .fst .snd)))
+
+        dPart : ldaGl (pull l GlCCC.⋆ appGl) .fst .fst ≡ l .fst .fst
+        dPart = Ep.pbExtensionality
+          ( Ep.pbβ₁
+          ∙ cong (𝒟.lda {c = A} {d = B})
+              ( cong (𝒟._⋆ appD) (pullD l)
+              ∙ sym (ExpD.appOfSeq (l .fst .fst) Ep.pbπ₁))
+          ∙ ExpD.ldaExt (ExpD.ldaβ _))
+          ( Ep.pbβ₂
+          ∙ cong (λ z → δ 𝒟.⋆ F ⟪ z ⟫) cPart
+          ∙ l .snd)
+
+    ue : Exponential GlCCC u v (λ d → bpGlCCC (d , u))
+    ue .vertex = expOb
+    ue .element = appGl
+    ue .universal ((G , Z) , δ) =
+      isoToIsEquiv (iso _ (At.ldaGl G Z δ) (At.secGl G Z δ)
+        (At.retGl G Z δ))
