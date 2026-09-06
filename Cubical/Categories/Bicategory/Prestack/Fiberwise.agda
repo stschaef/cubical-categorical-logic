@@ -130,11 +130,10 @@ module _ {C : Category ℓ ℓ'} (P : Prestack (LocallyDiscrete C) ℓp ℓp') w
         subst isIsoFun (sym (funExt (key Γ Γᴰ g)))
           (isEquivToIsIso _ (presBP g aᴰ bᴰ Γᴰ))
 
-  -- REVIEW how does this relate instead to a pseudofunctor
-  -- into cartesian categories? That would be a nice presentation/equivalence to
-  -- show
-  -- Same for any of these structures. Whenever we can show that something is a
-  -- (pseudo)functor into a nice structured (bi)category, that's a good thing
+  -- The input below is equivalently a pseudofunctor into the
+  -- bicategory of cartesian categories; see
+  -- `Prestack.Structured.CartesianPrestackIso` and, for arbitrary
+  -- `StructureOverᴮ`, `Structured.StructuredPseudofunctorIso`.
 
   -- the whole vertical cartesian structure at once
   ∫PreCartesianCategoryⱽ :
