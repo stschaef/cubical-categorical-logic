@@ -1,6 +1,6 @@
 {-# OPTIONS --lossy-unification #-}
 {- CAT has a terminal 0-cell: the unit category. -}
-module Cubical.Categories.Bicategory.Instances.CAT.Terminal where
+module Cubical.Categories.Bicategory.Instances.CAT.Limits.Terminal where
 
 
 open import Cubical.Foundations.Prelude
@@ -19,8 +19,8 @@ open import Cubical.Categories.Bicategory.Prestack.Base
 open import Cubical.Categories.Bicategory.Prestack.Hom
 open import Cubical.Categories.Bicategory.Universal.Base
 open import Cubical.Categories.Bicategory.Limits.Terminal
-open import Cubical.Categories.Bicategory.Instances.CAT.Inserter
-open import Cubical.Categories.Bicategory.Instances.CAT.Equifier
+open import Cubical.Categories.Bicategory.Instances.CAT.Limits.Inserter
+open import Cubical.Categories.Bicategory.Instances.CAT.Limits.Equifier
 
 private
   variable

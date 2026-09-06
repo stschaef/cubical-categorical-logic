@@ -2,7 +2,7 @@
 {-
   Pentagon coherence for the CAT bicategory.
 -}
-module Cubical.Categories.Bicategory.Instances.CAT.Pentagon where
+module Cubical.Categories.Bicategory.Instances.CAT.Coherence.Pentagon where
 
 open import Cubical.Foundations.Prelude
 
@@ -12,7 +12,7 @@ open import Cubical.Categories.NaturalTransformation
 open import Cubical.Categories.Instances.Functors
 
 open import Cubical.Categories.Bicategory.Instances.CAT.Base
-open import Cubical.Categories.Bicategory.Instances.CAT.Associator
+open import Cubical.Categories.Bicategory.Instances.CAT.Coherence.Associator
 
 private
   variable

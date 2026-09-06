@@ -1,6 +1,6 @@
 {-# OPTIONS --lossy-unification #-}
 {- CAT has inserters: the inserter of `F G : C → D` is `DIALG F G`. -}
-module Cubical.Categories.Bicategory.Instances.CAT.Inserter where
+module Cubical.Categories.Bicategory.Instances.CAT.Limits.Inserter where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Data.Sigma

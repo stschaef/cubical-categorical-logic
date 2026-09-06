@@ -1,6 +1,6 @@
 {-# OPTIONS --lossy-unification #-}
 {- CAT has all PIE limits. -}
-module Cubical.Categories.Bicategory.Instances.CAT.PIE where
+module Cubical.Categories.Bicategory.Instances.CAT.Limits.PIE where
 
 open import Cubical.Foundations.Prelude
 
@@ -11,10 +11,10 @@ open import Cubical.Categories.Bicategory.Instances.CAT
 open import Cubical.Categories.Bicategory.Limits.Terminal
 open import Cubical.Categories.Bicategory.Limits.Product
 open import Cubical.Categories.Bicategory.Limits.PIE
-open import Cubical.Categories.Bicategory.Instances.CAT.Inserter
-open import Cubical.Categories.Bicategory.Instances.CAT.Equifier
-open import Cubical.Categories.Bicategory.Instances.CAT.Terminal
-open import Cubical.Categories.Bicategory.Instances.CAT.Product
+open import Cubical.Categories.Bicategory.Instances.CAT.Limits.Inserter
+open import Cubical.Categories.Bicategory.Instances.CAT.Limits.Equifier
+open import Cubical.Categories.Bicategory.Instances.CAT.Limits.Terminal
+open import Cubical.Categories.Bicategory.Instances.CAT.Limits.Product
 
 private
   variable

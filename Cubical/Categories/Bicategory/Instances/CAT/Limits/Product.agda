@@ -1,6 +1,6 @@
 {-# OPTIONS --lossy-unification #-}
 {- CAT has binary products: the product category. -}
-module Cubical.Categories.Bicategory.Instances.CAT.Product where
+module Cubical.Categories.Bicategory.Instances.CAT.Limits.Product where
 
 
 open import Cubical.Foundations.Prelude
@@ -21,8 +21,8 @@ open import Cubical.Categories.Bicategory.Prestack.Hom
 open import Cubical.Categories.Bicategory.Prestack.BinProduct
 open import Cubical.Categories.Bicategory.Universal.Base
 open import Cubical.Categories.Bicategory.Limits.Product
-open import Cubical.Categories.Bicategory.Instances.CAT.Inserter
-open import Cubical.Categories.Bicategory.Instances.CAT.Equifier
+open import Cubical.Categories.Bicategory.Instances.CAT.Limits.Inserter
+open import Cubical.Categories.Bicategory.Instances.CAT.Limits.Equifier
 
 private
   variable

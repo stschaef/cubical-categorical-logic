@@ -2,7 +2,7 @@
 {-
   Left unitor NatIso for the CAT bicategory.
 -}
-module Cubical.Categories.Bicategory.Instances.CAT.LeftUnitor where
+module Cubical.Categories.Bicategory.Instances.CAT.Coherence.LeftUnitor where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Data.Sigma renaming (_×_ to _×Σ_)

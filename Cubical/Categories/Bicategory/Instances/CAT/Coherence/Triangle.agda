@@ -2,7 +2,7 @@
 {-
   Triangle coherence for the CAT bicategory.
 -}
-module Cubical.Categories.Bicategory.Instances.CAT.Triangle where
+module Cubical.Categories.Bicategory.Instances.CAT.Coherence.Triangle where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Data.Unit
@@ -13,9 +13,9 @@ open import Cubical.Categories.NaturalTransformation
 open import Cubical.Categories.Instances.Functors
 
 open import Cubical.Categories.Bicategory.Instances.CAT.Base
-open import Cubical.Categories.Bicategory.Instances.CAT.LeftUnitor
-open import Cubical.Categories.Bicategory.Instances.CAT.RightUnitor
-open import Cubical.Categories.Bicategory.Instances.CAT.Associator
+open import Cubical.Categories.Bicategory.Instances.CAT.Coherence.LeftUnitor
+open import Cubical.Categories.Bicategory.Instances.CAT.Coherence.RightUnitor
+open import Cubical.Categories.Bicategory.Instances.CAT.Coherence.Associator
 
 private
   variable

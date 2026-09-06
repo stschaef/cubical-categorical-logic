@@ -1078,3 +1078,6 @@ module _ {ℓ : Level} (P : PseudoAlgebra (FreeMonoidalTwoMonad {ℓ})) where
   algebraTensorStr : TensorStr C
   algebraTensorStr .TensorStr.─⊗─ = algebraTensor
   algebraTensorStr .TensorStr.unit = ev ⟅ unit ⟆
+
+  -- REIVEW
+  -- Build the rest of the monoidal structure by showing coherences
