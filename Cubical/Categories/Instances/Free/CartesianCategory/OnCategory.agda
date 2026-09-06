@@ -29,6 +29,7 @@ import Cubical.Data.Equality as Eq
 open import Cubical.Categories.Displayed.Base
 open import Cubical.Categories.Displayed.More
 open import Cubical.Categories.Displayed.HLevels
+open import Cubical.Categories.Displayed.HLevels.PropValuedPresheaf
 open import Cubical.Categories.Displayed.Limits.CartesianV'
 open import Cubical.Categories.Displayed.Section.Base
 open import Cubical.Categories.Displayed.Presheaf.Uncurried.Base
@@ -57,34 +58,6 @@ open Section
 open NatTrans
 open CartesianCategory renaming (C to Cat) using (term; bp)
 open UniversalElement
-
-{- Universal elements displayed over a category with prop-valued
-   displayed homs.  The hasContrHoms analogue is in
-   Displayed.HLevels.PropValuedPresheaf; this one takes the intro
-   operation as data.  TODO: it belongs in that file. -}
-module _ {B : Category ℓC ℓC'} (Bᴰ : Categoryᴰ B ℓD ℓD')
-  (propHomsᴰ : hasPropHoms Bᴰ)
-  (P : Presheaf B ℓE) (Pᴰ : Presheafᴰ P Bᴰ ℓE')
-  (isPropPshᴰ : ∀ {Γ} (Γᴰ : Categoryᴰ.ob[_] Bᴰ Γ) {e}
-    → isProp (PresheafᴰNotation.p[_][_] Bᴰ P Pᴰ e Γᴰ))
-  (ue : UniversalElement B P) where
-  private
-    module Bᴰ = Fibers Bᴰ
-    module Pᴰ = PresheafᴰNotation Bᴰ P Pᴰ
-    module ue = UniversalElementNotation ue
-
-  module _ {vᴰ : Bᴰ.ob[ ue .vertex ]} (eᴰ : Pᴰ.p[ ue .element ][ vᴰ ])
-    (introᴰ : ∀ {Γ} {Γᴰ : Bᴰ.ob[ Γ ]} (p : PresheafNotation.p[_] P Γ)
-      → Pᴰ.p[ p ][ Γᴰ ] → Bᴰ [ ue.intro p ][ Γᴰ , vᴰ ]) where
-    open isIsoOver
-    mkPropHomsUEᴰ : UniversalElementᴰ Bᴰ P Pᴰ ue
-    mkPropHomsUEᴰ .fst = vᴰ
-    mkPropHomsUEᴰ .snd .fst = eᴰ
-    mkPropHomsUEᴰ .snd .snd Γ Γᴰ .inv = introᴰ
-    mkPropHomsUEᴰ .snd .snd Γ Γᴰ .rightInv p pᴰ =
-      isProp→PathP (λ _ → isPropPshᴰ Γᴰ) _ pᴰ
-    mkPropHomsUEᴰ .snd .snd Γ Γᴰ .leftInv f fᴰ =
-      isProp→PathP (λ _ → propHomsᴰ _ Γᴰ vᴰ) _ fᴰ
 
 module _ (C : Category ℓC ℓC') where
   private module C = Category C

@@ -12,6 +12,7 @@ open import Cubical.Categories.Functor.Base
 open import Cubical.Categories.NaturalTransformation
 open import Cubical.Categories.NaturalTransformation.More
 open import Cubical.Foundations.Prelude
+open import Cubical.Data.Sigma
 open import Cubical.Categories.Monoidal.Base
 
 private
@@ -316,3 +317,99 @@ module _ {M : MonoidalCategory ℓC ℓC'}
                        , H .StrongMonoidalFunctor.F ⟅ b ⟆))
            (F-PresIsIso {F = G .StrongMonoidalFunctor.F}
                         (H .μ-isIso (a , b)))
+
+open NatTrans
+
+{- A natural transformation between strong monoidal functors is
+   monoidal when it commutes with the ε and μ comparisons. -}
+module _ {M : MonoidalCategory ℓC ℓC'} {N : MonoidalCategory ℓD ℓD'}
+         (G H : StrongMonoidalFunctor M N) where
+  private
+    module M = MonoidalCategory M
+    module N = MonoidalCategory N
+    module G = StrongMonoidalFunctor G
+    module H = StrongMonoidalFunctor H
+
+  isMonoidalNat : NatTrans G.F H.F → Type (ℓ-max ℓC ℓD')
+  isMonoidalNat σ =
+    (G.ε ⋆⟨ N.C ⟩ σ .N-ob M.unit ≡ H.ε)
+    × (∀ x y → G.μ⟨ x , y ⟩ ⋆⟨ N.C ⟩ σ .N-ob (x M.⊗ y)
+             ≡ (σ .N-ob x N.⊗ₕ σ .N-ob y) ⋆⟨ N.C ⟩ H.μ⟨ x , y ⟩)
+
+module _ {M : MonoidalCategory ℓC ℓC'} {N : MonoidalCategory ℓD ℓD'}
+         (G : StrongMonoidalFunctor M N) where
+  private
+    module N = MonoidalCategory N
+    module G = StrongMonoidalFunctor G
+  isMonoidalNat-id : isMonoidalNat G G (idTrans G.F)
+  isMonoidalNat-id .fst = N.⋆IdR _
+  isMonoidalNat-id .snd x y =
+    N.⋆IdR _ ∙ sym (N.⋆IdL _) ∙ cong₂ N._⋆_ (sym (N.─⊗─ .F-id)) refl
+
+-- Monoidal natural transformations are closed under composition.
+module _ {M : MonoidalCategory ℓC ℓC'} {N : MonoidalCategory ℓD ℓD'}
+         (G H K : StrongMonoidalFunctor M N) where
+  private
+    module N = MonoidalCategory N
+    module G = StrongMonoidalFunctor G
+    module K = StrongMonoidalFunctor K
+  isMonoidalNat-seq : (σ : NatTrans G.F (H .StrongMonoidalFunctor.F))
+    (τ : NatTrans (H .StrongMonoidalFunctor.F) K.F)
+    → isMonoidalNat G H σ → isMonoidalNat H K τ
+    → isMonoidalNat G K (seqTrans σ τ)
+  isMonoidalNat-seq σ τ mσ mτ .fst =
+    sym (N.⋆Assoc _ _ _) ∙ cong₂ N._⋆_ (mσ .fst) refl ∙ mτ .fst
+  isMonoidalNat-seq σ τ mσ mτ .snd x y =
+    sym (N.⋆Assoc _ _ _)
+    ∙ cong₂ N._⋆_ (mσ .snd x y) refl
+    ∙ N.⋆Assoc _ _ _
+    ∙ cong₂ N._⋆_ refl (mτ .snd x y)
+    ∙ sym (N.⋆Assoc _ _ _)
+    ∙ cong₂ N._⋆_ (sym (N.─⊗─ .F-seq _ _)) refl
+
+-- ... and under whiskering by a strong monoidal functor.
+module _ {M : MonoidalCategory ℓC ℓC'} {N : MonoidalCategory ℓD ℓD'}
+         {E : MonoidalCategory ℓE ℓE'}
+         (K : StrongMonoidalFunctor N E)
+         (G H : StrongMonoidalFunctor M N) where
+  private
+    module E = MonoidalCategory E
+    module K = StrongMonoidalFunctor K
+  isMonoidalNat-∘ʳ : (σ : NatTrans (G .StrongMonoidalFunctor.F)
+                                   (H .StrongMonoidalFunctor.F))
+    → isMonoidalNat G H σ
+    → isMonoidalNat (K ∘Str G) (K ∘Str H) (K.F ∘ʳ σ)
+  isMonoidalNat-∘ʳ σ mσ .fst =
+    E.⋆Assoc _ _ _
+    ∙ cong₂ E._⋆_ refl (sym (K.F-seq _ _) ∙ cong K.F-hom (mσ .fst))
+  isMonoidalNat-∘ʳ σ mσ .snd x y =
+    E.⋆Assoc _ _ _
+    ∙ cong₂ E._⋆_ refl
+      (sym (K.F-seq _ _) ∙ cong K.F-hom (mσ .snd x y) ∙ K.F-seq _ _)
+    ∙ sym (E.⋆Assoc _ _ _)
+    ∙ cong₂ E._⋆_ (sym (K.μ .N-hom _)) refl
+    ∙ E.⋆Assoc _ _ _
+
+module _ {M : MonoidalCategory ℓC ℓC'} {N : MonoidalCategory ℓD ℓD'}
+         {E : MonoidalCategory ℓE ℓE'}
+         (K : StrongMonoidalFunctor M N)
+         (G H : StrongMonoidalFunctor N E) where
+  private
+    module E = MonoidalCategory E
+    module K = StrongMonoidalFunctor K
+    module G = StrongMonoidalFunctor G
+    module H = StrongMonoidalFunctor H
+  isMonoidalNat-∘ˡ : (σ : NatTrans G.F H.F)
+    → isMonoidalNat G H σ
+    → isMonoidalNat (G ∘Str K) (H ∘Str K) (σ ∘ˡ K.F)
+  isMonoidalNat-∘ˡ σ mσ .fst =
+    E.⋆Assoc _ _ _
+    ∙ cong₂ E._⋆_ refl (σ .N-hom _)
+    ∙ sym (E.⋆Assoc _ _ _)
+    ∙ cong₂ E._⋆_ (mσ .fst) refl
+  isMonoidalNat-∘ˡ σ mσ .snd x y =
+    E.⋆Assoc _ _ _
+    ∙ cong₂ E._⋆_ refl (σ .N-hom _)
+    ∙ sym (E.⋆Assoc _ _ _)
+    ∙ cong₂ E._⋆_ (mσ .snd _ _) refl
+    ∙ E.⋆Assoc _ _ _

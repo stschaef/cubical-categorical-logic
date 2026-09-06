@@ -21,6 +21,8 @@ open import Cubical.Categories.Displayed.Presheaf.Uncurried.Base
 open import Cubical.Categories.Displayed.Presheaf.Uncurried.Representable
 open import Cubical.Categories.Displayed.Presheaf.Uncurried.Constructions
 open import Cubical.Categories.Displayed.HLevels
+open import Cubical.Categories.Displayed.Presheaf.Uncurried.UniversalProperties
+open import Cubical.Categories.Instances.Fiber
 
 private
   variable
@@ -64,3 +66,30 @@ module _ {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ') where
        hasContrHoms+propValuedPshᴰ→UEᴰ .fst = vᴰ
        hasContrHoms+propValuedPshᴰ→UEᴰ .snd .fst = eᴰ
        hasContrHoms+propValuedPshᴰ→UEᴰ .snd .snd = hasContrHoms→isUniversalᴰ
+
+{- Universal elements displayed over a category with prop-valued
+   displayed homs.  Unlike the hasContrHoms analogue above, this one
+   takes the intro operation as data. -}
+module _ {B : Category ℓC ℓC'} (Bᴰ : Categoryᴰ B ℓD ℓD')
+  (propHomsᴰ : hasPropHoms Bᴰ)
+  (P : Presheaf B ℓE) (Pᴰ : Presheafᴰ P Bᴰ ℓE')
+  (isPropPshᴰ : ∀ {Γ} (Γᴰ : Categoryᴰ.ob[_] Bᴰ Γ) {e}
+    → isProp (PresheafᴰNotation.p[_][_] Bᴰ P Pᴰ e Γᴰ))
+  (ue : UniversalElement B P) where
+  private
+    module Bᴰ = Fibers Bᴰ
+    module Pᴰ = PresheafᴰNotation Bᴰ P Pᴰ
+    module ue = UniversalElementNotation ue
+
+  module _ {vᴰ : Bᴰ.ob[ ue .vertex ]} (eᴰ : Pᴰ.p[ ue .element ][ vᴰ ])
+    (introᴰ : ∀ {Γ} {Γᴰ : Bᴰ.ob[ Γ ]} (p : PresheafNotation.p[_] P Γ)
+      → Pᴰ.p[ p ][ Γᴰ ] → Bᴰ [ ue.intro p ][ Γᴰ , vᴰ ]) where
+    open isIsoOver
+    mkPropHomsUEᴰ : UniversalElementᴰ Bᴰ P Pᴰ ue
+    mkPropHomsUEᴰ .fst = vᴰ
+    mkPropHomsUEᴰ .snd .fst = eᴰ
+    mkPropHomsUEᴰ .snd .snd Γ Γᴰ .inv = introᴰ
+    mkPropHomsUEᴰ .snd .snd Γ Γᴰ .rightInv p pᴰ =
+      isProp→PathP (λ _ → isPropPshᴰ Γᴰ) _ pᴰ
+    mkPropHomsUEᴰ .snd .snd Γ Γᴰ .leftInv f fᴰ =
+      isProp→PathP (λ _ → propHomsᴰ _ Γᴰ vᴰ) _ fᴰ
