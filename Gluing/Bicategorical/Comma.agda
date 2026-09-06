@@ -13,8 +13,8 @@ open import Cubical.Categories.Displayed.Instances.Comma as Cma
 
 open import Cubical.Categories.Bicategory.Base
 open import Cubical.Categories.Bicategory.Instances.CAT
-open import Cubical.Categories.Bicategory.Instances.CAT.Inserter
-open import Cubical.Categories.Bicategory.Instances.CAT.Product
+open import Cubical.Categories.Bicategory.Instances.CAT.Limits.Inserter
+open import Cubical.Categories.Bicategory.Instances.CAT.Limits.Product
 open import Cubical.Categories.Bicategory.Universal.Base
 open import Cubical.Categories.Bicategory.Limits.Product
 open import Cubical.Categories.Bicategory.Limits.Comma
