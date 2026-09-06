@@ -16,7 +16,7 @@
   different *representation of objects* (Cayley), not a ford.
 
   Consequently the `M ×C _` 2-monad on CAT in
-  `Bicategory.Instances.CAT.TwoMonads.Monoidal` is built over an
+  `Bicategory.Instances.CAT.TwoMonad.Instances.Monoidal` is built over an
   arbitrary `MonoidalCategory`, where the three 2-monad laws are the
   unitors and associator of M and no transport arises at all.
 -}

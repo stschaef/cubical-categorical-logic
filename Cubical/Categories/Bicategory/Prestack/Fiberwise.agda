@@ -29,7 +29,7 @@ open import Cubical.Categories.Displayed.Presheaf.Uncurried.Representable
 open import Cubical.Categories.Displayed.Presheaf.Uncurried.UniversalProperties
 
 open import Cubical.Categories.Bicategory.Functor.Pseudo
-open import Cubical.Categories.Bicategory.Instances.LocallyDiscrete
+open import Cubical.Categories.Bicategory.Instances.LocallyDiscrete.Base
 open import Cubical.Categories.Bicategory.Prestack.Base
 open import Cubical.Categories.Bicategory.Prestack.Grothendieck
 

@@ -15,7 +15,7 @@ open import Cubical.Categories.Displayed.Instances.Reindex.Base
 open import Cubical.Categories.Displayed.Isomorphism
 
 open import Cubical.Categories.Bicategory.Functor.Pseudo
-open import Cubical.Categories.Bicategory.Instances.LocallyDiscrete
+open import Cubical.Categories.Bicategory.Instances.LocallyDiscrete.Base
 open import Cubical.Foundations.Isomorphism renaming (isIso to isIsoFun)
 open import Cubical.Foundations.Isomorphism.More
 open import Cubical.Categories.Isomorphism

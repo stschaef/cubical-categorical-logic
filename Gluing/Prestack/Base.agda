@@ -17,12 +17,12 @@ open import Cubical.Categories.Displayed.Instances.Reindex.Base
 open import Cubical.Categories.Displayed.Isomorphism
 open import Cubical.Categories.Displayed.Instances.Sets.Base
 
-open import Cubical.Categories.Bicategory.Instances.LocallyDiscrete
+open import Cubical.Categories.Bicategory.Instances.LocallyDiscrete.Base
 open import Cubical.Categories.Bicategory.Prestack.Base
 open import Cubical.Categories.Bicategory.Prestack.Reindex
 open import Cubical.Categories.Bicategory.Prestack.Strict
 open import Cubical.Categories.Bicategory.Prestack.Grothendieck
-open import Cubical.Categories.Bicategory.Prestack.Examples.Sets
+open import Cubical.Categories.Bicategory.Prestack.Instances.Sets
 
 private
   variable

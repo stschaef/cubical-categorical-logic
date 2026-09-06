@@ -26,11 +26,11 @@ open import Cubical.Categories.Instances.Free.CartesianCategory.ProductQuiver
 open import Cubical.Categories.Instances.Free.CartesianCategory.Forded
   as FreeCC
 
-open import Cubical.Categories.Bicategory.Instances.LocallyDiscrete
+open import Cubical.Categories.Bicategory.Instances.LocallyDiscrete.Base
 open import Cubical.Categories.Bicategory.Prestack.Reindex
 open import Cubical.Categories.Bicategory.Prestack.Strict
 open import Cubical.Categories.Bicategory.Prestack.Grothendieck
-open import Cubical.Categories.Bicategory.Prestack.Examples.Sets
+open import Cubical.Categories.Bicategory.Prestack.Instances.Sets
 
 open import Gluing.Canonicity
 open import Gluing.Prestack.Base

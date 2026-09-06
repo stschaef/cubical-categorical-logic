@@ -20,7 +20,7 @@ open import Cubical.Categories.Isomorphism.More
 open import Cubical.Categories.Bicategory.Base
 open import Cubical.Categories.Bicategory.Constructions.Op
 open import Cubical.Categories.Bicategory.Instances.CAT
-open import Cubical.Categories.Bicategory.Instances.LocallyDiscrete
+open import Cubical.Categories.Bicategory.Instances.LocallyDiscrete.Base
 open import Cubical.Categories.Bicategory.Functor.Lax
 open import Cubical.Categories.Bicategory.Functor.Pseudo
 open import Cubical.Categories.Bicategory.Prestack.Base
