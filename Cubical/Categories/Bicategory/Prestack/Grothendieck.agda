@@ -89,6 +89,11 @@ module _ {C : Category ℓ ℓ'} (P : Prestack (LocallyDiscrete C) ℓp ℓp')
       (λ n h → sym (Pᶜ.⋆IdR m) ∙ cong (m Pᶜ.⋆_) (sym (θRefl e)) ∙ h)
       p
 
+  -- `θ p e` is the identity displayed over `p`
+  θPathP : {c c' : C.ob} {f g : C [ c , c' ]} (p : f ≡ g) (e : p[ c' ])
+    → PathP (λ i → Homᴳ (p i) (f ⋆ᴾ e) e) Pᶜ.id (θ p e)
+  θPathP p e = hmPathP p Pᶜ.id (θ p e) (Pᶜ.⋆IdL _)
+
   substHom : {c c' : C.ob} {f g : C [ c , c' ]} (p : f ≡ g)
     {xᴰ : p[ c ]} {e : p[ c' ]} (m : Homᴳ f xᴰ e)
     → subst (λ h → Homᴳ h xᴰ e) p m ≡ m Pᶜ.⋆ θ p e
@@ -248,11 +253,8 @@ module _ {C : Category ℓ ℓ'} (P : Prestack (LocallyDiscrete C) ℓp ℓp')
       ε : ∫P.Hom[ f ][ f ⋆ᴾ yᴰ , yᴰ ]
       ε = Pᶜ.id
 
-      -- REVIEW use the prestack's action on homs here, not a subst;
-      -- `elem = θ (sym (C.⋆IdL f)) yᴰ` typechecks, but `key` below is
-      -- written against the subst form and needs rewriting to match
       elem : Spec.p[ C.id ][ f ⋆ᴾ yᴰ ]
-      elem = F.reind (sym (C.⋆IdL f)) ε
+      elem = θ (sym (C.⋆IdL f)) yᴰ
 
       key : (Γ : C.ob) (Γᴰ : p[ Γ ]) (g : C [ Γ , x ])
         (gᴰ : ∫P.Hom[ g ][ Γᴰ , f ⋆ᴾ yᴰ ])
@@ -263,7 +265,7 @@ module _ {C : Category ℓ ℓ'} (P : Prestack (LocallyDiscrete C) ℓp ℓp')
                      (C.isSetHom _ _ _ (cong (g C.⋆_) (C.⋆IdL f)))))
           ∙ Q.⋆ᴰ-reind gᴰ (cong (g C.⋆_) (C.⋆IdL f)) elem
           ∙ F.reind-filler⁻ refl
-          ∙ F.⟨ refl ⟩⋆⟨ F.reind-filler⁻ (sym (C.⋆IdL f)) ⟩))
+          ∙ F.⟨ refl ⟩⋆⟨ sym (F.≡in (θPathP (sym (C.⋆IdL f)) yᴰ)) ⟩))
         ∙ cong (gᴰ Pᶜ.⋆_)
             (cong (Pᶜ._⋆ ⋆ᴾAssoc g f yᴰ .fst) (reind g .F-id)
              ∙ Pᶜ.⋆IdL _)
