@@ -140,6 +140,82 @@ module _ {ℓC ℓC' ℓD ℓD' : Level}
         λ g → Σ≡Prop (λ _ → D.isSetHom _ _)
           (ΣPathP (A×B.,p≡ refl refl , X×Y.,p≡ refl refl)))
 
+  -- Coproducts and the initial object need NOTHING of `F`: their
+  -- structure map is built by copairing out of the two components,
+  -- not by a comparison map into a product.
+  module _ (initC : Initial' C) (initD : Initial' D) where
+    private
+      module 𝟘C = InitialNotation initC
+      module 𝟘D = InitialNotation initD
+
+    glueInitial : Initial' Gl
+    glueInitial = terminalToUniversalElement
+      ( ((𝟘D.𝟘 , 𝟘C.𝟘) , 𝟘D.absurd)
+      , λ ((A , X) , α) →
+          ((𝟘D.absurd , 𝟘C.absurd) , 𝟘D.𝟘extensionality)
+        , λ ((h , f) , sq) → Σ≡Prop (λ _ → D.isSetHom _ _)
+            (ΣPathP (𝟘D.𝟘extensionality , 𝟘C.𝟘extensionality)))
+
+  module _ (bcpC : BinCoProducts C) (bcpD : BinCoProducts D) where
+
+    glueBinCoProducts : BinCoProducts Gl
+    glueBinCoProducts (((A , X) , α) , ((B , Y) , β)) = ue
+      where
+      module A+B = BinCoProductNotation (bcpD (A , B))
+      module X+Y = BinCoProductNotation (bcpC (X , Y))
+
+      γ : D [ A+B.vert , F ⟅ X+Y.vert ⟆ ]
+      γ = A+B.[ α D.⋆ F ⟪ X+Y.σ₁ ⟫ ,p β D.⋆ F ⟪ X+Y.σ₂ ⟫ ]
+
+      i₁ : Gl [ ((A , X) , α) , ((A+B.vert , X+Y.vert) , γ) ]
+      i₁ = (A+B.σ₁ , X+Y.σ₁) , sym A+B.+β₁
+
+      i₂ : Gl [ ((B , Y) , β) , ((A+B.vert , X+Y.vert) , γ) ]
+      i₂ = (A+B.σ₂ , X+Y.σ₂) , sym A+B.+β₂
+
+      module _ {E : D .ob} {Z : C .ob} {δ : D [ E , F ⟅ Z ⟆ ]}
+        (g₁ : Gl [ ((A , X) , α) , ((E , Z) , δ) ])
+        (g₂ : Gl [ ((B , Y) , β) , ((E , Z) , δ) ]) where
+        private
+          h₁ = g₁ .fst .fst
+          f₁ = g₁ .fst .snd
+          h₂ = g₂ .fst .fst
+          f₂ = g₂ .fst .snd
+
+        copairSq : γ D.⋆ F ⟪ X+Y.[ f₁ ,p f₂ ] ⟫
+                 ≡ A+B.[ h₁ ,p h₂ ] D.⋆ δ
+        copairSq = A+B.[-,p-]-extensionality
+          ( sym (D.⋆Assoc _ _ _)
+          ∙ cong (D._⋆ F ⟪ X+Y.[ f₁ ,p f₂ ] ⟫) A+B.+β₁
+          ∙ D.⋆Assoc _ _ _
+          ∙ cong (α D.⋆_) (sym (F .F-seq _ _) ∙ cong (F ⟪_⟫) X+Y.+β₁)
+          ∙ g₁ .snd
+          ∙ cong (D._⋆ δ) (sym A+B.+β₁)
+          ∙ D.⋆Assoc _ _ _)
+          ( sym (D.⋆Assoc _ _ _)
+          ∙ cong (D._⋆ F ⟪ X+Y.[ f₁ ,p f₂ ] ⟫) A+B.+β₂
+          ∙ D.⋆Assoc _ _ _
+          ∙ cong (β D.⋆_) (sym (F .F-seq _ _) ∙ cong (F ⟪_⟫) X+Y.+β₂)
+          ∙ g₂ .snd
+          ∙ cong (D._⋆ δ) (sym A+B.+β₂)
+          ∙ D.⋆Assoc _ _ _)
+
+        copair : Gl [ ((A+B.vert , X+Y.vert) , γ) , ((E , Z) , δ) ]
+        copair = (A+B.[ h₁ ,p h₂ ] , X+Y.[ f₁ ,p f₂ ]) , copairSq
+
+      ue : BinCoProduct Gl (((A , X) , α) , ((B , Y) , β))
+      ue .vertex = (A+B.vert , X+Y.vert) , γ
+      ue .element = i₁ , i₂
+      ue .universal w = isoToIsEquiv (iso _
+        (λ (g₁ , g₂) → copair g₁ g₂)
+        (λ (g₁ , g₂) → ΣPathP
+          ( Σ≡Prop (λ _ → D.isSetHom _ _)
+              (ΣPathP (A+B.+β₁ , X+Y.+β₁))
+          , Σ≡Prop (λ _ → D.isSetHom _ _)
+              (ΣPathP (A+B.+β₂ , X+Y.+β₂))))
+        λ g → Σ≡Prop (λ _ → D.isSetHom _ _)
+          (ΣPathP (A+B.[-,p-]≡ refl refl , X+Y.[-,p-]≡ refl refl)))
+
 {-
   Exponentials.  Taken in `SET`, where the classical pullback is a
   subset: the carrier of `(A , X , α) ⇒ (B , Y , β)` is the set of

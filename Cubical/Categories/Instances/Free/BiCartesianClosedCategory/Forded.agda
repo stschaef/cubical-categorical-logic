@@ -344,86 +344,231 @@ module _ (Q : +×⇒Quiver ℓQ ℓQ') where
       ((λ (f , g) → ΣPathP (p.×β₁ , p.×β₂)) ,
       λ f → p.,p≡ refl refl))
 
-  -- -- -- BCCC functors out of the FreeBiCartesianClosedCategory
-  -- -- -- are naturally isomorphic to each other
-  -- -- -- TODO: uncomment once IsoCommaBinProductsᴰ etc. are defined
-  -- -- module _
-  -- --   {D : Category ℓD ℓD'}
-  -- --   ((F , F-bp) (G , G-bp) :
-  -- --     CartesianFunctor (FreeBiCartesianClosedCategory .CCC .CC) D)
-  -- --   (F-1 : Term.preservesTerminal |FreeBiCartesianClosedCategory| D F)
-  -- --   (G-1 : Term.preservesTerminal |FreeBiCartesianClosedCategory| D G)
-  -- --   (F-0 : isTerminal (D ^op) (F ⟅ ⊥ ⟆))
-  -- --   (G-0 : isTerminal (D ^op) (G ⟅ ⊥ ⟆))
-  -- --   (+-iso : ∀ {A B} → CatIso D (F ⟅ A ⟆) (G ⟅ A ⟆)
-  -- --                     → CatIso D (F ⟅ B ⟆) (G ⟅ B ⟆)
-  -- --                     → CatIso D (F ⟅ A + B ⟆) (G ⟅ A + B ⟆))
-  -- --   (+-σ₁ : ∀ {A B} (f : CatIso D (F ⟅ A ⟆) (G ⟅ A ⟆))
-  -- --                    (g : CatIso D (F ⟅ B ⟆) (G ⟅ B ⟆))
-  -- --          → D ._⋆_ (F ⟪ σ₁' ⟫) (+-iso f g .fst)
-  -- --            ≡ D ._⋆_ (f .fst) (G ⟪ σ₁' ⟫))
-  -- --   (+-σ₂ : ∀ {A B} (f : CatIso D (F ⟅ A ⟆) (G ⟅ A ⟆))
-  -- --                    (g : CatIso D (F ⟅ B ⟆) (G ⟅ B ⟆))
-  -- --          → D ._⋆_ (F ⟪ σ₂' ⟫) (+-iso f g .fst)
-  -- --            ≡ D ._⋆_ (g .fst) (G ⟪ σ₂' ⟫))
-  -- --   (+-cocase : ∀ {A B Γ} (f : CatIso D (F ⟅ A ⟆) (G ⟅ A ⟆))
-  -- --                          (g : CatIso D (F ⟅ B ⟆) (G ⟅ B ⟆))
-  -- --                          (γ : CatIso D (F ⟅ Γ ⟆) (G ⟅ Γ ⟆))
-  -- --             → (h : Expr (A + B) Γ)
-  -- --             → D ._⋆_ (F ⟪ h ⟫) (γ .fst)
-  -- --               ≡ D ._⋆_ (+-iso f g .fst) (G ⟪ h ⟫))
-  -- --   (⇒-iso : ∀ {A B} → CatIso D (F ⟅ A ⟆) (G ⟅ A ⟆)
-  -- --                      → CatIso D (F ⟅ B ⟆) (G ⟅ B ⟆)
-  -- --                      → CatIso D (F ⟅ A ⇒ B ⟆) (G ⟅ A ⇒ B ⟆))
-  -- --   (⇒-lam : ∀ {A B Γ} (f : CatIso D (F ⟅ A ⟆) (G ⟅ A ⟆))
-  -- --                       (g : CatIso D (F ⟅ B ⟆) (G ⟅ B ⟆))
-  -- --                       (γ : CatIso D (F ⟅ Γ ⟆) (G ⟅ Γ ⟆))
-  -- --            → (h : Expr (Γ × A) B)
-  -- --            → (D ._⋆_ (F ⟪ lam' h ⟫) (⇒-iso f g .fst))
-  -- --              ≡ (D ._⋆_ (γ .fst) (G ⟪ lam' h ⟫)))
-  -- --   where
-  -- --   open IsoCommaStructure F G
-  -- --   private module D = Category D
+  -- BCCC functors out of the FreeBiCartesianClosedCategory are
+  -- naturally isomorphic to each other.
+  module _
+    {D : Category ℓD ℓD'}
+    ((F , F-bp) (G , G-bp) :
+      CartesianFunctor (FreeBiCartesianClosedCategory .CCC .CC) D)
+    (F-1 : Term.preservesTerminal |FreeBiCartesianClosedCategory| D F)
+    (G-1 : Term.preservesTerminal |FreeBiCartesianClosedCategory| D G)
+    (F-0 : isTerminal (D ^op) (F ⟅ ⊥ ⟆))
+    (G-0 : isTerminal (D ^op) (G ⟅ ⊥ ⟆))
+    (⇒-iso : ∀ {A B} → CatIso D (F ⟅ A ⟆) (G ⟅ A ⟆)
+                       → CatIso D (F ⟅ B ⟆) (G ⟅ B ⟆)
+                       → CatIso D (F ⟅ A ⇒ B ⟆) (G ⟅ A ⇒ B ⟆))
+    (+-iso : ∀ {A B} → CatIso D (F ⟅ A ⟆) (G ⟅ A ⟆)
+                       → CatIso D (F ⟅ B ⟆) (G ⟅ B ⟆)
+                       → CatIso D (F ⟅ A + B ⟆) (G ⟅ A + B ⟆))
+    where
+    private
+      F,G-IsoC : Categoryᴰ |FreeBiCartesianClosedCategory| _ _
+      F,G-IsoC = Reindex.reindex (IsoCommaᴰ F G)
+        (Δ |FreeBiCartesianClosedCategory|)
+      module D = Category D
 
-  -- --   module _
-  -- --     (⇒-eval : ∀ {A B} (f : CatIso D (F ⟅ A ⟆) (G ⟅ A ⟆))
-  -- --                        (g : CatIso D (F ⟅ B ⟆) (G ⟅ B ⟆))
-  -- --              → F ⟪ eval' ⟫ D.⋆ g .fst
-  -- --                ≡ IsoCommaBinProductsᴰ
-  -- --                    (FreeBiCartesianClosedCategory .CCC .CC .bp) F-bp G-bp
-  -- --                    (⇒-iso f g) f .fst .fst
-  -- --                  D.⋆ G ⟪ eval' ⟫)
-  -- --     where
+    open isIsoOver
 
-  -- --     private
-  -- --       BCCCᴰF,G-IsoC : BiCartesianClosedCategoryᴰ FreeBiCartesianClosedCategory _ _
-  -- --       BCCCᴰF,G-IsoC .BiCartesianClosedCategoryᴰ.CCCᴰ
-  -- --         .CartesianClosedCategoryᴰ.CCᴰ .CartesianCategoryᴰ.Cᴰ = IsoCommaᴰΔ
-  -- --       BCCCᴰF,G-IsoC .BiCartesianClosedCategoryᴰ.CCCᴰ
-  -- --         .CartesianClosedCategoryᴰ.CCᴰ .CartesianCategoryᴰ.termᴰ =
-  -- --         IsoCommaTerminalᴰ (FreeBCCC.term) F-1 G-1
-  -- --       BCCCᴰF,G-IsoC .BiCartesianClosedCategoryᴰ.CCCᴰ
-  -- --         .CartesianClosedCategoryᴰ.CCᴰ .CartesianCategoryᴰ.bpᴰ =
-  -- --         IsoCommaBinProductsᴰ (FreeBCCC.bp) F-bp G-bp
-  -- --       BCCCᴰF,G-IsoC .BiCartesianClosedCategoryᴰ.CCCᴰ
-  -- --         .CartesianClosedCategoryᴰ.expᴰ {A = A} f {B = B} g =
-  -- --         ⇒-iso f g , (⇒-eval f g , tt) , isUniv
-  -- --         where
-  -- --         isUniv : isUniversalᴰ IsoCommaᴰΔ _ _
-  -- --           (FreeBCCC.exps A B) (⇒-eval f g , tt)
-  -- --         isUniv Γ Γᴰ .inv u uᴰ .fst = ⇒-lam f g Γᴰ u
-  -- --         isUniv Γ Γᴰ .inv _ _ .snd = tt
-  -- --         isUniv Γ Γᴰ .rightInv _ _ =
-  -- --           isProp→PathP (λ _ → isPropΣ (D.isSetHom _ _) λ _ → isPropUnit) _ _
-  -- --         isUniv Γ Γᴰ .leftInv _ _ =
-  -- --           isProp→PathP (λ _ → isPropΣ (D.isSetHom _ _) λ _ → isPropUnit) _ _
-  -- --       BCCCᴰF,G-IsoC .BiCartesianClosedCategoryᴰ.initᴰ =
-  -- --         IsoCommaInitialᴰ FreeBCCC.init F-0 G-0
-  -- --       BCCCᴰF,G-IsoC .BiCartesianClosedCategoryᴰ.bcpᴰ =
-  -- --         IsoCommaBinCoProductsᴰ FreeBCCC.sums +-iso +-σ₁ +-σ₂ +-cocase
+    CCᴰF,G-IsoC :
+      CartesianCategoryᴰ (FreeBiCartesianClosedCategory .CCC .CC) _ _
+    CCᴰF,G-IsoC .CartesianCategoryᴰ.Cᴰ = F,G-IsoC
+    CCᴰF,G-IsoC .CartesianCategoryᴰ.termᴰ =
+      F⊤≅G⊤ , _ , isUniv
+      where
+      F⊤ : Terminal D
+      F⊤ = _ , F-1 (Terminal'ToTerminal FreeBCCC.term)
 
-  -- --     module _ (ı : ElimInterpᴰ BCCCᴰF,G-IsoC) where
-  -- --       FreeBCCCFunctor≅ : NatIso F G
-  -- --       FreeBCCCFunctor≅ =
-  -- --         sectionToNatIso (elimBiCartesianClosed BCCCᴰF,G-IsoC ı
-  -- --           .BiCartesianClosedSection.section)
+      G⊤ : Terminal D
+      G⊤ = _ , G-1 (Terminal'ToTerminal FreeBCCC.term)
+
+      module G⊤ = TerminalNotation (terminalToUniversalElement G⊤)
+
+      F⊤≅G⊤ : CatIso D (F ⟅ ⊤ ⟆) (G ⟅ ⊤ ⟆)
+      F⊤≅G⊤ = terminalToIso D F⊤ G⊤
+
+      isUniv : isUniversalᴰ F,G-IsoC _ _ FreeBCCC.term tt
+      isUniv Γ Γᴰ .inv _ _ .fst = G⊤.𝟙extensionality
+      isUniv Γ Γᴰ .inv _ _ .snd = _
+      isUniv Γ Γᴰ .rightInv = λ _ _ → refl
+      isUniv Γ Γᴰ .leftInv u v =
+        isProp→PathP (λ _ → isPropΣ (D.isSetHom _ _) λ _ → isPropUnit) _ _
+    CCᴰF,G-IsoC .CartesianCategoryᴰ.bpᴰ {A = A} {B = B} f g =
+      F×≅G× , ((sym G×.×β₁ , tt) , (sym G×.×β₂ , tt)) , isUniv
+      where
+      module FCC× = BinProductNotation (FreeBCCC.bp (A , B))
+      F× = preservesUniversalElement→UniversalElement
+            (preservesBinProdCones F A B) (FreeBCCC.bp (A , B)) (F-bp A B)
+      G× = preservesUniversalElement→UniversalElement
+            (preservesBinProdCones G A B) (FreeBCCC.bp (A , B)) (G-bp A B)
+      module F× = BinProductNotation F×
+      module G× = BinProductNotation G×
+
+      forward = (F×.π₁ D.⋆ f .fst) G×.,p (F×.π₂ D.⋆ g .fst)
+      backward = (G×.π₁ D.⋆ f .snd .isIso.inv) F×.,p
+                 (G×.π₂ D.⋆ g .snd .isIso.inv)
+
+      F×≅G× : CatIso D _ _
+      F×≅G× .fst = forward
+      F×≅G× .snd .isIso.inv = backward
+      F×≅G× .snd .isIso.sec = G×.,p-extensionality
+        (D.⋆Assoc _ _ _
+        ∙ D.⟨ refl ⟩⋆⟨ G×.×β₁ ⟩
+        ∙ sym (D.⋆Assoc _ _ _)
+        ∙ D.⟨ F×.×β₁ ⟩⋆⟨ refl ⟩
+        ∙ D.⋆Assoc _ _ _
+        ∙ D.⟨ refl ⟩⋆⟨ f .snd .isIso.sec ⟩
+        ∙ D.⋆IdR _
+        ∙ sym (D.⋆IdL _))
+        (D.⋆Assoc _ _ _
+        ∙ D.⟨ refl ⟩⋆⟨ G×.×β₂ ⟩
+        ∙ sym (D.⋆Assoc _ _ _)
+        ∙ D.⟨ F×.×β₂ ⟩⋆⟨ refl ⟩
+        ∙ D.⋆Assoc _ _ _
+        ∙ D.⟨ refl ⟩⋆⟨ g .snd .isIso.sec ⟩
+        ∙ D.⋆IdR _
+        ∙ sym (D.⋆IdL _))
+      F×≅G× .snd .isIso.ret = F×.,p-extensionality
+        (D.⋆Assoc _ _ _
+        ∙ D.⟨ refl ⟩⋆⟨ F×.×β₁ ⟩
+        ∙ sym (D.⋆Assoc _ _ _)
+        ∙ D.⟨ G×.×β₁ ⟩⋆⟨ refl ⟩
+        ∙ D.⋆Assoc _ _ _
+        ∙ D.⟨ refl ⟩⋆⟨ f .snd .isIso.ret ⟩
+        ∙ D.⋆IdR _
+        ∙ sym (D.⋆IdL _))
+        (D.⋆Assoc _ _ _
+        ∙ D.⟨ refl ⟩⋆⟨ F×.×β₂ ⟩
+        ∙ sym (D.⋆Assoc _ _ _)
+        ∙ D.⟨ G×.×β₂ ⟩⋆⟨ refl ⟩
+        ∙ D.⋆Assoc _ _ _
+        ∙ D.⟨ refl ⟩⋆⟨ g .snd .isIso.ret ⟩
+        ∙ D.⋆IdR _
+        ∙ sym (D.⋆IdL _))
+
+      isUniv : isUniversalᴰ F,G-IsoC _ _ (FreeBCCC.bp (A , B))
+        ((sym G×.×β₁ , tt) , (sym G×.×β₂ , tt))
+      isUniv Γ Γᴰ .inv (u₁ , u₂) ((sq₁ , _) , (sq₂ , _)) .fst =
+        G×.,p-extensionality
+          (D.⋆Assoc _ _ _
+          ∙ D.⟨ refl ⟩⋆⟨ G×.×β₁ ⟩
+          ∙ sym (D.⋆Assoc _ _ _)
+          ∙ D.⟨ sym (F .F-seq _ _) ∙ cong (F .F-hom) FCC×.×β₁ ⟩⋆⟨ refl ⟩
+          ∙ sq₁
+          ∙ D.⟨ refl ⟩⋆⟨ sym (cong (G .F-hom) FCC×.×β₁) ∙ G .F-seq _ _ ⟩
+          ∙ sym (D.⋆Assoc _ _ _))
+          (D.⋆Assoc _ _ _
+          ∙ D.⟨ refl ⟩⋆⟨ G×.×β₂ ⟩
+          ∙ sym (D.⋆Assoc _ _ _)
+          ∙ D.⟨ sym (F .F-seq _ _) ∙ cong (F .F-hom) FCC×.×β₂ ⟩⋆⟨ refl ⟩
+          ∙ sq₂
+          ∙ D.⟨ refl ⟩⋆⟨ sym (cong (G .F-hom) FCC×.×β₂) ∙ G .F-seq _ _ ⟩
+          ∙ sym (D.⋆Assoc _ _ _))
+      isUniv Γ Γᴰ .inv _ _ .snd = tt
+      isUniv Γ Γᴰ .rightInv _ _ =
+        isProp→PathP (λ _ → isProp×
+          (isPropΣ (D.isSetHom _ _) λ _ → isPropUnit)
+          (isPropΣ (D.isSetHom _ _) λ _ → isPropUnit)) _ _
+      isUniv Γ Γᴰ .leftInv _ _ =
+        isProp→PathP (λ _ → isPropΣ (D.isSetHom _ _) λ _ → isPropUnit) _ _
+
+    -- The initial object needs only that `F` and `G` send `⊥` to an
+    -- initial object; there is no analogue of `⇒-lam` to get wrong,
+    -- because every square out of an initial object commutes.
+    initᴰF,G : Initialᴰ F,G-IsoC FreeBCCC.init
+    initᴰF,G = F⊥≅G⊥ , _ , isUniv
+      where
+      F⊥≅G⊥ : CatIso D (F ⟅ ⊥ ⟆) (G ⟅ ⊥ ⟆)
+      F⊥≅G⊥ .fst = F-0 (G ⟅ ⊥ ⟆) .fst
+      F⊥≅G⊥ .snd .isIso.inv = G-0 (F ⟅ ⊥ ⟆) .fst
+      F⊥≅G⊥ .snd .isIso.sec =
+        isContr→isProp (G-0 (G ⟅ ⊥ ⟆)) _ _
+      F⊥≅G⊥ .snd .isIso.ret =
+        isContr→isProp (F-0 (F ⟅ ⊥ ⟆)) _ _
+
+      isUniv : isUniversalᴰ (F,G-IsoC ^opᴰ) _ _ FreeBCCC.init tt
+      isUniv Γ Γᴰ .inv _ _ .fst = isContr→isProp (F-0 (G ⟅ Γ ⟆)) _ _
+      isUniv Γ Γᴰ .inv _ _ .snd = _
+      isUniv Γ Γᴰ .rightInv = λ _ _ → refl
+      isUniv Γ Γᴰ .leftInv u v =
+        isProp→PathP (λ _ → isPropΣ (D.isSetHom _ _) λ _ → isPropUnit) _ _
+
+    module _
+      (+-σ₁ : ∀ {A B} (f : CatIso D (F ⟅ A ⟆) (G ⟅ A ⟆))
+                       (g : CatIso D (F ⟅ B ⟆) (G ⟅ B ⟆))
+             → F ⟪ σ₁' ⟫ D.⋆ +-iso f g .fst
+               ≡ f .fst D.⋆ G ⟪ σ₁' ⟫)
+      (+-σ₂ : ∀ {A B} (f : CatIso D (F ⟅ A ⟆) (G ⟅ A ⟆))
+                       (g : CatIso D (F ⟅ B ⟆) (G ⟅ B ⟆))
+             → F ⟪ σ₂' ⟫ D.⋆ +-iso f g .fst
+               ≡ g .fst D.⋆ G ⟪ σ₂' ⟫)
+      (+-cocase : ∀ {A B Γ} (f : CatIso D (F ⟅ A ⟆) (G ⟅ A ⟆))
+                             (g : CatIso D (F ⟅ B ⟆) (G ⟅ B ⟆))
+                             (γ : CatIso D (F ⟅ Γ ⟆) (G ⟅ Γ ⟆))
+                             (h₁ : Expr A Γ) (h₂ : Expr B Γ)
+                → F ⟪ h₁ ⟫ D.⋆ γ .fst ≡ f .fst D.⋆ G ⟪ h₁ ⟫
+                → F ⟪ h₂ ⟫ D.⋆ γ .fst ≡ g .fst D.⋆ G ⟪ h₂ ⟫
+                → F ⟪ [ h₁ , h₂ ]' ⟫ D.⋆ γ .fst
+                  ≡ +-iso f g .fst D.⋆ G ⟪ [ h₁ , h₂ ]' ⟫)
+      (⇒-eval : ∀ {A B} (f : CatIso D (F ⟅ A ⟆) (G ⟅ A ⟆))
+                         (g : CatIso D (F ⟅ B ⟆) (G ⟅ B ⟆))
+               → F ⟪ eval' ⟫ D.⋆ g .fst
+                 ≡ CCᴰF,G-IsoC .CartesianCategoryᴰ.bpᴰ
+                     (⇒-iso f g) f .fst .fst
+                   D.⋆ G ⟪ eval' ⟫)
+      (⇒-lam : ∀ {A B Γ} (f : CatIso D (F ⟅ A ⟆) (G ⟅ A ⟆))
+                          (g : CatIso D (F ⟅ B ⟆) (G ⟅ B ⟆))
+                          (γ : CatIso D (F ⟅ Γ ⟆) (G ⟅ Γ ⟆))
+               → (h : Expr (Γ × A) B)
+               → F ⟪ h ⟫ D.⋆ g .fst
+                 ≡ CCᴰF,G-IsoC .CartesianCategoryᴰ.bpᴰ γ f .fst .fst
+                   D.⋆ G ⟪ h ⟫
+               → F ⟪ lam' h ⟫ D.⋆ ⇒-iso f g .fst
+                 ≡ γ .fst D.⋆ G ⟪ lam' h ⟫)
+      where
+
+      bcpᴰF,G : BinCoProductsᴰ F,G-IsoC FreeBCCC.sums
+      bcpᴰF,G {A = A} {B = B} f g =
+        +-iso f g , ((+-σ₁ f g , tt) , (+-σ₂ f g , tt)) , isUniv
+        where
+        isUniv : isUniversalᴰ (F,G-IsoC ^opᴰ) _ _ (FreeBCCC.sums (A , B))
+          ((+-σ₁ f g , tt) , (+-σ₂ f g , tt))
+        isUniv Γ Γᴰ .inv (u₁ , u₂) ((sq₁ , _) , (sq₂ , _)) .fst =
+          +-cocase f g Γᴰ u₁ u₂ sq₁ sq₂
+        isUniv Γ Γᴰ .inv _ _ .snd = _
+        isUniv Γ Γᴰ .rightInv _ _ =
+          isProp→PathP (λ _ → isProp×
+            (isPropΣ (D.isSetHom _ _) λ _ → isPropUnit)
+            (isPropΣ (D.isSetHom _ _) λ _ → isPropUnit)) _ _
+        isUniv Γ Γᴰ .leftInv _ _ =
+          isProp→PathP (λ _ → isPropΣ (D.isSetHom _ _) λ _ → isPropUnit) _ _
+
+      BCCCᴰF,G-IsoC :
+        BiCartesianClosedCategoryᴰ FreeBiCartesianClosedCategory _ _
+      BCCCᴰF,G-IsoC .BiCartesianClosedCategoryᴰ.CCCᴰ
+        .CartesianClosedCategoryᴰ.CCᴰ = CCᴰF,G-IsoC
+      BCCCᴰF,G-IsoC .BiCartesianClosedCategoryᴰ.CCCᴰ
+        .CartesianClosedCategoryᴰ.expᴰ {A = A} f {B = B} g =
+        ⇒-iso f g , (⇒-eval f g , tt) , isUniv
+        where
+        isUniv : isUniversalᴰ F,G-IsoC _ _
+          (FreeBCCC.exps A B) (⇒-eval f g , tt)
+        isUniv Γ Γᴰ .inv u uᴰ .fst = ⇒-lam f g Γᴰ u (uᴰ .fst)
+        isUniv Γ Γᴰ .inv _ _ .snd = tt
+        isUniv Γ Γᴰ .rightInv _ _ =
+          isProp→PathP (λ _ → isPropΣ (D.isSetHom _ _) λ _ → isPropUnit) _ _
+        isUniv Γ Γᴰ .leftInv _ _ =
+          isProp→PathP (λ _ → isPropΣ (D.isSetHom _ _) λ _ → isPropUnit) _ _
+      BCCCᴰF,G-IsoC .BiCartesianClosedCategoryᴰ.initᴰ = initᴰF,G
+      BCCCᴰF,G-IsoC .BiCartesianClosedCategoryᴰ.bcpᴰ = bcpᴰF,G
+
+      -- A global section of the IsoComma gives a natural isomorphism
+      sectionToNatIso : GlobalSection F,G-IsoC → NatIso F G
+      sectionToNatIso S .NatIso.trans .NatTrans.N-ob x = S .F-obᴰ x .fst
+      sectionToNatIso S .NatIso.trans .NatTrans.N-hom f = S .F-homᴰ f .fst
+      sectionToNatIso S .NatIso.nIso x = S .F-obᴰ x .snd
+
+      module _ (ı : ElimInterpᴰ BCCCᴰF,G-IsoC) where
+        FreeBiCCCFunctor≅ : NatIso F G
+        FreeBiCCCFunctor≅ =
+          sectionToNatIso (elimBiCartesianClosed BCCCᴰF,G-IsoC ı
+            .BiCartesianClosedSection.section)
