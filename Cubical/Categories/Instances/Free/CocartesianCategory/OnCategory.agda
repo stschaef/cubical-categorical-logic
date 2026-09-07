@@ -53,8 +53,6 @@ module _ {A : Category ℓA ℓA'} {B : Category ℓB ℓB'} where
   unop₂ F .F-id = F .F-id
   unop₂ F .F-seq f g = F .F-seq g f
 
-  unop₂-op₂ : (F : Functor A B) → unop₂ (op₂ F) ≡ F
-  unop₂-op₂ F = Functor≡ (λ _ → refl) (λ _ → refl)
 
 module _ {A : Category ℓA ℓA'} {B : Category ℓB ℓB'}
   {P Q : Functor (A ^op) (B ^op)} where
@@ -75,11 +73,6 @@ module _ {A : Category ℓA ℓA'} {B : Category ℓB ℓB'}
   opNatIso ı .nIso A .sec = ı .nIso A .ret
   opNatIso ı .nIso A .ret = ı .nIso A .sec
 
-module _ {A : Category ℓA ℓA'} {B : Category ℓB ℓB'}
-  {P Q : Functor A B} where
-  op₂NT : NatTrans P Q → NatTrans (op₂ Q) (op₂ P)
-  op₂NT σ .N-ob = σ .N-ob
-  op₂NT σ .N-hom f = sym (σ .N-hom f)
 
 module _ (C : Category ℓC ℓC') where
   private
@@ -135,8 +128,6 @@ module _ (C : Category ℓC ℓC') where
     → t ≡ [ ι₁ ⋆⟨ |FreeCocartesianOn| ⟩ t , ι₂ ⋆⟨ |FreeCocartesianOn| ⟩ t ]ᶜ
   +η = ×η
 
-  initialᶜ : Initial |FreeCocartesianOn|
-  initialᶜ = 0ᶜ , λ Γ → ¡ᶜ , λ t → sym (0η t)
 
   {- The binary coproducts are the binary products of
      `FreeCartesianOn (C ^op)`.  They are not restated as

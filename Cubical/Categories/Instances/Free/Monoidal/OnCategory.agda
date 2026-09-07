@@ -24,7 +24,6 @@ open import Cubical.Categories.Displayed.NaturalTransformation.More
 open import Cubical.Categories.Displayed.Section
 open import Cubical.Categories.Displayed.Monoidal.Base
 open import Cubical.Categories.Displayed.Instances.Reindex.Base
-  as Monoidal
 open import Cubical.Categories.Displayed.Instances.Reindex.Properties
 open import Cubical.Categories.Displayed.Instances.Weaken.Monoidal
 import Cubical.Categories.Displayed.Instances.Weaken as Wk

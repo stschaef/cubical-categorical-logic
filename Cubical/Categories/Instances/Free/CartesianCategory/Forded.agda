@@ -239,14 +239,12 @@ module _ (Q : ×Quiver ℓQ ℓQ') where
         F⊤ : Terminal D
         F⊤ = _ , F-1 (Terminal'ToTerminal $ FreeCartesianCategory .term)
 
-        F⊤' = terminalToUniversalElement F⊤
 
         G⊤ : Terminal D
         G⊤ = _ , G-1 (Terminal'ToTerminal $ FreeCartesianCategory .term)
 
         G⊤' = terminalToUniversalElement G⊤
 
-        module F⊤ = TerminalNotation F⊤'
         module G⊤ = TerminalNotation G⊤'
 
         F⊤≅G⊤ : CatIso D (F ⟅ ⊤ ⟆) (G ⟅ ⊤ ⟆)

@@ -32,8 +32,8 @@ open import Cubical.Categories.Isomorphism
 open import Cubical.Categories.NaturalTransformation
 open import Cubical.Categories.Limits.Cartesian.Base
 open import Cubical.Categories.Limits.Cartesian.More
-open import Cubical.Categories.Limits.Terminal as Term
-open import Cubical.Categories.Limits.Terminal.More as Term
+open import Cubical.Categories.Limits.Terminal
+open import Cubical.Categories.Limits.Terminal.More
 open import Cubical.Categories.Limits.BinProduct.More
 open import Cubical.Categories.Presheaf.Base
 open import Cubical.Categories.Presheaf.StrictHom

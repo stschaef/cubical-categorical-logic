@@ -16,7 +16,6 @@ open import Cubical.Categories.Monoidal.Base
 open import Cubical.Categories.Monoidal.Biclosed
 open import Cubical.Categories.Monoidal.Functor
 open import Cubical.Categories.Adjoint.RightAdjoint
-import Cubical.Categories.Instances.Free.Monoidal.OnCategory as FM
 open import Cubical.Categories.Functor
 open import Cubical.Categories.NaturalTransformation
 open import Cubical.Categories.Presheaf.Representable

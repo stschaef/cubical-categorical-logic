@@ -139,8 +139,6 @@ module NF (Q : Quiver ℓQ ℓQ') (isSetOb : isSet (Q .fst)) where
   Ctx : Type ℓQ
   Ctx = List Ty
 
-  isSetCtx : isSet Ctx
-  isSetCtx = isOfHLevelList 0 isSetTy
 
   -- variables, by recursion on the context
   Var : Ctx → Ty → Type ℓQ
