@@ -221,7 +221,3 @@ module TwoMonadNotation {K : Bicategory ℓ ℓ' ℓ''} (M : TwoMonad K) where
   assoc₂ : (x : K.ob) → K.2Cell _ _
   assoc₂ x = assoc⁺ .M-ob x
 
-  -- `whiskerL T` inserts an identity laxity cell on each side.
-  dropId₂ : {x y : K.ob} {f g : K.1Cell x y} (u : K.2Cell f g)
-    → K.id₂ K.⋆₂ (u K.⋆₂ K.id₂) ≡ u
-  dropId₂ u = K.⋆₂IdL _ ∙ K.⋆₂IdR _

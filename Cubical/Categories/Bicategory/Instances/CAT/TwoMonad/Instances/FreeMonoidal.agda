@@ -1058,26 +1058,3 @@ module _ {ℓ : Level} (M : MonoidalCategory ℓ ℓ) where
   relates to `ev ((↑ x ⊗ ↑ y) ⊗ ↑ z)`, and only there does the free
   associator become available.  That half is not done here.
 -}
-module _ {ℓ : Level} (P : PseudoAlgebra (FreeMonoidalTwoMonad {ℓ})) where
-  private
-    C = P .carrier
-    ev = P .act
-
-  algebraTensor : Functor (C ×C C) C
-  algebraTensor .F-ob (x , y) = ev ⟅ ↑ x ⊗ ↑ y ⟆
-  algebraTensor .F-hom (f , g) = ev ⟪ ↑ₘ f ⊗ ↑ₘ g ⟫
-  algebraTensor .F-id {x = x , y} =
-      cong (ev .F-hom)
-        ((λ i → ↑ₘId {x = x} i ⊗ ↑ₘId {x = y} i) ∙ ⊗id)
-    ∙ ev .F-id
-  algebraTensor .F-seq (f , g) (f' , g') =
-      cong (ev .F-hom)
-        ((λ i → ↑ₘSeq f f' i ⊗ ↑ₘSeq g g' i) ∙ ⊗⋆ _ _ _ _)
-    ∙ ev .F-seq _ _
-
-  algebraTensorStr : TensorStr C
-  algebraTensorStr .TensorStr.─⊗─ = algebraTensor
-  algebraTensorStr .TensorStr.unit = ev ⟅ unit ⟆
-
-  -- REIVEW
-  -- Build the rest of the monoidal structure by showing coherences
