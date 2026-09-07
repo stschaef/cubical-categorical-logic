@@ -64,3 +64,30 @@ module _
   --   transport (λ i → C [ GF i x , GF i y ]) (G .F-hom f)
   -- corec G Go GF .F-id = {!!}
   -- corec G Go GF .F-seq = {!!}
+
+-- Raising a category's OBJECT level, leaving its homs where they are.
+-- `Lift` on the objects and `lower` as the reindexing: the homs are
+-- literally C's, so every universal property of C is one of `LiftOb C`
+-- after `lift`/`lower`.  This is the direction upstream's `LiftHoms`
+-- does not go, and it is what lets two categories whose object levels
+-- differ be compared inside a single `CAT ℓ ℓ'`.
+module _ (C : Category ℓC ℓC') (ℓ : Level) where
+  LiftOb : Category (ℓ-max ℓC ℓ) ℓC'
+  LiftOb = ChangeOfObjects {X = Lift ℓ (C .ob)} C lower
+
+  -- `lower`, as a functor.  An isomorphism of categories: it is the
+  -- identity on homs, and `lift`/`lower` are inverse on objects.
+  lowerOb : Functor LiftOb C
+  lowerOb = π {X = Lift ℓ (C .ob)} C lower
+
+  liftOb : Functor C LiftOb
+  liftOb .F-ob = lift
+  liftOb .F-hom f = f
+  liftOb .F-id = refl
+  liftOb .F-seq _ _ = refl
+
+  lowerOb∘liftOb : lowerOb ∘F liftOb ≡ Id
+  lowerOb∘liftOb = Functor≡ (λ _ → refl) (λ _ → refl)
+
+  liftOb∘lowerOb : liftOb ∘F lowerOb ≡ Id
+  liftOb∘lowerOb = Functor≡ (λ _ → refl) (λ _ → refl)
