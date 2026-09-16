@@ -58,12 +58,26 @@ module _ (Wo : WFOrder ℓD ℓ<) (Wo' : WFOrder ℓD' ℓ<') where
       inr (a≡a' Eq.∙ a'≡a'' , W'.trans< b<b' b'<b'')
 
     wf<Lex : WellFounded _<Lex_
-    wf<Lex (a , b) = go a (W.wf< a) b (W'.wf< b)
+    wf<Lex (a , b) = accLex (W.wf< a) (W'.wf< b)
       where
-        go : ∀ a → Acc W._<_ a → ∀ b → Acc W'._<_ b → Acc _<Lex_ (a , b)
-        go a aA@(acc rsA) b (acc rsB) = acc λ where
-          (a' , b') (inl a'<a)             → go a' (rsA a' a'<a) b' (W'.wf< b')
-          (a' , b') (inr (Eq.refl , b'<b)) → go a  aA            b' (rsB b' b'<b)
+        -- Split across a mutual pair rather than writing one function that
+        -- descends lexicographically. The point is the second clause of
+        -- `accLex'`: the first component is unchanged there, so it has to be
+        -- handed back as the *variable* `accA`. Writing this as a single
+        -- function forces that argument to be reconstructed as `acc rsA` (via
+        -- an as-pattern), which Mikan's termination checker does not accept as
+        -- a non-increase. Cf. the same variable-vs-constructor distinction
+        -- behind the indexed `Acc` in Cubical.Induction.WellFounded.
+        accLex  : ∀ {a b} → Acc W._<_ a → Acc W'._<_ b → Acc _<Lex_ (a , b)
+        accLex' : ∀ {a b} → Acc W._<_ a → Acc W'._<_ b
+                → ∀ q → q <Lex (a , b) → Acc _<Lex_ q
+
+        accLex accA accB = acc (accLex' accA accB)
+
+        accLex' (acc rsA) accB (a' , b') (inl a'<a) =
+          accLex (rsA a' a'<a) (W'.wf< b')
+        accLex' accA (acc rsB) (a' , b') (inr (Eq.refl , b'<b)) =
+          accLex accA (rsB b' b'<b)
 
   LexWFOrder : WFOrder (ℓ-max ℓD ℓD') (ℓ-max ℓ< (ℓ-max ℓD ℓ<'))
   LexWFOrder = record
