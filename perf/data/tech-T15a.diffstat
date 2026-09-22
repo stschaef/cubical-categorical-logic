@@ -1,0 +1,15 @@
+ .../CBPV/Unary/Instances/StateAlg/Vertical.agda    | 23 +++----
+ .../Displayed/Instances/Family/EqProperties.agda   |  2 +-
+ .../Instances/Presheaf/Eq/CartesianClosed.agda     |  5 ++
+ .../Displayed/Instances/Reindex/Cartesian.agda     |  4 +-
+ .../Instances/Reindex/UniversalQuantifier.agda     | 33 ++++------
+ .../LocalRepresentability/Properties.agda          | 51 ++++++---------
+ .../Presheaf/Constructions/Exponential/Base.agda   | 40 ++++--------
+ .../Exponential/UniversalProperty.agda             |  6 +-
+ .../Displayed/Presheaf/Uncurried/Eq/Base.agda      | 38 +++++------
+ .../Uncurried/Eq/Conversion/CartesianClosedV.agda  | 29 +++------
+ .../Presheaf/Uncurried/UniversalProperties.agda    | 76 +++++++++++-----------
+ Cubical/Categories/Limits/Pullback/Alt.agda        | 18 ++---
+ .../IntoFiberCategory/Base.agda                    |  2 +-
+ .../IntoFiberCategory/Eq.agda                      |  8 +--
+ 14 files changed, 140 insertions(+), 195 deletions(-)

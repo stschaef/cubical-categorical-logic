@@ -1,0 +1,8 @@
+ .../CBPV/Unary/Instances/StateAlg/Vertical.agda    | 23 +++++--------
+ .../Displayed/Instances/Family/EqProperties.agda   |  2 +-
+ .../Displayed/Instances/Reindex/Cartesian.agda     |  4 +--
+ .../LocalRepresentability/Properties.agda          | 36 ++++++++-----------
+ .../Presheaf/Constructions/Exponential/Base.agda   | 40 +++++++---------------
+ .../Exponential/UniversalProperty.agda             |  6 ++--
+ .../IntoFiberCategory/Eq.agda                      |  8 ++---
+ 7 files changed, 46 insertions(+), 73 deletions(-)

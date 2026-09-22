@@ -1,0 +1,18 @@
+# INVALID: the whole file set was moved at once, so each module was charged with
+# rebuilding the rest of the set.  Superseded by tech-permodule.tsv.  GiB, not GB.
+T4	Cubical/Categories/Limits/Pullback/Alt.agda	14.1385	7.2619	0	0
+T5	Cubical/Categories/Displayed/Presheaf/Uncurried/Eq/Conversion/CartesianClosedV.agda	8.9625	8.9445	0	0
+T3	Cubical/Categories/Displayed/Instances/Presheaf/Eq/CartesianClosed.agda	68.6716	8.6091	0	0
+T3	Cubical/Categories/Displayed/Presheaf/Constructions/BinProduct/LocalRepresentability/Properties.agda	7.4216	7.2603	0	0
+T3	Cubical/Categories/LocallySmall/Displayed/NaturalTransformation/IntoFiberCategory/Base.agda	9.0242	6.3285	0	0
+T2	Cubical/Categories/Displayed/Instances/Reindex/UniversalQuantifier.agda	30.1335	9.1147	0	0
+T2	Cubical/Categories/Displayed/Presheaf/Uncurried/Eq/Base.agda	7.3735	7.3187	0	0
+T2	Cubical/Categories/Displayed/Presheaf/Uncurried/Eq/Conversion/CartesianClosedV.agda	45.3066	8.9445	0	0
+T2	Cubical/Categories/Displayed/Presheaf/Uncurried/UniversalProperties.agda	18.4294	18.2892	0	0
+T1	Cubical/Categories/Displayed/CBPV/Unary/Instances/StateAlg/Vertical.agda	79.9863	12.8957	0	0
+T1	Cubical/Categories/Displayed/Instances/Family/EqProperties.agda	67.0851	5.6083	0	0
+T1	Cubical/Categories/Displayed/Instances/Reindex/Cartesian.agda	57.0984	6.2343	0	0
+T1	Cubical/Categories/Displayed/Presheaf/Constructions/BinProduct/LocalRepresentability/Properties.agda	10.8074	7.2603	0	0
+T1	Cubical/Categories/Displayed/Presheaf/Constructions/Exponential/Base.agda	15.9034	4.9160	0	0
+T1	Cubical/Categories/Displayed/Presheaf/Constructions/Exponential/UniversalProperty.agda	18.4782	5.1137	0	0
+T1	Cubical/Categories/LocallySmall/Displayed/NaturalTransformation/IntoFiberCategory/Eq.agda	8.1886	7.6406	0	0

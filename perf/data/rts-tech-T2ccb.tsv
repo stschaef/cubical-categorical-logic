@@ -1,0 +1,25 @@
+'/nix/store/zpfldk2lsavj7f60a4n7n920zyjigqv4-Agda-2.9.0-bin/bin/agda' '--with-compiler=/nix/store/w1q8g0ghxyc7f85x86a1sir7b9lkp5q2-ghc-9.10.3-with-packages/bin/ghc' '--library-file=/nix/store/5k13nb2zhxwfrjhh6bn08pf74kr8ks9j-libraries' '--library-file=/home/steven/ccl-abtech/libs.txt' '--build-library' '-j1' +RTS '-I0' '-N1' '-qb0' '-N1' '-A1G' '-H4G' '-M24G' '-s/home/steven/ccl-abtech/perf/data/rts-tech-T2ccb.tsv' 
+ 540,441,283,280 bytes allocated in the heap
+  30,915,578,912 bytes copied during GC
+   2,032,501,600 bytes maximum residency (16 sample(s))
+       3,280,032 bytes maximum slop
+            4816 MiB total memory in use (0 MiB lost due to fragmentation)
+
+                                     Tot time (elapsed)  Avg pause  Max pause
+  Gen  0       209 colls,     0 par   24.133s  24.181s     0.1157s    0.6715s
+  Gen  1        16 colls,     0 par    2.606s   2.611s     0.1632s    0.7001s
+
+  TASKS: 4 (1 bound, 3 peak workers (3 total), using -N1)
+
+  SPARKS: 0 (0 converted, 0 overflowed, 0 dud, 0 GC'd, 0 fizzled)
+
+  INIT    time    0.006s  (  0.006s elapsed)
+  MUT     time  155.908s  (156.244s elapsed)
+  GC      time   26.739s  ( 26.792s elapsed)
+  EXIT    time    0.000s  (  0.000s elapsed)
+  Total   time  182.654s  (183.043s elapsed)
+
+  Alloc rate    3,466,406,943 bytes per MUT second
+
+  Productivity  85.4% of total user, 85.4% of total elapsed
+

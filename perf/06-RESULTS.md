@@ -1067,3 +1067,309 @@ A third is worth recording as method rather than code: `die` inside `$( )` exits
 only the subshell, so a failed dependency build yields an empty path and the
 cell
 fails later with a confusing error.
+
+## 14. Per technique, not per file
+
+§3 attributed this branch's gain **by commit**. The factor lattice on
+`perf-lattice` attributed it **by file partition**. Neither answers the question
+a maintainer actually asks, which is *what kind of refactor is worth doing
+again*. This section attributes by **technique**: the five techniques of the
+`push-*` session, which have never been measured as techniques, plus a
+restatement of the four earlier ones.
+
+22 whole-library builds, every one `rc=0`. Driver: `perf/bin/ab-tech` (arms) and
+`perf/bin/ab-tech-module` (the per-module column). Raw data: `perf/data/tech-*`.
+
+### 14.0 Method, and what it reproduces to
+
+**Revert from the end, not apply from the start.** For each technique, that
+technique's hunks are put back into the state they had before it landed, and the
+whole library is rebuilt. Applying a change forward onto `main` flatters it,
+because the neighbours that close some of the same channels are missing; §3
+established this and it is the method here.
+
+    metric      GHC bytes allocated, from `+RTS -s`
+    command     agda --library-file=libs.txt --build-library -j1
+                  +RTS -N1 -A1G -H4G -M24G -s<out> -RTS
+    discipline  `_build` wiped before every arm; strictly serial under an
+                exclusive flock; two readings of every arm, both reported
+    worktree    /home/steven/ccl-abtech, branch `ab-technique` off `perf-final`
+                (74e112d2).  Every number below was measured in that one
+                worktree; none is compared across worktrees.
+
+Units are 10⁹ bytes, as everywhere else in this directory.
+
+**Reproducibility, measured here.** The unmodified branch was built four times
+over three hours: 540.052, 540.042, 540.042, 540.053 GB — a spread of 0.002%.
+`main`, the joint revert, and the `--lossy-unification` arm each returned two
+byte-identical readings. Eight significant figures within a worktree is not an
+overstatement.
+
+**Endpoints, and agreement with the rest of the directory.**
+
+    main 82334ffb          840.623 GB   472 modules
+    perf-final 74e112d2    540.042 GB   479 modules
+    ----------------------------------------------
+    total                  300.581 GB   -35.8%,  1.557x
+
+The lattice measured the same `main` commit at 840.535 GB in a different
+worktree: **0.01% apart**. §13's `agda x perf-final` cell reads 547.4 GB against
+540.042 here because §13 builds a parity tree; the arms below are all relative,
+so the difference does not enter.
+
+### 14.1 The groupings, checked against the diffs
+
+Every one of the nineteen commits was diffed rather than taken on its label, and
+**thirteen of the fourteen files still carry their commit's post-image blob byte
+for byte** on `perf-final`. The exception is
+`Presheaf/Constructions/Exponential/Base.agda`, where two T1 commits from
+different branches were merged; its pre-T1 state is the blob both of them
+started from, and that is what the T1 arm restores.
+
+    technique              files  lines  commits
+    T1 argument pinning        7    119  d7c6a265 4ffecb32 3ebf5512 878e8f68
+                                         1c8672b9 85c943a4 8e1f1811 19bee4d3
+                                         afa15cb6 4a2413c4
+    T2 shared elaboration      4    170  1bb16824 888fd547 f4360f25 5d9920a3
+    T3 notation trimming       3     22  fa981723 826e01ea f4f7ba9c
+    T4 root-cause split        1     18  42e4727c
+    T5 named projections       1      6  c72302b8
+
+Lines are insertions + deletions of the technique's own hunks, not of whole
+files, so they are smaller than the lattice's churn column and not directly
+comparable with it.
+
+**Four of the nineteen commits belong to two techniques.** The split was not
+forced; the commit stays with the technique that dominates it and the minority
+content is recorded here.
+
+* **85c943a4** (booked T1) is half T2. It binds `e = sym $ P.⋆IdL p` and
+  `⌈e⌉ = cong ⌈ Γᴰ ×ⱽ_*Pᴰ⌉ e` — 4 of its 13 added lines — in the same hunks that
+  replace `_` with `Γᴰ`/`Θᴰ`. The substitutions do both jobs at once and cannot
+  be separated without rewriting the commit.
+* **4a2413c4** (booked T1) has one T2 hunk, about 6 of its 23 changed lines: an
+  inlined copy of the *already existing* `canonical-fᴰ`/`canonical-homᴰ`
+  replaced by calls to them.
+* **f4f7ba9c** (booked T3) is a hoist and a trim in one hunk. Three notation
+  module applications move out of an inner `module _` — so they are elaborated
+  once rather than once per instantiation — *and* acquire `using (…)` lists.
+  Inseparable.
+* **f4360f25** (booked T2) ends with two `using (…)` trims, 2 of its 33 lines.
+
+The buckets are disjoint as *file-and-hunk sets*, which is what the arms
+actually manipulate, so they still compose — §14.3 confirms it. It is the
+mechanism labels that are approximate at the margins, and T1's and T2's are
+approximate in each other's direction.
+
+### 14.2 The table
+
+Build-wide is the mean of two readings against the branch at 540.042 GB.
+Per-module is the sum over the technique's files of that one module's
+allocation with the hunks reverted minus with them in place, everything else in
+the tree held fixed and up to date.
+
+| rank | technique | files | lines | build-wide GB | **GB / 100 lines** | per-module GB | amplification |
+|---:|---|---:|---:|---:|---:|---:|---:|
+| 1 | **T4** root-cause split | 1 | 18 | **7.396** | **41.1** | 7.384 | 1.00 |
+| 2 | **T1** argument pinning | 7 | 119 | **21.494** | **18.1** | 21.325 | 1.01 |
+| 3 | **T3** notation trimming | 3 | 22 | **3.460** | **15.7** | 3.384 | 1.02 |
+| 4 | **T2** shared elaboration | 4 | 170 | **1.713** | **1.0** | 1.695 | 1.01 |
+| 5 | **T5** named projections | 1 | 6 | **0.025** | **0.4** | 0.019 | ~1 ¹ |
+| | total | 16 ² | 335 | 34.088 | 10.2 | 33.807 | |
+
+¹ the two readings of T5 are 0.020 and 0.030 GB and the per-module figure is
+  0.019; the difference between local and build-wide is 6 MB, which is at the
+  floor of what this method resolves. Read it as 1, not as 1.3.
+² 13 distinct files; `Eq/Conversion/CartesianClosedV.agda` carries both a T2 and
+  a T5 hunk.
+
+Per-arm allocation, both readings:
+
+    arm                          reading 1   reading 2   vs branch
+    base   perf-final             540.042     540.042        --
+    T1     argument pinning       561.538     561.534     21.494
+    T2     shared elaboration     541.752     541.758      1.713
+    T3     notation trimming      543.507     543.496      3.460
+    T4     root-cause split       547.435     547.441      7.396
+    T5     named projections      540.062     540.072      0.025
+    T1-T5  all five at once       574.082     574.082     34.040
+
+### 14.3 Additivity: 0.14%
+
+    sum of the five individual reverts     34.088 GB
+    all five reverted in one build         34.040 GB
+    difference                              0.048 GB   0.14%
+
+Against §3's 2.2% for the earlier commit-level attribution and the lattice's
+0.7% for the factor-level one, this is the tightest additivity yet measured on
+this library, and it says the same thing more strongly: these defects are
+file-local and do not overlap. The five techniques together are **11.3% of the
+300.58 GB that separates `main` from `perf-final`**; the rest is the earlier
+work of §3 and §10 of `perf-lattice`.
+
+### 14.4 Amplification is 1 for every technique measured both ways
+
+This was the interesting question and the answer is flat. Every one of the five
+amplification factors is between 1.00 and 1.02. Including §3's
+`--lossy-unification` case, re-measured in §14.5 below, that is **nine
+techniques for which the whole-build number and the per-module number agree to
+within 2%**.
+
+For this class of change the cheap screen is sufficient: measure the module,
+believe the number. That is not what §10 concluded, and §14.5 is why.
+
+### 14.5 Two corrections to §10
+
+**(a) The 16x does not reproduce.** §10 reports that sharing the
+`⋆πⱽ-natural`/`βᴰ` chain opener in `Eq/Conversion/CartesianClosedV` (commit
+1bb16824) "saved 0.388 GB in its own module and 6.224 GB build-wide — 16x", and
+draws from it the general claim that interface-visible sharing amplifies. That
+commit was reverted on its own here and the whole library rebuilt twice:
+
+    perf-final                        540.042 GB
+    perf-final without 1bb16824       540.435 GB   (540.430 / 540.441)
+    -----------------------------------------------
+    the commit is worth                 0.393 GB   build-wide
+    its own module                      0.387 GB   (10.023 -> 9.635 in its
+                                                    commit message; 9.992 ->
+                                                    9.604 here)
+
+**1.02x, not 16x.** The per-module figure reproduces to three decimal places;
+the build-wide one is 16 times smaller than claimed.
+
+**(b) The uncurried cluster is worth about 0.6 GB, not 6.4 GB.** The three
+`push-unc` commits, measured here:
+
+    1bb16824  chain opener shared        0.393 GB   whole-build arm
+    888fd547  three more elaborations    0.151 GB   per-module
+    c72302b8  named projections (T5)     0.025 GB   whole-build arm
+    ----------------------------------------------
+                                         0.569 GB
+
+against §10's −6.40 GB for that cluster. The other three clusters reconcile:
+
+    cluster        §10        here (per-module)   note
+    CBPV          -6.96 GB          6.87 GB       1.3% apart
+    LocallySmall -19.46            17.57 + share  see below
+    representab.  -7.96             5.51 + share  see below
+    uncurried     -6.40             0.57          11x apart
+
+"share" is the 3.293 GB of `Exponential/Base.agda`, which `push-ls` and
+`push-repr` both improved and which no per-commit split can divide, since the
+two patches were merged. §10 records this hazard itself — the four cluster
+deltas sum to −40.8 GB against a merged −34.1 GB, and each cluster was measured
+in its own worktree, where §10 puts the path-length effect at 0.1–1.4%. 1.4% of
+549 GB is 7.7 GB, which is larger than the entire uncurried figure. The likely
+reading is that −6.40 GB was worktree drift and the cluster's real value is
+0.6 GB.
+
+The paragraph in §10 headed "Interface-visible sharing amplifies" should be
+withdrawn. Its second example — a previously-landed change that saved 0.205 GB
+locally and cost +0.825 GB build-wide (§2) — was not re-measured here and is a
+sign error rather than a magnitude claim, so it stands on its own evidence.
+
+### 14.6 The earlier techniques, cited not re-measured
+
+T6–T9 already have whole-build revert numbers. They are reproduced here from §3
+of this file and from §10.3 of `perf-lattice`, which partitions the branch into
+nine factors; `perf/data/lattice-arms.tsv` on that branch holds the 40 arms.
+
+| technique | factor | commits | lines | build-wide GB | GB / 100 lines |
+|---|---|---|---:|---:|---:|
+| T8 `--lossy-unification` | F3 | 99c349e2 | 1 | 4.99 | **498** |
+| T7 copattern → record | F2 | e8c03d78, 8bcea917 (+7fd37a27) | 55 | 10.01 | **18.2** |
+| T6 rectifyOut fusion | F7 (+F4) | 7134efb9, a9dda177, d876c91f | 526 / 690 | 67.3 / 146.2 ¹ | **12.7** |
+| T9 reind normal form | F6 | the `lattice-F6.files` set | 1487 | −0.31 ² | **~0** |
+
+¹ two defensible numbers for the same technique. The lattice's 67.3 GB is the
+  44-file slice of the sweep; §3's 146.2 GB is the commit revert, which also
+  takes the sweep's edits to 16 files booked to other factors. The larger figure
+  is the technique's value; the smaller is what a file-partitioned lattice can
+  see of it.
+² F6's rewrites can only be removed together with the 904 lines of mathematics
+  they were written to make affordable, and taking both out makes the build
+  *slightly worse*. T9 is not a performance technique; it is what made a body of
+  previously unaffordable mathematics cost 12.6 GB instead of 168 GB.
+
+**Consistency check of this method against theirs.** T8 is one line and reverts
+cleanly, so it was re-measured here as a calibration:
+
+    perf-final without 99c349e2   545.043 GB  (both readings identical)
+    the pragma is worth             5.001 GB
+
+against §3's 4.99 GB (whole-build revert from `perf-sweep`) and the lattice's
+4.98 / 4.99 GB (OFAT on `main` / LOO from `perf-all`). **Four independent
+measurements across three worktrees and three baselines agree to 0.3%**, which
+is the best evidence in this directory that whole-build allocation reverts are
+measuring a real, context-independent quantity.
+
+### 14.7 The combined ranking
+
+All nine techniques by gain per 100 lines of churn, which is the maintainer's
+standing question. F1 and F8 are included because they are the earlier members
+of T4's and T3's families and the comparison is the point.
+
+| technique | lines | GB | **GB / 100 lines** |
+|---|---:|---:|---:|
+| T8 one `--lossy-unification` pragma | 1 | 5.00 | **500** |
+| F1 root-cause fix in `Reindex/Eq/Base` | 49 | 82.8 | **169** |
+| F8 notation trimming in `LocallySmall` | 153 | 69.3 | **43.1** |
+| **T4 root-cause split (`Pullback/Alt`)** | 18 | 7.40 | **41.1** |
+| T7 copatterns → record expression | 55 | 10.0 | **18.2** |
+| **T1 argument pinning** | 119 | 21.49 | **18.1** |
+| **T3 notation trimming (this session)** | 22 | 3.46 | **15.7** |
+| T6 rectifyOut fusion | 526 | 67.3 | **12.7** |
+| **T2 shared elaboration** | 170 | 1.71 | **1.0** |
+| **T5 named projections** | 6 | 0.03 | **0.4** |
+| T9 reind normal form | 1487 | ~0 | **~0** |
+
+### 14.8 What separates the top of the table from the bottom
+
+The ranking has a clean reading, and it is not about how clever the refactor is.
+
+**What pays is stopping a type from being re-elaborated.** A pragma that tells
+the unifier not to descend (T8, 500 GB/100 lines). A coherence path pulled out
+of a record field and made `opaque`, so its two large inferred endpoints are
+elaborated once instead of at every use (T4, F1). A notation module that stops
+copying a telescope of `Typeω`-kinded definitions into every dependent (T3, F8).
+An implicit that is named, so the unifier stops inverting a projection to find
+it (T1). All four are edits to what Agda has to *check*, and all four are in the
+top half.
+
+**What does not pay is stopping a term from being written twice.** T2 shares
+four repeated elaborations across 170 lines — the largest single technique in
+this session by churn — and returns 1.7 GB, 1.0 GB per 100 lines, twentieth of
+T4's rate. T5 replaces two spelled-out `Iso.fun … .fst` projections with the
+notation module's own, and returns 25 MB. Both make the source shorter and
+better; neither makes Agda do materially less, because the shared subterm was
+already being elaborated against the same expected type either way.
+
+The practical corollary for the next sweep: **grep for `_` in the arguments of
+lemmas whose types are large, and for notation modules re-exported `public`
+through nested module applications.** Do not spend a session hoisting repeated
+chain openers into `where`-bound abbreviations; it is good style and it is worth
+about a percent.
+
+And measure the module, not the build. Nine techniques now have both numbers
+and they agree to 2%.
+
+### 14.9 How to re-run, and the raw data
+
+    perf/bin/ab-tech <base|T1..T5|T15|T8|T2cc|main> <tag>
+    perf/bin/ab-tech-module <T1..T5>
+
+`ab-tech` reverts the named technique's hunks from the working tree, wipes
+`_build`, builds the whole library, appends a row to `perf/data/tech-arms.tsv`
+and resets the tree. `ab-tech-module` moves **one file at a time** and re-checks
+**that one module**; moving a technique's whole file set and then measuring one
+of its modules charges that module with rebuilding the rest of the set and
+inflates the reading by up to 8x. The first attempt did exactly that and is kept
+as `perf/data/tech-permodule-MULTIFILE-INVALID.tsv` so the trap is on record.
+
+    perf/data/tech-arms.tsv             all 22 whole-library arms: allocation,
+                                        copied, max residency, MUT, GC, wall,
+                                        module count
+    perf/data/tech-arms-gib.tsv         the same runs as first recorded, in GiB
+    perf/data/tech-permodule.tsv        per-file, per-module A/B (§14.2, §14.4)
+    perf/data/rts-tech-<tag>.tsv        verbatim `+RTS -s` for every arm
+    perf/data/tech-<tag>.diffstat       exactly what each arm reverted

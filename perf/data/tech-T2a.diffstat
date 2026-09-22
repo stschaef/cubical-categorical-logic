@@ -1,0 +1,5 @@
+ .../Instances/Reindex/UniversalQuantifier.agda     | 33 ++++------
+ .../Displayed/Presheaf/Uncurried/Eq/Base.agda      | 38 +++++------
+ .../Uncurried/Eq/Conversion/CartesianClosedV.agda  | 23 ++-----
+ .../Presheaf/Uncurried/UniversalProperties.agda    | 76 +++++++++++-----------
+ 4 files changed, 74 insertions(+), 96 deletions(-)
