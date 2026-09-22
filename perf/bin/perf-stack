@@ -61,9 +61,12 @@ RTS_OPTS=${RTS_OPTS:--A1G -H4G -M24G}
 [ -f "$CUBICAL_DIR/cubical.agda-lib" ] || die "no cubical.agda-lib in $CUBICAL_DIR"
 command -v "$AGDA" >/dev/null || die "no agda binary ($AGDA)"
 
-# The stack, bottom to top.  `main` is the baseline; merge-candidate is the
-# accumulation we intend to merge, and carries no reind-normal-form work.
-DEFAULT_REVS="main
+# The stack, bottom to top.  perf/00-baseline is main as it stood when these
+# numbers were taken (82334ffb) -- pinned rather than tracking `main`, because a
+# fork whose main has drifted silently changes the baseline and every ratio with
+# it.  merge-candidate is the accumulation we intend to merge; it carries no
+# reind-normal-form work.
+DEFAULT_REVS="perf/00-baseline
 perf/01-rectifyout
 perf/02-presented
 perf/03-notation-trim

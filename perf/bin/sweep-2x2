@@ -95,8 +95,21 @@ for t in ${TOOLS//,/ }; do
 done
 [ ${#SELECTED[@]} -gt 0 ] || die "no usable toolchain"
 
-git -C "$REPO" rev-parse --verify -q "$BASE" >/dev/null || die "no such ref: $BASE"
-git -C "$REPO" rev-parse --verify -q "$HEAD_REF" >/dev/null || die "no such ref: $HEAD_REF"
+# Resolve a revision name.  A user who has fetched but not checked out sees the
+# branches as remote-tracking refs, and a bare "perf/merge-candidate" does not
+# resolve through rev-parse -- refs/remotes/<name> only matches a remote
+# literally called "perf".  Try the bare name, then each remote in turn.
+resolve_ref() {
+  local r=$1 rem
+  if git -C "$REPO" rev-parse --verify -q "$r" >/dev/null 2>&1; then echo "$r"; return 0; fi
+  for rem in $(git -C "$REPO" remote); do
+    if git -C "$REPO" rev-parse --verify -q "$rem/$r" >/dev/null 2>&1; then echo "$rem/$r"; return 0; fi
+  done
+  return 1
+}
+
+BASE=$(resolve_ref "$BASE") || die "no such ref: $BASE"
+HEAD_REF=$(resolve_ref "$HEAD_REF") || die "no such ref: $HEAD_REF"
 
 mkdir -p "$OUTDIR" "$WORKDIR"
 LOCK=$WORKDIR/lock

@@ -111,6 +111,7 @@ you have checked it out or merely fetched it.
 
 For the full stack run, the remote needs:
 
+    perf/00-baseline                                   the pinned baseline
     perf/01-rectifyout ... perf/12-named-projections   the per-edit stack
     perf/merge-candidate                               the accumulation
     perf/harness                                       these scripts and docs
@@ -130,9 +131,16 @@ If you have fetched but not checked out, confirm with:
 
 A revision printed as `?` is one the script could not resolve.
 
-## A caution on the baseline
+## The baseline is pinned, deliberately
 
-`main` is the baseline for every ratio here, and the recorded numbers were taken
-against `main` @ 82334ffb. If the `main` you resolve is a different commit, your
-baseline is a different tree and the ratios will not match the ones in
-`06-RESULTS.md`. Check with `git rev-parse main` before comparing.
+The bottom of the stack is `perf/00-baseline`, not `main`. It is `main` as it
+stood when these numbers were taken (82334ffb).
+
+This matters: a fork whose `main` has drifted silently changes the baseline and
+every ratio with it. That is not hypothetical -- the fork this was first pushed
+to had a `main` several commits behind, so a fresh clone resolved a different
+tree and the mikan port would not apply to it. Pinning removes the question.
+
+If you want to measure against a newer `main`, pass it explicitly:
+
+    perf/bin/perf-stack -r main,perf/12-named-projections
