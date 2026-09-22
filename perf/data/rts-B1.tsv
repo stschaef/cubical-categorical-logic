@@ -1,0 +1,25 @@
+'/nix/store/zpfldk2lsavj7f60a4n7n920zyjigqv4-Agda-2.9.0-bin/bin/agda' '--with-compiler=/nix/store/w1q8g0ghxyc7f85x86a1sir7b9lkp5q2-ghc-9.10.3-with-packages/bin/ghc' '--library-file=/nix/store/5k13nb2zhxwfrjhh6bn08pf74kr8ks9j-libraries' '--library-file=/home/steven/ccl-perf-all/libs.txt' '-j1' '--build-library' +RTS '-I0' '-N1' '-qb0' '-M24G' '-s/tmp/claude-1000/-home-steven-cubical-categorical-logic/76005fa0-5844-4d24-a8c2-77c101597242/scratchpad/final/B1.rts' 
+ 542,412,854,144 bytes allocated in the heap
+ 102,851,798,096 bytes copied during GC
+   1,621,266,320 bytes maximum residency (75 sample(s))
+       1,777,776 bytes maximum slop
+            3346 MiB total memory in use (0 MiB lost due to fragmentation)
+
+                                     Tot time (elapsed)  Avg pause  Max pause
+  Gen  0     129053 colls,     0 par   94.545s  95.534s     0.0007s    0.0081s
+  Gen  1        75 colls,     0 par    9.645s   9.711s     0.1295s    0.6809s
+
+  TASKS: 4 (1 bound, 3 peak workers (3 total), using -N1)
+
+  SPARKS: 0 (0 converted, 0 overflowed, 0 dud, 0 GC'd, 0 fizzled)
+
+  INIT    time    0.000s  (  0.000s elapsed)
+  MUT     time  203.021s  (204.574s elapsed)
+  GC      time  104.190s  (105.245s elapsed)
+  EXIT    time    0.000s  (  0.000s elapsed)
+  Total   time  307.212s  (309.819s elapsed)
+
+  Alloc rate    2,671,704,730 bytes per MUT second
+
+  Productivity  66.1% of total user, 66.0% of total elapsed
+

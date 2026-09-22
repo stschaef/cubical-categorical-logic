@@ -1,0 +1,111 @@
+diff --git a/Cubical/Categories/Displayed/Instances/Reindex/UniversalQuantifier.agda b/Cubical/Categories/Displayed/Instances/Reindex/UniversalQuantifier.agda
+index 1b86e377..5b4bfc93 100644
+--- a/Cubical/Categories/Displayed/Instances/Reindex/UniversalQuantifier.agda
++++ b/Cubical/Categories/Displayed/Instances/Reindex/UniversalQuantifier.agda
+@@ -210,13 +210,13 @@ module _
+     hasUniversalQuantifiersReindex :
+       UniversalQuantifiers Dᴰ bpD cartLifts
+       → UniversalQuantifiers (reindex Dᴰ G) bpC (isFibrationReindex Dᴰ G cartLifts)
+-    hasUniversalQuantifiersReindex ∀s {Γ}{A} Aᴰ =
++    hasUniversalQuantifiersReindex ∀s .∀Ob {Γ}{A} Aᴰ =
+       reflectsUniversalQuantifiers
+         (λ c → bpC (c , A))
+         (λ d → bpD (d , G ⟅ A ⟆ ))
+         (λ c' → G⟪×⟫≅G×G c' A)
+         Aᴰ
+-        (∀s ((GΓ×GA.π₁ G⟪Γ×A⟫.,p GΓ×GA.π₂) cartLifts.* Aᴰ))
++        (∀s .∀Ob ((GΓ×GA.π₁ G⟪Γ×A⟫.,p GΓ×GA.π₂) cartLifts.* Aᴰ))
+       where
+         G⟪Γ×A⟫ : BinProduct D (G ⟅ Γ ⟆ , G ⟅ A ⟆)
+         G⟪Γ×A⟫ = isUniversal→UniversalElement _ (G⟪×⟫≅G×G Γ A)
+diff --git a/Cubical/Categories/Displayed/Limits/CartesianClosedV.agda b/Cubical/Categories/Displayed/Limits/CartesianClosedV.agda
+index 70656386..50726d3e 100644
+--- a/Cubical/Categories/Displayed/Limits/CartesianClosedV.agda
++++ b/Cubical/Categories/Displayed/Limits/CartesianClosedV.agda
+@@ -72,4 +72,4 @@ module _ (CCC : CartesianClosedCategory ℓC ℓC') (CCCⱽ : CartesianClosedCat
+       (cartesianLifts Bᴰ ((A ⇒ B) × A) app)
+       (expⱽ _ _)
+       (λ _ _ → cartesianLifts _ _ _)
+-      (forallⱽ _)
++      (forallⱽ .∀Ob _)
+diff --git a/Cubical/Categories/Displayed/Presheaf/Uncurried/Constructions/UniversalQuantifier.agda b/Cubical/Categories/Displayed/Presheaf/Uncurried/Constructions/UniversalQuantifier.agda
+index ff1571eb..9252e647 100644
+--- a/Cubical/Categories/Displayed/Presheaf/Uncurried/Constructions/UniversalQuantifier.agda
++++ b/Cubical/Categories/Displayed/Presheaf/Uncurried/Constructions/UniversalQuantifier.agda
+@@ -194,10 +194,17 @@ module _ {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ') where
+   module _ (bp : BinProducts C) (isFib : isFibration Cᴰ) where
+     private
+       module bp = BinProductsNotation bp
+-    UniversalQuantifiers : Type _
+-    UniversalQuantifiers = ∀ {Γ A} (Aᴰ : Cᴰ.ob[ Γ bp.× A ])
+-      → UniversalQuantifier A (λ c → bp (c , A))
+-          (λ Δ yᴰ → isFib yᴰ (Δ bp.× A) bp.π₁) Aᴰ
++    -- PERF: this is a record rather than a plain type synonym on purpose.
++    -- Conversion checking two UniversalQuantifiers types then compares the
++    -- three (small) arguments instead of unfolding both sides into the
++    -- enormous underlying Pi-type.
++    record UniversalQuantifiers : Type (ℓ-max ℓC (ℓ-max ℓC' (ℓ-max ℓCᴰ ℓCᴰ'))) where
++      constructor mkUniversalQuantifiers
++      field
++        ∀Ob : ∀ {Γ A} (Aᴰ : Cᴰ.ob[ Γ bp.× A ])
++          → UniversalQuantifier A (λ c → bp (c , A))
++              (λ Δ yᴰ → isFib yᴰ (Δ bp.× A) bp.π₁) Aᴰ
++    open UniversalQuantifiers public
+ 
+ -- The UniversalQuantifier quantifying over a locally representable presheaf
+ module _ {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ') where
+diff --git a/Cubical/Categories/Displayed/Presheaf/Uncurried/Eq/Conversion/CartesianClosedV.agda b/Cubical/Categories/Displayed/Presheaf/Uncurried/Eq/Conversion/CartesianClosedV.agda
+index 97f12783..7694c291 100644
+--- a/Cubical/Categories/Displayed/Presheaf/Uncurried/Eq/Conversion/CartesianClosedV.agda
++++ b/Cubical/Categories/Displayed/Presheaf/Uncurried/Eq/Conversion/CartesianClosedV.agda
+@@ -217,7 +217,7 @@ module _ (CC : CartesianCategory ℓC ℓC') where
+                                    (Path.CartesianCategoryⱽ.Cᴰ
+                                     (Path.CartesianClosedCategoryⱽ.CCⱽ (EqCCCⱽ→CCCⱽ isCCCⱽ)))
+                                    (xᴰ , Path.CartesianClosedCategoryⱽ.lrⱽ (EqCCCⱽ→CCCⱽ isCCCⱽ) xᴰ))) Representable≅
+-    EqCCCⱽ→CCCⱽ isCCCⱽ .Path.CartesianClosedCategoryⱽ.forallⱽ {Γ} {A} Aᴰ =
++    EqCCCⱽ→CCCⱽ isCCCⱽ .Path.CartesianClosedCategoryⱽ.forallⱽ .Path.UniversalQuantifiers.∀Ob {Γ} {A} Aᴰ =
+       EqReprⱽ→PathReprⱽ _ (isCCCⱽ .snd .snd A Aᴰ)
+       Path.◁PshIsoⱽ reindPsh-square (Path/→Eq/ (CC.C [-, Γ ]) Cᴰ) _ _ (Path/→Eq/ (CC.C [-, Γ CC.× A ]) Cᴰ) _
+         (wkF-Path/→Eq/-square ⋆AssocC ⋆IdLC Cᴰ CC.bp (isCCCⱽ .fst .snd .snd) π₁NatEqC ×aF-seqC _ (isCCCⱽ .fst .fst (Γ CC.× A) .fst))
+diff --git a/Cubical/Categories/Instances/Free/Lambda/ArrowOnly.agda b/Cubical/Categories/Instances/Free/Lambda/ArrowOnly.agda
+index 2eae1537..45b798ee 100644
+--- a/Cubical/Categories/Instances/Free/Lambda/ArrowOnly.agda
++++ b/Cubical/Categories/Instances/Free/Lambda/ArrowOnly.agda
+@@ -56,6 +56,7 @@ open import Cubical.Categories.Displayed.Instances.Reindex.Fibration
+ open import Cubical.Categories.Displayed.Instances.Reindex.UniversalQuantifier
+ open import Cubical.Categories.Displayed.Limits.CartesianV'
+ open import Cubical.Categories.Displayed.Limits.CartesianClosedV
++import      Cubical.Categories.Displayed.Presheaf.Uncurried.Constructions.UniversalQuantifier as UQuant
+ open import Cubical.Categories.Displayed.More
+ open import Cubical.Categories.Displayed.Section
+ open import Cubical.Categories.Displayed.Presheaf.Uncurried.UniversalProperties
+@@ -232,7 +233,7 @@ module Lambda⇒
+         (reindexCartesianLift CCCⱽ.Cᴰ _ _ _ (CCCⱽ.cartesianLifts _ _ _))
+         (reindexExponentialⱽ _ _ _ (CCCⱽ.expⱽ _ _))
+         (λ _ _ → reindexCartesianLift CCCⱽ.Cᴰ _ _ _ (CCCⱽ.cartesianLifts _ _ _))
+-        (reflectsUniversalQuantifiers _ _ CCCⱽ.cartesianLifts (EXTENSION A) (λ c → D .CartesianCategory.bp (c , F-ob F (x: A))) (F-× A) _ (CCCⱽ.forallⱽ _))
++        (reflectsUniversalQuantifiers _ _ CCCⱽ.cartesianLifts (EXTENSION A) (λ c → D .CartesianCategory.bp (c , F-ob F (x: A))) (F-× A) _ (CCCⱽ.forallⱽ .UQuant.UniversalQuantifiers.∀Ob _))
+ 
+     elimLocal :
+       (ıOb : (A : Base) → CCCⱽ.Cᴰ.ob[ F  .F-ob (x: (↑ A)) ])
+diff --git a/Cubical/Categories/Instances/Free/Lambda/Negative.agda b/Cubical/Categories/Instances/Free/Lambda/Negative.agda
+index 118ee1e8..8d48571e 100644
+--- a/Cubical/Categories/Instances/Free/Lambda/Negative.agda
++++ b/Cubical/Categories/Instances/Free/Lambda/Negative.agda
+@@ -47,6 +47,7 @@ open import Cubical.Categories.Displayed.Instances.Reindex.Fibration
+ open import Cubical.Categories.Displayed.Instances.Reindex.UniversalQuantifier
+ open import Cubical.Categories.Displayed.Limits.CartesianV'
+ open import Cubical.Categories.Displayed.Limits.CartesianClosedV
++import      Cubical.Categories.Displayed.Presheaf.Uncurried.Constructions.UniversalQuantifier as UQuant
+ open import Cubical.Categories.Displayed.More
+ open import Cubical.Categories.Displayed.Section
+ open import Cubical.Categories.Displayed.Presheaf.Uncurried.UniversalProperties
+@@ -275,7 +276,7 @@ module Lambda1×⇒
+         (reindexCartesianLift CCCⱽ.Cᴰ _ _ _ (CCCⱽ.cartesianLifts _ _ _))
+         (reindexExponentialⱽ _ _ _ (CCCⱽ.expⱽ _ _))
+         (λ _ _ → reindexCartesianLift CCCⱽ.Cᴰ _ _ _ (CCCⱽ.cartesianLifts _ _ _))
+-        (reflectsUniversalQuantifiers _ _ CCCⱽ.cartesianLifts (EXTENSION A) (λ c → D .CartesianCategory.bp (c , F-ob F (x: A))) (F-× A) _ (CCCⱽ.forallⱽ _))
++        (reflectsUniversalQuantifiers _ _ CCCⱽ.cartesianLifts (EXTENSION A) (λ c → D .CartesianCategory.bp (c , F-ob F (x: A))) (F-× A) _ (CCCⱽ.forallⱽ .UQuant.UniversalQuantifiers.∀Ob _))
+ 
+     elimLocal :
+       (ıOb : (A : Base) → CCCⱽ.Cᴰ.ob[ F  .F-ob (x: (↑ A)) ])

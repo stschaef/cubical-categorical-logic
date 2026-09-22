@@ -1,0 +1,5 @@
+cell	tool	tree	rep	rc	wall_s	user_s	maxrss_mib	alloc_gb	modules	source
+agda-base	agda	base	1	0	301.5	299.16	5190	847.8	469	ported
+agda-head	agda	head	1	0	189.4	187.33	4608	547.4	476	ported
+mikan-base	mikan	base	1	42	0.0	0.00	50	0.0	469	ported
+mikan-head	mikan	head	1	42	0.4	0.19	916	0.9	476	ported

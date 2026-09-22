@@ -1,0 +1,10 @@
+85.422	53.79	2367	0	Cubical/Categories/Instances/Presented.agda
+46.078	26.78	3954	0	Cubical/Categories/Displayed/Presheaf/Uncurried/UniversalProperties.agda
+17.388	13.17	1952	0	Cubical/Categories/Displayed/FixedPoint.agda
+28.705	19.87	4323	0	Cubical/Categories/Displayed/Instances/Reindex/UniversalQuantifier.agda
+23.454	19.56	2661	0	Cubical/Categories/LocallySmall/Displayed/NaturalTransformation/IntoFiberCategory/Base.agda
+26.035	18.31	3280	0	Cubical/Categories/Displayed/CBPV/Unary/Instances/StateAlg/Vertical.agda
+20.405	15.18	3179	0	Cubical/Categories/LocallySmall/Displayed/Presheaf/GloballySmall/IntoFiberCategory/Properties.agda
+14.166	10.41	1694	0	Cubical/Categories/LocallySmall/Displayed/Instances/Sets/Base.agda
+13.051	11.01	3157	0	Cubical/Categories/Displayed/Instances/Reindex/CartesianClosed.agda
+9.010	6.48	1361	0	Cubical/Categories/Displayed/Instances/PropertyOver/Cartesian.agda

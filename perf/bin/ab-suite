@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+# Portable A/B suite for the performance sweep.
+#
+#   perf/bin/ab-suite [case ...]      # default: every case in perf/cases.tsv
+#   LIBFILE=/path/to/libraries perf/bin/ab-suite
+#   REPS=3 perf/bin/ab-suite presented
+#
+# METHOD
+#   Each case names a set of source files and the modules to measure. For every
+#   module we measure it twice, against an OTHERWISE IDENTICAL tree:
+#     arm A  the case's files at BASE (the pre-sweep commit)
+#     arm B  the case's files as they are now
+#   Only the case's own files move; every dependency stays fixed, so the
+#   comparison isolates that one change. This is sound because the defects these
+#   cases fix are file-local -- fixing a module measurably does NOT speed up its
+#   importers, which we verified separately.
+#
+# METRIC
+#   GHC bytes allocated, read from the RTS's own `-s` report. Allocation is
+#   deterministic (repeats agree to ~3 decimal places), so RATIOS are stable
+#   across machines and immune to load. Wall time is reported too but is only
+#   indicative: on a busy machine single-run wall time varies by +-30%.
+#   No external `time(1)` is needed -- everything comes from the RTS.
+#
+# EXIT STATUS
+#   0  every case reproduced its expected ratio (within tolerance)
+#   1  at least one case failed to reproduce, or failed to type-check
+set -uo pipefail
+
+ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || { echo "not a git repo" >&2; exit 2; }
+cd "$ROOT"
+BASE=${BASE_COMMIT:-82334ffb}
+REPS=${REPS:-1}
+HEAP=${HEAP:-6G}
+TOL=${TOL:-0.60}          # reproduce at >=60% of the claimed ratio to pass
+AGDA=${AGDA:-agda}
+CASES=$ROOT/perf/cases.tsv
+OUT=${OUT:-$ROOT/perf/ab-results.tsv}
+LIBARG=""; [ -n "${LIBFILE:-}" ] && LIBARG="--library-file=$LIBFILE"
+[ -z "$LIBARG" ] && [ -f "$ROOT/libs.txt" ] && LIBARG="--library-file=$ROOT/libs.txt"
+
+command -v "$AGDA" >/dev/null || { echo "agda not found (set AGDA=)" >&2; exit 2; }
+git diff --quiet || { echo "working tree is dirty; commit or stash first" >&2; exit 2; }
+
+iface() { echo "$ROOT/_build/2.9.0/agda/${1%.agda}.agdai"; }
+
+# measure <module> -> "allocGB wallS rssMB rc"
+measure() {
+  local m=$1 rts; rts=$(mktemp); local o; o=$(mktemp)
+  rm -f "$(iface "$m")"
+  ( cd "$ROOT" && "$AGDA" $LIBARG +RTS -N1 -M$HEAP "-s$rts" -RTS -j1 "$m" ) >"$o" 2>&1
+  local rc=$?
+  if [ $rc -ne 0 ]; then echo "0 0 0 $rc"; sed -n '1,12p' "$o" >&2; rm -f "$rts" "$o"; return; fi
+  awk '/bytes allocated in the heap/{gsub(/,/,"",$1); a=$1}
+       /Total[ ]+time/{ for(i=1;i<=NF;i++) if($i ~ /^[0-9.]+s$/){sub(/s$/,"",$i); t=$i; break} }
+       /MiB total memory in use/{ r=$1 }
+       END{ printf "%.4f %s %s 0\n", a/1073741824, (t==""?"0":t), (r==""?"0":r) }' "$rts"
+  rm -f "$rts" "$o"
+}
+
+printf 'case\tmodule\tarm\talloc_GB\twall_s\tmem_MiB\trc\n' > "$OUT"
+FAIL=0; printf '%-16s %-58s %10s %10s %8s %s\n' CASE MODULE A_alloc B_alloc RATIO VERDICT
+printf '%-16s %-58s %10s %10s %8s %s\n' ---- ------ ------- ------- ----- -------
+
+while IFS=$'\t' read -r name files mods expect; do
+  [[ "$name" =~ ^#|^$ ]] && continue
+  [ $# -gt 0 ] && ! printf '%s\n' "$@" | grep -qx "$name" && continue
+  for m in ${mods//,/ }; do
+    aA=0; aB=0
+    for r in $(seq 1 "$REPS"); do
+      git checkout -q "$BASE" -- ${files//,/ } || { echo "checkout failed: $name" >&2; FAIL=1; continue 2; }
+      read -r a w mem rc <<<"$(measure "$m")"
+      printf '%s\t%s\tA\t%s\t%s\t%s\t%s\n' "$name" "$m" "$a" "$w" "$mem" "$rc" >> "$OUT"
+      [ "$rc" != 0 ] && FAIL=1
+      aA=$a; wA=$w
+      git checkout -q HEAD -- ${files//,/ }
+      read -r b w2 mem2 rc2 <<<"$(measure "$m")"
+      printf '%s\t%s\tB\t%s\t%s\t%s\t%s\n' "$name" "$m" "$b" "$w2" "$mem2" "$rc2" >> "$OUT"
+      [ "$rc2" != 0 ] && FAIL=1
+      aB=$b
+    done
+    git checkout -q HEAD -- ${files//,/ }
+    ratio=$(awk -v a="$aA" -v b="$aB" 'BEGIN{printf "%.2f", (b>0? a/b : 0)}')
+    verdict=$(awk -v r="$ratio" -v e="$expect" -v t="$TOL" \
+      'BEGIN{ if(e=="-") print "(no claim)"; else if(r >= e*t) printf "ok (claimed %.2fx)", e; else printf "FAIL (claimed %.2fx)", e }')
+    [[ "$verdict" == FAIL* ]] && FAIL=1
+    printf '%-16s %-58s %10s %10s %7sx %s\n' "$name" "$(echo "$m" | sed "s#Cubical/Categories/##; s#\.agda$##")" "$aA" "$aB" "$ratio" "$verdict"
+  done
+done < "$CASES"
+
+echo; echo "raw results: $OUT"
+[ $FAIL -eq 0 ] && echo "ALL CASES REPRODUCED" || echo "SOME CASES FAILED"
+exit $FAIL

@@ -1,0 +1,2403 @@
+diff --git a/Cubical/Categories/Displayed/CBPV/Unary/Base.agda b/Cubical/Categories/Displayed/CBPV/Unary/Base.agda
+index ad758b5a..90dee5a1 100644
+--- a/Cubical/Categories/Displayed/CBPV/Unary/Base.agda
++++ b/Cubical/Categories/Displayed/CBPV/Unary/Base.agda
+@@ -206,7 +206,7 @@ module _ {C : CBPVCat ℓ ℓ'}(Cᴰ : CBPVCatᴰ C ℓᴰ ℓᴰ') where
+           (thunkᴰ M Mᴰ Cᴰ.⋆ᴰ Cᴰ.reind U-force≡force forceᴰ)
+           Mᴰ
+     Uβᴰ {Bᴰ = Bᴰ} U-force≡force M Uβ Mᴰ =
+-      Cᴰ.rectify {e' = Uβ} (Cᴰ.≡out
++      Cᴰ.rectifyOut {e' = Uβ} (
+         (Cᴰ.⟨⟩⋆⟨ Cᴰ.reind-filler⁻ U-force≡force ⟩
+         ∙ force-naturalᴰ (thunkᴰ M Mᴰ)
+         ∙ Cᴰ.≡in
+@@ -227,7 +227,7 @@ module _ {C : CBPVCat ℓ ℓ'}(Cᴰ : CBPVCatᴰ C ℓᴰ ℓᴰ') where
+           (thunkᴰ (V C.⋆ᴰ force)
+             (Vᴰ Cᴰ.⋆ᴰ Cᴰ.reind U-force≡force forceᴰ))
+     Uηᴰ {Bᴰ = Bᴰ} U-force≡force V Uη Vᴰ =
+-      Cᴰ.rectify {e' = Uη} (Cᴰ.≡out
++      Cᴰ.rectifyOut {e' = Uη} (
+         (sym (Cᴰ.≡in
+           (hasUᴰC Bᴰ .snd .snd _ _ .isIsoOver.leftInv _ Vᴰ))
+         ∙ cong-thunkᴰ
+@@ -299,7 +299,7 @@ module _ {C : CBPVCat ℓ ℓ'}(Cᴰ : CBPVCatᴰ C ℓᴰ ℓᴰ') where
+           (Cᴰ.reind F-ret≡ret F-retᴰ Cᴰ.⋆ᴰ F-bindᴰ M Mᴰ)
+           Mᴰ
+     Fβᴰ {Aᴰ = Aᴰ} F-ret≡ret M Fβ Mᴰ =
+-      Cᴰ.rectify {e' = Fβ} (Cᴰ.≡out
++      Cᴰ.rectifyOut {e' = Fβ} (
+         (Cᴰ.⟨ Cᴰ.reind-filler⁻ F-ret≡ret ⟩⋆⟨⟩
+         ∙ F-ret-naturalᴰ (F-bindᴰ M Mᴰ)
+         ∙ Cᴰ^op.≡in
+@@ -320,7 +320,7 @@ module _ {C : CBPVCat ℓ ℓ'}(Cᴰ : CBPVCatᴰ C ℓᴰ ℓᴰ') where
+           (F-bindᴰ (ret C.⋆ᴰ K)
+             (Cᴰ.reind F-ret≡ret F-retᴰ Cᴰ.⋆ᴰ Kᴰ))
+     Fηᴰ {Aᴰ = Aᴰ} F-ret≡ret K Fη Kᴰ =
+-      Cᴰ.rectify {e' = Fη} (Cᴰ.≡out
++      Cᴰ.rectifyOut {e' = Fη} (
+         (sym (Cᴰ^op.≡in
+           (hasFᴰC Aᴰ .snd .snd _ _ .isIsoOver.leftInv _ Kᴰ))
+         ∙ cong-F-bindᴰ
+diff --git a/Cubical/Categories/Displayed/CBPV/Unary/Instances/StateAlg/Vertical.agda b/Cubical/Categories/Displayed/CBPV/Unary/Instances/StateAlg/Vertical.agda
+index 4a791e64..acff0fab 100644
+--- a/Cubical/Categories/Displayed/CBPV/Unary/Instances/StateAlg/Vertical.agda
++++ b/Cubical/Categories/Displayed/CBPV/Unary/Instances/StateAlg/Vertical.agda
+@@ -186,7 +186,7 @@ StateAlgCBPV-η-lift {ℓ = ℓ} {A = A} Aᴰ = UniversalElementⱽ'.REPRⱽ η-
+   η-ue .UniversalElementⱽ'.universalⱽ ((𝓒 , Z) , Zᴰ , ϕ) .snd .snd ψᴰ =
+     cong (η-ue .UniversalElementⱽ'.universalⱽ ((𝓒 , Z) , Zᴰ , ϕ) .fst)
+       (Cᴰ.rectifyOut {e' = refl} (Cᴰ.reind-filler⁻ _))
+-    ∙ (Dᴰ.rectify $ Dᴰ.≡out $
++    ∙ (Dᴰ.rectifyOut $
+         Dᴰ.reind-filler⁻ (recHom≡ Z (ϕ .snd))
+         ∙ Dᴰ.≡in {pth = recHom≡ Z (ϕ .snd)}
+           (ΣPathPProp
+@@ -335,7 +335,7 @@ StateAlgCBPV-push-lift {ℓ = ℓ} {B = B} {B' = B'} ϕ Bᴰ =
+                     ((ϕ .snd) ⋆Homo (ψ .snd .snd))
+                     _)
+                   (σ (ϕ .snd) (Bᴰ .snd) (B' .fst .snd) ⋆Homoᴰ χᴰ .snd)))))
+-    ∙ (Dᴰ.rectify $ Dᴰ.≡out $ Dᴰ.≡in
++    ∙ (Dᴰ.rectifyOut $ Dᴰ.≡in
+       {pth = ∫Homo≡ _ _ (Z .fst .snd) refl}
+       (ΣPathP
+         ( (funExt λ b' → funExt λ x →
+diff --git a/Cubical/Categories/Displayed/Fibration/Base.agda b/Cubical/Categories/Displayed/Fibration/Base.agda
+index 7ae68a80..1a01ef7c 100644
+--- a/Cubical/Categories/Displayed/Fibration/Base.agda
++++ b/Cubical/Categories/Displayed/Fibration/Base.agda
+@@ -59,10 +59,10 @@ module _ {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ') where
+         fibration→HomᴰRepr .UniversalElement.element =
+           Cⱽ.reind (C.⋆IdL f) f*yᴰ.elementⱽ
+         fibration→HomᴰRepr .UniversalElement.universal xᴰ = isIsoToIsEquiv ((λ fᴰ → f*yᴰ.introᴰ (Cⱽ.idᴰ Cⱽ.⋆ᴰ fᴰ))
+-          , (λ fᴰ → Cᴰ.rectify $ Cᴰ.≡out $ (sym (Cᴰ.reind-filler _) ∙ Cᴰ.⟨⟩⋆⟨ sym $ Cᴰ.reind-filler _  ⟩)
++          , (λ fᴰ → Cᴰ.rectifyOut $ (sym (Cᴰ.reind-filler _) ∙ Cᴰ.⟨⟩⋆⟨ sym $ Cᴰ.reind-filler _  ⟩)
+             ∙ Cᴰ.reind-filler _ ∙ Cᴰ.reind-filler _ ∙ Cᴰ.≡in f*yᴰ.βⱽ
+             ∙ Cᴰ.⋆IdL _)
+-          , λ fⱽ → Cᴰ.rectify $ Cᴰ.≡out $ f*yᴰ.∫ue.intro≡ $ change-base {C = Cᴰ [_][ xᴰ , yᴰ ]} (C._⋆ f)
++          , λ fⱽ → Cᴰ.rectifyOut $ f*yᴰ.∫ue.intro≡ $ change-base {C = Cᴰ [_][ xᴰ , yᴰ ]} (C._⋆ f)
+             C.isSetHom ((sym $ C.⋆IdL (f*yᴰ.∫ue.element .fst)))
+             (Cⱽ.⋆IdL _ ∙ sym (Cᴰ.reind-filler _) ∙ Cⱽ.⟨⟩⋆⟨ sym $ Cⱽ.reind-filler _ ⟩ ∙ Cᴰ.reind-filler _)
+           )
+diff --git a/Cubical/Categories/Displayed/Instances/Presheaf/General.agda b/Cubical/Categories/Displayed/Instances/Presheaf/General.agda
+index ec9fdf79..e5b30fba 100644
+--- a/Cubical/Categories/Displayed/Instances/Presheaf/General.agda
++++ b/Cubical/Categories/Displayed/Instances/Presheaf/General.agda
+@@ -50,11 +50,11 @@ PRESHEAFᴰ' Cᴰ ℓP ℓPᴰ .ob[_] P = Presheafᴰ P Cᴰ ℓPᴰ
+ PRESHEAFᴰ' Cᴰ ℓP ℓPᴰ .Hom[_][_,_] α Pᴰ Qᴰ = PshHomᴰ α Pᴰ Qᴰ
+ PRESHEAFᴰ' Cᴰ ℓP ℓPᴰ .idᴰ = idPshHomᴰ
+ PRESHEAFᴰ' Cᴰ ℓP ℓPᴰ ._⋆ᴰ_ = _⋆PshHomᴰ_
+-PRESHEAFᴰ' Cᴰ ℓP ℓPᴰ .⋆IdLᴰ {P}{Q}{α}{Pᴰ}{Qᴰ} αᴰ = makePshHomᴰPathP _ _ _ (funExt (λ p → Qᴰ.rectify (Qᴰ.≡out refl)))
++PRESHEAFᴰ' Cᴰ ℓP ℓPᴰ .⋆IdLᴰ {P}{Q}{α}{Pᴰ}{Qᴰ} αᴰ = makePshHomᴰPathP _ _ _ (funExt (λ p → Qᴰ.rectifyOut ( refl)))
+   where module Qᴰ = PresheafᴰNotation Qᴰ
+-PRESHEAFᴰ' Cᴰ ℓP ℓPᴰ .⋆IdRᴰ {P}{Q}{α}{Pᴰ}{Qᴰ} αᴰ = makePshHomᴰPathP _ _ _ (funExt (λ p → Qᴰ.rectify (Qᴰ.≡out refl)))
++PRESHEAFᴰ' Cᴰ ℓP ℓPᴰ .⋆IdRᴰ {P}{Q}{α}{Pᴰ}{Qᴰ} αᴰ = makePshHomᴰPathP _ _ _ (funExt (λ p → Qᴰ.rectifyOut ( refl)))
+   where module Qᴰ = PresheafᴰNotation Qᴰ
+-PRESHEAFᴰ' Cᴰ ℓP ℓPᴰ .⋆Assocᴰ {wᴰ = Sᴰ} αᴰ βᴰ γᴰ = makePshHomᴰPathP _ _ _ (funExt (λ p → Sᴰ.rectify (Sᴰ.≡out refl)))
++PRESHEAFᴰ' Cᴰ ℓP ℓPᴰ .⋆Assocᴰ {wᴰ = Sᴰ} αᴰ βᴰ γᴰ = makePshHomᴰPathP _ _ _ (funExt (λ p → Sᴰ.rectifyOut ( refl)))
+   where module Sᴰ = PresheafᴰNotation Sᴰ
+ PRESHEAFᴰ' Cᴰ ℓP ℓPᴰ .isSetHomᴰ = isSetPshHomᴰ _ _ _
+ 
+@@ -113,7 +113,7 @@ module _ (C : Category ℓC ℓC') (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ') (ℓP
+         ⋆PshHomᴰⱽ≡ : (αᴰ : PshHomᴰ α Pᴰ Qᴰ)(βᴰ : PshHomⱽ Qᴰ Rᴰ)
+           → αᴰ ⋆PshHomᴰⱽ βᴰ ≡ (αᴰ PSHᴰ.⋆ᴰⱽ βᴰ)
+         ⋆PshHomᴰⱽ≡ αᴰ βᴰ = sym (fromPathP (makePshHomᴰPathP (αᴰ PSHᴰ.⋆ᴰ βᴰ) (αᴰ ⋆PshHomᴰⱽ βᴰ) _
+-          (funExt λ pᴰ → Rᴰ.rectify $ Rᴰ.≡out refl)))
++          (funExt λ pᴰ → Rᴰ.rectifyOut refl)))
+   module _ {P : Presheaf C ℓP}{Q : Presheaf C ℓP}{R : Presheaf C ℓP}
+     (α : PshHom Q P)(β : PshHom R Q)(Pᴰ : Presheafᴰ P Cᴰ ℓPᴰ)(Rᴰ : Presheafᴰ R Cᴰ ℓPᴰ)(βᴰ : PshHomᴰ β Rᴰ (reind α Pᴰ))
+     where
+@@ -125,10 +125,10 @@ module _ (C : Category ℓC ℓC') (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ') (ℓP
+     opaque
+       unfolding hSetReasoning.reind
+       reind⋆ᴰ≡⋆PshHomᴰ : βᴰ α*Pᴰ.⋆ᴰ (idPshHomᴰ ⋆PshHomᴰ reind-π) ≡ (βᴰ ⋆PshHomᴰ idPshHomᴰ) ⋆PshHomᴰ reind-π
+-      reind⋆ᴰ≡⋆PshHomᴰ = fromPathP (makePshHomᴰPathP _ _ _ (funExt λ rᴰ → Pᴰ.rectify $ Pᴰ.≡out $ refl ))
++      reind⋆ᴰ≡⋆PshHomᴰ = fromPathP (makePshHomᴰPathP _ _ _ (funExt λ rᴰ → Pᴰ.rectifyOut $ refl ))
+ 
+       reind⋆ᴰⱽ≡⋆PshHomᴰ : βᴰ α*Pᴰ.⋆ᴰⱽ (idPshHomᴰ ⋆PshHomᴰ reind-π) ≡ (βᴰ ⋆PshHomᴰⱽ idPshHomᴰ) ⋆PshHomᴰ reind-π
+-      reind⋆ᴰⱽ≡⋆PshHomᴰ = fromPathP (reind⋆ᴰ≡⋆PshHomᴰ ◁ (makePshHomᴰPathP _ _ _ (funExt λ rᴰ → Pᴰ.rectify $ Pᴰ.≡out $
++      reind⋆ᴰⱽ≡⋆PshHomᴰ = fromPathP (reind⋆ᴰ≡⋆PshHomᴰ ◁ (makePshHomᴰPathP _ _ _ (funExt λ rᴰ → Pᴰ.rectifyOut $
+         refl)))
+ 
+   module _ {P : Presheaf C ℓP}{R : Presheaf C ℓP}
+@@ -144,7 +144,7 @@ module _ (C : Category ℓC ℓC') (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ') (ℓP
+         ⋆PshHomⱽᴰ≡ : (αⱽ : PshHomⱽ Pᴰ Qᴰ)(βᴰ : PshHomᴰ β Qᴰ Rᴰ)
+           → αⱽ ⋆PshHomⱽᴰ βᴰ ≡ (αⱽ PSHᴰ.⋆ⱽᴰ βᴰ)
+         ⋆PshHomⱽᴰ≡ αⱽ βᴰ = sym (fromPathP (makePshHomᴰPathP (αⱽ PSHᴰ.⋆ᴰ βᴰ) (αⱽ ⋆PshHomⱽᴰ βᴰ) _
+-          (funExt λ pᴰ → Rᴰ.rectify $ Rᴰ.≡out refl)))
++          (funExt λ pᴰ → Rᴰ.rectifyOut refl)))
+ 
+ 
+   -- TODO only use opacity for the proofs
+diff --git a/Cubical/Categories/Displayed/Instances/Reindex/Cartesian.agda b/Cubical/Categories/Displayed/Instances/Reindex/Cartesian.agda
+index 067dacde..23e1e4a3 100644
+--- a/Cubical/Categories/Displayed/Instances/Reindex/Cartesian.agda
++++ b/Cubical/Categories/Displayed/Instances/Reindex/Cartesian.agda
+@@ -68,7 +68,7 @@ module _ {C : Category ℓC ℓC'} {D : Category ℓD ℓD'}
+   (F : Functor C D) where
+   private
+     module D = Category D
+-    module Dᴰ = Fibers Dᴰ using (ob[_]; reind; reind-filler; rectify; ≡out; cong-reind; ⋆IdL)
++    module Dᴰ = Fibers Dᴰ using (ob[_]; reind; reind-filler; rectify; rectifyOut; ≡out; cong-reind; ⋆IdL)
+ 
+   reindexTerminalⱽ : ∀ x → Terminalⱽ Dᴰ (F ⟅ x ⟆) → Terminalⱽ (reindex Dᴰ F) x
+   reindexTerminalⱽ x 𝟙ⱽ =
+@@ -123,13 +123,13 @@ module _ {C : Category ℓC ℓC'} {D : Category ℓD ℓD'}
+        reindexRepresentableIsoⱽ Dᴰ F x xᴰ))
+     ((λ (Δ , Δᴰ , γ) γᴰ → (γᴰ ×ⱽ*xᴰ.⋆π₁ⱽ) -- making this explicit is negligible
+       , Dᴰ.reind (sym $ F .F-seq γ f) (γᴰ ×ⱽ*xᴰ.⋆π₂ⱽ)) ,
+-    funExt λ (Δ , Δᴰ , γ) → funExt λ fᴰ → ΣPathP (refl , (Dᴰ.rectify $ Dᴰ.≡out -- removing the second `ΣPathP (refl , (Dᴰ.rectify $ Dᴰ.≡out` is a big speedup
++    funExt λ (Δ , Δᴰ , γ) → funExt λ fᴰ → ΣPathP (refl , (Dᴰ.rectifyOut -- removing the second `ΣPathP (refl , (Dᴰ.rectify $ Dᴰ.≡out` is a big speedup
+ 
+       $ Dᴰ.cong-reind _ _ -- making the first two args to cong-reind implicit is a noticable but smaller speedup
+                       (Dᴰ.⋆IdL _))))
+     ((λ (Δ , Δᴰ , γ) (γᴰ , γfᴰ) →
+       ×ⱽ*xᴰ.introᴰ γᴰ (Dᴰ.reind (F .F-seq γ f) γfᴰ)) , funExt λ (Δ , Δᴰ , γ) → funExt λ (γᴰ , γfᴰ) →
+-      Dᴰ.rectify $ Dᴰ.≡out $ ×ⱽ*xᴰ.cong-introᴰ refl (Dᴰ.cong-reind _ _ (Dᴰ.⋆IdL _)))
++      Dᴰ.rectifyOut $ ×ⱽ*xᴰ.cong-introᴰ refl (Dᴰ.cong-reind _ _ (Dᴰ.⋆IdL _)))
+     where
+       module ×ⱽ*xᴰ = LRⱽPresheafᴰNotation Dᴰ (_ , _×ⱽ_*xᴰ)
+ 
+@@ -142,7 +142,7 @@ module _ {C : Category ℓC ℓC'} {D : Category ℓD ℓD'}
+   module _ {x} (Pᴰ : LRⱽPresheafᴰ (D [-, F ⟅ x ⟆ ]) Dᴰ ℓPᴰ) where
+     private
+       module ×ⱽ*Pᴰ = LRⱽPresheafᴰNotation Dᴰ Pᴰ using (⟨_⟩⋆π₁ⱽ; ⟨_⟩⋆π₂ⱽ)
+-      module Pᴰ = PresheafᴰNotation Dᴰ (D [-, F ⟅ _ ⟆ ]) (Pᴰ .fst) using (≡out; rectify; reind-filler; formal-reind-filler)
++      module Pᴰ = PresheafᴰNotation Dᴰ (D [-, F ⟅ _ ⟆ ]) (Pᴰ .fst) using (≡out; rectify; rectifyOut; reind-filler; formal-reind-filler)
+ 
+     opaque
+       unfolding hSetReasoning.reind
+@@ -155,7 +155,7 @@ module _ {C : Category ℓC ℓC'} {D : Category ℓD ℓD'}
+           (λ _ → Eq.refl)
+         (λ (Γ , Γᴰ , f ) →
+           ΣPathP ((Hom/≡ ×ⱽ*Pᴰ.⟨ sym $ Dᴰ.reind-filler _ ⟩⋆π₁ⱽ)
+-          , (Pᴰ.rectify $ Pᴰ.≡out $
++          , (Pᴰ.rectifyOut $
+             sym (Pᴰ.reind-filler _)
+             -- this formal reind filler took a long time without the explicit argument. Why?
+             ∙ Pᴰ.formal-reind-filler (reindexRepresentable-seq (π Dᴰ F) .nIso (Γ , Pᴰ .snd Γᴰ (F-hom F f) .fst , id C) .isIso.inv .snd .snd) _
+diff --git a/Cubical/Categories/Displayed/Instances/Reindex/Limits.agda b/Cubical/Categories/Displayed/Instances/Reindex/Limits.agda
+index 1938d77b..17defc09 100644
+--- a/Cubical/Categories/Displayed/Instances/Reindex/Limits.agda
++++ b/Cubical/Categories/Displayed/Instances/Reindex/Limits.agda
+@@ -82,19 +82,19 @@ module _ {C : Category ℓC ℓC'}{D : Category ℓD ℓD'}
+           Dᴰ.reind (sym $ F .F-id) $ vbp .elementⱽ .snd
+         preservesBinProductⱽ .universalⱽ .fst (fᴰ₁ , fᴰ₂) = fᴰ₁ Fcᴰ∧Fcᴰ'.,ⱽ fᴰ₂
+         preservesBinProductⱽ .universalⱽ .snd .fst (fᴰ₁ , fᴰ₂) = ΣPathP
+-          ( (Dᴰ.rectify $ Dᴰ.≡out $
++          ( (Dᴰ.rectifyOut $
+             (sym $ Dᴰ.reind-filler _)
+             ∙ (sym $ Dᴰ.reind-filler _)
+             ∙ Dᴰ.⟨ refl ⟩⋆⟨ sym $ Dᴰ.reind-filler _ ⟩
+             ∙ Dᴰ.reind-filler _
+             ∙ Fcᴰ∧Fcᴰ'.∫×βⱽ₁)
+-          , (Dᴰ.rectify $ Dᴰ.≡out $
++          , (Dᴰ.rectifyOut $
+             (sym $ Dᴰ.reind-filler _)
+             ∙ (sym $ Dᴰ.reind-filler _)
+             ∙ Dᴰ.⟨ refl ⟩⋆⟨ sym $ Dᴰ.reind-filler _ ⟩
+             ∙ Dᴰ.reind-filler _
+             ∙ Fcᴰ∧Fcᴰ'.∫×βⱽ₂))
+-        preservesBinProductⱽ .universalⱽ .snd .snd fᴰ = Dᴰ.rectify $ Dᴰ.≡out $
++        preservesBinProductⱽ .universalⱽ .snd .snd fᴰ = Dᴰ.rectifyOut $
+           Fcᴰ∧Fcᴰ'.,ⱽ≡
+             (sym (Dᴰ.reind-filler _)
+             ∙ sym (Dᴰ.reind-filler _)
+diff --git a/Cubical/Categories/Displayed/Instances/Reindex/UniversalQuantifier.agda b/Cubical/Categories/Displayed/Instances/Reindex/UniversalQuantifier.agda
+index 1b86e377..482e56bb 100644
+--- a/Cubical/Categories/Displayed/Instances/Reindex/UniversalQuantifier.agda
++++ b/Cubical/Categories/Displayed/Instances/Reindex/UniversalQuantifier.agda
+@@ -122,7 +122,7 @@ module _
+           cartLifts.sq-filler Dᴰ.idᴰ (D.⋆IdR _ ∙ π'≡swap⁻Gπ Δ)
+         the-niᴰ .NatIsoᴰ.transᴰ .NatTransᴰ.N-homᴰ
+             {x = (Θ , Θᴰ , _)}{y = (Δ , Δᴰ , _)}{f = (δ , δᴰ , _)} _ =
+-            Dᴰ.rectify $ Dᴰ.≡out $
++            Dᴰ.rectifyOut $
+               _ , (cartLifts.sq-filler δᴰ _ Dᴰ.⋆ᴰ cartLifts.sq-filler Dᴰ.idᴰ _)
+                 ≡⟨ cartLifts.sq-collapse _ _
+                   ∙ cartLifts.cong-introᴰ (symNatIso swap .trans .N-hom δ)
+@@ -142,11 +142,11 @@ module _
+               ∎
+         the-niᴰ .NatIsoᴰ.nIsoᴰ {x = Δ , Δᴰ , γ} _ =
+           isisoᴰ (cartLifts.sq-filler Dᴰ.idᴰ (D.⋆IdR _ ∙ sym (swapπ'≡Gπ Δ)))
+-            (Dᴰ.rectify $ Dᴰ.≡out $
++            (Dᴰ.rectifyOut $
+               _ , (cartLifts.sq-filler _ _ Dᴰ.⋆ᴰ cartLifts.sq-filler _ _) ≡⟨ cartLifts.sq-collapse _ _
+                 ∙ cartLifts.cong-introᴰ (swap .nIso Δ .ret) (Dᴰ.cong-reind _ (D.⋆IdR _) Dᴰ.⟨⟩⋆⟨ Dᴰ.⋆IdL _ ⟩)
+                 ∙ cartLifts.sq-id refl ⟩ D.id , Dᴰ.idᴰ ∎)
+-            (Dᴰ.rectify $ Dᴰ.≡out $
++            (Dᴰ.rectifyOut $
+               cartLifts.sq-collapse _ _
+               ∙ cartLifts.cong-introᴰ (swap .nIso Δ .sec) (Dᴰ.cong-reind _ (D.⋆IdR _) Dᴰ.⟨⟩⋆⟨ Dᴰ.⋆IdL _ ⟩)
+               ∙ cartLifts.sq-id refl)
+diff --git a/Cubical/Categories/Displayed/Limits/BinProduct/Base.agda b/Cubical/Categories/Displayed/Limits/BinProduct/Base.agda
+index 423d4979..c9140d5f 100644
+--- a/Cubical/Categories/Displayed/Limits/BinProduct/Base.agda
++++ b/Cubical/Categories/Displayed/Limits/BinProduct/Base.agda
+@@ -129,8 +129,8 @@ module _ {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓD ℓD') where
+           → Path Cⱽ.Hom[ _ , _ ] (f , (fᴰ ,ⱽ fᴰ')) (g , gᴰ)
+         ,ⱽ≡ fᴰ≡ fᴰ'≡ = ∫ue.intro≡ (ΣPathP (cong fst fᴰ≡ ∙ (sym $ C.⋆IdR _)
+           , (ΣPathP
+-          ( (Cⱽ.rectify $ Cⱽ.≡out $ fᴰ≡ ∙ (sym $ Cⱽ.reind-filler _))
+-          , (Cⱽ.rectify $ Cⱽ.≡out $ fᴰ'≡ ∙ (sym $ Cⱽ.reind-filler _))))))
++          ( (Cⱽ.rectifyOut $ fᴰ≡ ∙ (sym $ Cⱽ.reind-filler _))
++          , (Cⱽ.rectifyOut $ fᴰ'≡ ∙ (sym $ Cⱽ.reind-filler _))))))
+ 
+         ×βⱽ₁ : {fᴰ : Cᴰ.Hom[ f ][ xᴰ , cᴰ ]}
+            → {fᴰ' : Cᴰ.Hom[ f ][ xᴰ , cᴰ' ]}
+@@ -173,7 +173,7 @@ module _ {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓD ℓD') where
+         ⟨ p ⟩,ⱽ⟨ p' ⟩ = ∫ue.intro⟨ ΣPathP (cong fst p
+           , ΣPathP
+           ( (Cⱽ.≡out $ p)
+-          , (Cⱽ.rectify $ Cⱽ.≡out $ p'))) ⟩
++          , (Cⱽ.rectifyOut $ p'))) ⟩
+ 
+ module _ {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓD ℓD') where
+   private
+diff --git a/Cubical/Categories/Displayed/Limits/BinProduct/Fiberwise.agda b/Cubical/Categories/Displayed/Limits/BinProduct/Fiberwise.agda
+index daaf6063..4d773986 100644
+--- a/Cubical/Categories/Displayed/Limits/BinProduct/Fiberwise.agda
++++ b/Cubical/Categories/Displayed/Limits/BinProduct/Fiberwise.agda
+@@ -44,11 +44,11 @@ module _ {C : Category ℓC ℓC'}(Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ') where
+       BinProductⱽ→BinProductFiber .universal Γᴰ =
+         isIsoToIsEquiv
+             ( a₁×ⱽa₂.×ueⱽ.introⱽ
+-            , (λ f → a₁×ⱽa₂.×ueⱽ.Pshⱽ.rectify $ a₁×ⱽa₂.×ueⱽ.Pshⱽ.≡out $
++            , (λ f → a₁×ⱽa₂.×ueⱽ.Pshⱽ.rectifyOut $
+                 (sym $ a₁×ⱽa₂.×ueⱽ.Pshⱽ.reind-filler _)
+                 ∙ a₁×ⱽa₂.×ueⱽ.βᴰ
+                 )
+-            , λ f → Cᴰ.rectify $ Cᴰ.≡out $
++            , λ f → Cᴰ.rectifyOut $
+                 a₁×ⱽa₂.×ueⱽ.introᴰ≡ (sym $ a₁×ⱽa₂.×ueⱽ.Pshⱽ.reind-filler _)
+                 )
+ 
+@@ -64,7 +64,7 @@ module _ {C : Category ℓC ℓC'}(Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ') where
+   --   ( (λ (fⱽ₁ , fⱽ₂) → f*×.intro (bpⱽ.×ueⱽ.introᴰ ((fⱽ₁ Cᴰ.⋆ᴰ f*aᴰ₁.π) , (fⱽ₂ Cᴰ.⋆ᴰ f*aᴰ₂.π))))
+   --   , (λ (fⱽ₁ , fⱽ₂) → ΣPathP
+   --       -- This part of the proof can probably be simplified
+-  --       ((Cᴰ.rectify $ Cᴰ.≡out $
++  --       ((Cᴰ.rectifyOut $
+   --         (sym $ Cᴰ.reind-filler _)
+   --         ∙ f*aᴰ₁.introL-natural
+   --         ∙ f*aᴰ₁.introCL≡' (C.⋆IdL _)
+@@ -74,7 +74,7 @@ module _ {C : Category ℓC ℓC'}(Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ') where
+   --           ∙ Cᴰ.⟨ f*×.βCL ⟩⋆⟨ refl ⟩
+   --           ∙ Cᴰ.reind-filler _
+   --           ∙ bpⱽ.∫×βⱽ₁))
+-  --       , (Cᴰ.rectify $ Cᴰ.≡out $
++  --       , (Cᴰ.rectifyOut $
+   --         (sym $ Cᴰ.reind-filler _)
+   --         ∙ f*aᴰ₂.introCL-natural
+   --         ∙ f*aᴰ₂.introCL≡' (C.⋆IdL _)
+@@ -85,7 +85,7 @@ module _ {C : Category ℓC ℓC'}(Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ') where
+   --           ∙ Cᴰ.reind-filler _
+   --           ∙ bpⱽ.∫×βⱽ₂))
+   --       ))
+-  --   , λ fⱽ → Cᴰ.rectify $ Cᴰ.≡out $
++  --   , λ fⱽ → Cᴰ.rectifyOut $
+   --         f*×.introCL≡ (bpⱽ.,ⱽ≡
+   --           (Cᴰ.⟨ sym $ Cᴰ.reind-filler _ ⟩⋆⟨ refl ⟩
+   --             ∙ Cᴰ.⋆Assoc _ _ _
+diff --git a/Cubical/Categories/Displayed/More.agda b/Cubical/Categories/Displayed/More.agda
+index 2cad24b3..94d34d60 100644
+--- a/Cubical/Categories/Displayed/More.agda
++++ b/Cubical/Categories/Displayed/More.agda
+@@ -38,9 +38,9 @@ module _ {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ') where
+     → CatIso (Cᴰ.v[ a ]) aᴰ aᴰ'
+   CatIsoⱽ→CatIso isoⱽ .fst = isoⱽ .fst
+   CatIsoⱽ→CatIso isoⱽ .snd .isIso.inv = isoⱽ .snd .isIsoᴰ.invᴰ
+-  CatIsoⱽ→CatIso isoⱽ .snd .isIso.sec = Cᴰ.rectify $ Cᴰ.≡out $
++  CatIsoⱽ→CatIso isoⱽ .snd .isIso.sec = Cᴰ.rectifyOut $
+     sym (Cᴰ.reind-filler _) ∙ (Cᴰ.≡in $ isoⱽ .snd .isIsoᴰ.secᴰ)
+-  CatIsoⱽ→CatIso isoⱽ .snd .isIso.ret = Cᴰ.rectify $ Cᴰ.≡out $
++  CatIsoⱽ→CatIso isoⱽ .snd .isIso.ret = Cᴰ.rectifyOut $
+     sym (Cᴰ.reind-filler _) ∙ (Cᴰ.≡in $ isoⱽ .snd .isIsoᴰ.retᴰ)
+ 
+   invIsoⱽ : ∀ {a} {aᴰ aᴰ' : Cᴰ.ob[ a ]}
+diff --git a/Cubical/Categories/Displayed/NaturalTransformation/More.agda b/Cubical/Categories/Displayed/NaturalTransformation/More.agda
+index 6c4abad0..bd101487 100644
+--- a/Cubical/Categories/Displayed/NaturalTransformation/More.agda
++++ b/Cubical/Categories/Displayed/NaturalTransformation/More.agda
+@@ -63,7 +63,7 @@ module _ {C : Category ℓC ℓC'} {D : Category ℓD ℓD'} where
+         Dᴰ.⋆ᴰ Gᴰ .F-homᴰ fᴰ)
+         Dᴰ.⋆ᴰ nIsoᴰ yᴰ .isIsoᴰ.invᴰ)
+     sqRLᴰ =
+-      Dᴰ.rectify $ Dᴰ.≡out $
++      Dᴰ.rectifyOut $
+         (sym $ Dᴰ.⋆IdR _)
+         ∙ Dᴰ.⟨ refl ⟩⋆⟨ Dᴰ.≡in (symP (nIsoᴰ _ .isIsoᴰ.retᴰ)) ⟩
+         ∙ (sym $ Dᴰ.⋆Assoc _ _ _)
+@@ -78,7 +78,7 @@ module _ {C : Category ℓC ℓC'} {D : Category ℓD ℓD'} where
+         (Gᴰ .F-homᴰ fᴰ Dᴰ.⋆ᴰ nIsoᴰ yᴰ .isIsoᴰ.invᴰ)
+         (nIsoᴰ xᴰ .isIsoᴰ.invᴰ Dᴰ.⋆ᴰ Fᴰ .F-homᴰ fᴰ)
+     sqLLᴰ =
+-      Dᴰ.rectify $ Dᴰ.≡out $
++      Dᴰ.rectifyOut $
+         (sym $ Dᴰ.⋆IdL _)
+         ∙ Dᴰ.⟨ sym $ Dᴰ.≡in $ nIsoᴰ _ .isIsoᴰ.secᴰ ⟩⋆⟨ refl ⟩
+         ∙ Dᴰ.⋆Assoc _ _ _
+@@ -95,7 +95,7 @@ module _ {C : Category ℓC ℓC'} {D : Category ℓD ℓD'} where
+         Dᴰ.⋆ᴰ Fᴰ .F-homᴰ fᴰ)
+         Dᴰ.⋆ᴰ transᴰ .N-obᴰ yᴰ)
+     sqLRᴰ =
+-      Dᴰ.rectify $ Dᴰ.≡out $
++      Dᴰ.rectifyOut $
+         (sym $ Dᴰ.⋆IdR _)
+         ∙ Dᴰ.⟨ refl ⟩⋆⟨ Dᴰ.≡in (symP (nIsoᴰ _ .isIsoᴰ.secᴰ)) ⟩
+         ∙ (sym $ Dᴰ.⋆Assoc _ _ _)
+@@ -116,7 +116,7 @@ module _ {C : Category ℓC ℓC'} {D : Category ℓD ℓD'} where
+           → (Fᴰ .F-homᴰ fᴰ Dᴰ.⋆ᴰ isoᴰs yᴰ .fst) Dᴰ.∫≡ (isoᴰs xᴰ .fst Dᴰ.⋆ᴰ Gᴰ .F-homᴰ fᴰ))
+       → NatIsoᴰ α Fᴰ Gᴰ
+     isosToNatIsoᴰ isoᴰs homᴰ .transᴰ .N-obᴰ = λ xᴰ → isoᴰs xᴰ .fst
+-    isosToNatIsoᴰ isoᴰs homᴰ .transᴰ .N-homᴰ fᴰ = Dᴰ.rectify $ Dᴰ.≡out $ homᴰ fᴰ
++    isosToNatIsoᴰ isoᴰs homᴰ .transᴰ .N-homᴰ fᴰ = Dᴰ.rectifyOut $ homᴰ fᴰ
+     isosToNatIsoᴰ isoᴰs homᴰ .nIsoᴰ xᴰ .invᴰ = isoᴰs xᴰ .snd .invᴰ
+     isosToNatIsoᴰ isoᴰs homᴰ .nIsoᴰ xᴰ .secᴰ = isoᴰs xᴰ .snd .secᴰ
+     isosToNatIsoᴰ isoᴰs homᴰ .nIsoᴰ xᴰ .retᴰ = isoᴰs xᴰ .snd .retᴰ
+@@ -160,7 +160,7 @@ module _
+     _∘ʳᴰ_ : NatTransᴰ (F ∘ʳ α) (Fᴰ ∘Fᴰ Gᴰ) (Fᴰ ∘Fᴰ Hᴰ)
+     _∘ʳᴰ_ .N-obᴰ bᴰ = Fᴰ .F-homᴰ (αᴰ .N-obᴰ bᴰ)
+     _∘ʳᴰ_ .N-homᴰ {f = f} {xᴰ = xᴰ} {yᴰ = yᴰ} fᴰ =
+-      Dᴰ.rectify $ Dᴰ.≡out $
++      Dᴰ.rectifyOut $
+         Dᴰ.≡in (symP (Fᴰ .F-seqᴰ _ _))
+         ∙ Dᴰ.≡in (congP (λ _ → Fᴰ .F-homᴰ) (αᴰ .N-homᴰ fᴰ))
+         ∙ Dᴰ.≡in (Fᴰ .F-seqᴰ _ _)
+@@ -175,12 +175,12 @@ module _
+     _∘ʳᴰⁱ_ .NatIsoᴰ.nIsoᴰ bᴰ .isIsoᴰ.invᴰ =
+       F-homᴰ Fᴰ (αᴰ .NatIsoᴰ.nIsoᴰ bᴰ .isIsoᴰ.invᴰ)
+     _∘ʳᴰⁱ_ .NatIsoᴰ.nIsoᴰ bᴰ .isIsoᴰ.secᴰ =
+-      Dᴰ.rectify $ Dᴰ.≡out $
++      Dᴰ.rectifyOut $
+         Dᴰ.≡in (symP $ Fᴰ .F-seqᴰ _ _)
+         ∙ (Dᴰ.≡in $ congP (λ _ → Fᴰ .F-homᴰ) (αᴰ .NatIsoᴰ.nIsoᴰ bᴰ .isIsoᴰ.secᴰ))
+         ∙ (Dᴰ.≡in $ Fᴰ .F-idᴰ)
+     _∘ʳᴰⁱ_ .NatIsoᴰ.nIsoᴰ bᴰ .isIsoᴰ.retᴰ =
+-      Dᴰ.rectify $ Dᴰ.≡out $
++      Dᴰ.rectifyOut $
+         Dᴰ.≡in (symP $ Fᴰ .F-seqᴰ _ _)
+         ∙ (Dᴰ.≡in $ congP (λ _ → Fᴰ .F-homᴰ) (αᴰ .NatIsoᴰ.nIsoᴰ bᴰ .isIsoᴰ.retᴰ))
+         ∙ (Dᴰ.≡in $ Fᴰ .F-idᴰ)
+@@ -200,7 +200,7 @@ module _
+   idTransᴰ : NatTransᴰ (idTrans F) Fᴰ Fᴰ
+   idTransᴰ .N-obᴰ _ =  Dᴰ.idᴰ
+   idTransᴰ .N-homᴰ fᴰ =
+-    Dᴰ.rectify $ Dᴰ.≡out $
++    Dᴰ.rectifyOut $
+       Dᴰ.⋆IdR _
+       ∙ (sym $ Dᴰ.⋆IdL _)
+ 
+@@ -305,14 +305,14 @@ module _
+   (αᴰ ⋆NatIsoᴰ βᴰ) .nIsoᴰ xᴰ .invᴰ =
+     (Dᴰ Categoryᴰ.⋆ᴰ βᴰ .nIsoᴰ xᴰ .invᴰ) (αᴰ .nIsoᴰ xᴰ .invᴰ)
+   (αᴰ ⋆NatIsoᴰ βᴰ) .nIsoᴰ xᴰ .secᴰ =
+-   Dᴰ.rectify $ Dᴰ.≡out $
++   Dᴰ.rectifyOut $
+      Dᴰ.⋆Assoc _ _ _
+      ∙ Dᴰ.⟨ refl ⟩⋆⟨ (sym $ Dᴰ.⋆Assoc _ _ _)
+                       ∙ Dᴰ.⟨ Dᴰ.≡in $ αᴰ .nIsoᴰ xᴰ .secᴰ ⟩⋆⟨ refl ⟩
+                       ∙ Dᴰ.⋆IdL _ ⟩
+      ∙ (Dᴰ.≡in $ βᴰ .nIsoᴰ xᴰ .secᴰ)
+   (αᴰ ⋆NatIsoᴰ βᴰ) .nIsoᴰ xᴰ .retᴰ =
+-   Dᴰ.rectify $ Dᴰ.≡out $
++   Dᴰ.rectifyOut $
+      (sym $ Dᴰ.⋆Assoc _ _ _)
+      ∙ Dᴰ.⟨ Dᴰ.⋆Assoc _ _ _
+             ∙ Dᴰ.⟨ refl ⟩⋆⟨ Dᴰ.≡in (βᴰ .nIsoᴰ xᴰ .retᴰ) ⟩
+@@ -341,7 +341,7 @@ module _
+       ((Gᴰ ∘Fᴰ Fᴰ) ^opFᴰ)
+   ∘Fᴰ-^opFᴰ-NatIsoᴰ .transᴰ .N-obᴰ xᴰ = Eᴰ.idᴰ
+   ∘Fᴰ-^opFᴰ-NatIsoᴰ .transᴰ .N-homᴰ fᴰ =
+-    Eᴰ.rectify $ Eᴰ.≡out $
++    Eᴰ.rectifyOut $
+       Eᴰ.⋆IdL _ ∙ (sym $ Eᴰ.⋆IdR _)
+   ∘Fᴰ-^opFᴰ-NatIsoᴰ .nIsoᴰ xᴰ .invᴰ = Eᴰ.idᴰ
+   ∘Fᴰ-^opFᴰ-NatIsoᴰ .nIsoᴰ xᴰ .secᴰ = Eᴰ.⋆IdLᴰ (∘Fᴰ-^opFᴰ-NatIsoᴰ .nIsoᴰ xᴰ .invᴰ)
+diff --git a/Cubical/Categories/Displayed/Presheaf/Base.agda b/Cubical/Categories/Displayed/Presheaf/Base.agda
+index 4a1c84fa..7ebff27d 100644
+--- a/Cubical/Categories/Displayed/Presheaf/Base.agda
++++ b/Cubical/Categories/Displayed/Presheaf/Base.agda
+@@ -128,7 +128,7 @@ module PresheafᴰNotation {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓD
+     → Path p[ _ ] (_ , fⱽ ⋆ⱽᴰ gᴰ) (_ , fⱽ' ⋆ⱽᴰ gᴰ')
+   ⟨_⟩⋆ⱽᴰ⟨_⟩ {fⱽ = fⱽ}{fⱽ'} p q = ≡in (λ i → p' i ⋆ⱽᴰ q i .snd) where
+     p' : fⱽ ≡ fⱽ'
+-    p' = Cᴰ.rectify $ Cᴰ.≡out p
++    p' = Cᴰ.rectifyOut p
+   opaque
+     ⋆Assocᴰⱽᴰ : ∀ {x y} {f : C [ x , y ]} {h : P.p[ y ]} {xᴰ yᴰ yᴰ'}
+         (fᴰ : Cᴰ [ f ][ xᴰ , yᴰ ]) (gⱽ : Cᴰ.v[ y ] [ yᴰ , yᴰ' ]) (hᴰ : p[ h ][ yᴰ' ])
+diff --git a/Cubical/Categories/Displayed/Presheaf/CartesianLift/Manual.agda b/Cubical/Categories/Displayed/Presheaf/CartesianLift/Manual.agda
+index f64373ef..4c0de4e9 100644
+--- a/Cubical/Categories/Displayed/Presheaf/CartesianLift/Manual.agda
++++ b/Cubical/Categories/Displayed/Presheaf/CartesianLift/Manual.agda
+@@ -70,7 +70,7 @@ module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
+         → Path Pᴰ.p[ _ ] (_ , gpᴰ) (_ , gpᴰ')
+         → Path Cᴰ.Hom[ _ , _ ] (_ , intro gpᴰ) (_ , intro gpᴰ')
+       intro⟨ g≡g' ⟩⟨ gpᴰ≡gpᴰ' ⟩ =
+-        intro⟨ ΣPathP (g≡g' , (Pᴰ.rectify $ Pᴰ.≡out $ gpᴰ≡gpᴰ')) ⟩
++        intro⟨ ΣPathP (g≡g' , (Pᴰ.rectifyOut $ gpᴰ≡gpᴰ')) ⟩
+ 
+       β :
+         ∀ {z zᴰ}{g : C [ z , x ]}
+@@ -125,12 +125,12 @@ module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
+   isFibrationReind p .isCartesian .fst qᴰ =
+     isFibQᴰ.intro $ Qᴰ.reind (α .N-hom _ _ _ p) qᴰ
+   isFibrationReind p .isCartesian .snd .fst qᴰ =
+-    Qᴰ.rectify $ Qᴰ.≡out $
++    Qᴰ.rectifyOut $
+       sym (Qᴰ.reind-filler _)
+       ∙ isFibQᴰ.β
+       ∙ (sym $ Qᴰ.reind-filler _)
+   isFibrationReind p .isCartesian .snd .snd gᴰ =
+-    Cᴰ.rectify $ Cᴰ.≡out $ isFibQᴰ.intro≡ $ sym $
++    Cᴰ.rectifyOut $ isFibQᴰ.intro≡ $ sym $
+       Qᴰ.reind-filler _ ∙ Qᴰ.reind-filler _
+ 
+ module _ {C : Category ℓC ℓC'} {D : Category ℓD ℓD'} {Dᴰ : Categoryᴰ D ℓDᴰ ℓDᴰ'}
+diff --git a/Cubical/Categories/Displayed/Presheaf/CartesianLift/Properties.agda b/Cubical/Categories/Displayed/Presheaf/CartesianLift/Properties.agda
+index 90178d23..b0f5752e 100644
+--- a/Cubical/Categories/Displayed/Presheaf/CartesianLift/Properties.agda
++++ b/Cubical/Categories/Displayed/Presheaf/CartesianLift/Properties.agda
+@@ -55,14 +55,14 @@ module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
+       CartesianLift→ManualCartesianLift .isCartesian .fst pᴰ =
+         cL.introᴰ pᴰ
+       CartesianLift→ManualCartesianLift .isCartesian .snd .fst pᴰ =
+-        Pᴰ.rectify $ Pᴰ.≡out $
++        Pᴰ.rectifyOut $
+           Pᴰ.⟨⟩⋆⟨ sym $ Pᴰ.reind-filler _ ⟩
+           ∙ Pᴰ.reind-filler _
+           ∙ Pᴰ.reind-filler _
+           ∙ Pᴰ.≡in cL.βⱽ
+       CartesianLift→ManualCartesianLift .isCartesian .snd .snd pᴰ =
+         cong (cL.universalⱽ .fst)
+-          (Pᴰ.rectify $ Pᴰ.≡out $
++          (Pᴰ.rectifyOut $
+             Pᴰ.⟨⟩⋆⟨ sym $ Pᴰ.reind-filler _ ⟩
+             ∙ Pᴰ.reind-filler _
+             ∙ Pᴰ.reind-filler _
+@@ -86,7 +86,7 @@ module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
+       ManualCartesianLift→CartesianLift .universalⱽ {y} {yᴰ} {f} .snd =
+         subst
+           motive
+-          (funExt (λ fᴰ → Pᴰ.rectify $ Pᴰ.≡out $
++          (funExt (λ fᴰ → Pᴰ.rectifyOut $
+             Pᴰ.⟨⟩⋆⟨ sym $ Pᴰ.⋆IdL _ ⟩ ∙ Pᴰ.reind-filler _ ∙ Pᴰ.reind-filler _))
+           (McL.isCartesian .snd)
+         where
+diff --git a/Cubical/Categories/Displayed/Presheaf/Constructions/BinProduct/LocalRepresentability/Properties.agda b/Cubical/Categories/Displayed/Presheaf/Constructions/BinProduct/LocalRepresentability/Properties.agda
+index db179934..a57dba06 100644
+--- a/Cubical/Categories/Displayed/Presheaf/Constructions/BinProduct/LocalRepresentability/Properties.agda
++++ b/Cubical/Categories/Displayed/Presheaf/Constructions/BinProduct/LocalRepresentability/Properties.agda
+@@ -169,7 +169,7 @@ module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'} where
+         → LR-cong p≡q ≡ pathToCatIsoⱽ Cᴰ (cong ⌈ Γᴰ ×ⱽ_*Pᴰ⌉ p≡q) .fst
+       LR-cong≡pathToPshHom =
+         J (λ q p≡q → LR-cong p≡q ≡ pathToCatIsoⱽ Cᴰ (cong ⌈ _ ×ⱽ_*Pᴰ⌉ p≡q) .fst)
+-         (Cᴰ.rectify $ Cᴰ.≡out $
++         (Cᴰ.rectifyOut $
+            (introLR≡ (sym $ Cᴰ.⋆IdL _)
+              (sym (Pᴰ.reind-filler _)
+              ∙ (sym $ Pᴰ.⋆IdL _)))
+diff --git a/Cubical/Categories/Displayed/Presheaf/Constructions/BinProduct/Properties.agda b/Cubical/Categories/Displayed/Presheaf/Constructions/BinProduct/Properties.agda
+index 6b2dd6e0..a13a2c40 100644
+--- a/Cubical/Categories/Displayed/Presheaf/Constructions/BinProduct/Properties.agda
++++ b/Cubical/Categories/Displayed/Presheaf/Constructions/BinProduct/Properties.agda
+@@ -73,8 +73,8 @@ module _ {C : Category ℓ ℓ'} {Cᴰ : Categoryᴰ C ℓᴰ ℓᴰ'}
+         ×ᴰ-UMPᴰ .IsoOver.fun α×β α×βᴰ = (α×βᴰ ⋆PshHomᴰ ×ᴰ-π₁) , (α×βᴰ ⋆PshHomᴰ ×ᴰ-π₂)
+         ×ᴰ-UMPᴰ .IsoOver.inv (α , β) (αᴰ , βᴰ) = ×ᴰ-introᴰ αᴰ βᴰ
+         ×ᴰ-UMPᴰ .IsoOver.rightInv (α , β) (αᴰ , βᴰ) =
+-          ΣPathP ((makePshHomᴰPathP _ _ _ (funExt (λ rᴰ → Pᴰ.rectify $ Pᴰ.≡out $ refl))) , (makePshHomᴰPathP _ _ _ (funExt (λ rᴰ → Qᴰ.rectify $ Qᴰ.≡out $ refl))))
+-        ×ᴰ-UMPᴰ .IsoOver.leftInv α×β α×βᴰ = makePshHomᴰPathP _ _ _ (funExt λ rᴰ → ΣPathP ((Pᴰ.rectify $ Pᴰ.≡out $ refl) , (Qᴰ.rectify $ Qᴰ.≡out $ refl)))
++          ΣPathP ((makePshHomᴰPathP _ _ _ (funExt (λ rᴰ → Pᴰ.rectifyOut $ refl))) , (makePshHomᴰPathP _ _ _ (funExt (λ rᴰ → Qᴰ.rectifyOut $ refl))))
++        ×ᴰ-UMPᴰ .IsoOver.leftInv α×β α×βᴰ = makePshHomᴰPathP _ _ _ (funExt λ rᴰ → ΣPathP ((Pᴰ.rectifyOut $ refl) , (Qᴰ.rectifyOut $ refl)))
+ 
+   module _ {P : Presheaf C ℓP}{Pᴰ : Presheafᴰ P Cᴰ ℓPᴰ}{Qᴰ : Presheafᴰ P Cᴰ ℓQᴰ}
+     where
+@@ -182,16 +182,16 @@ module _ {C : Category ℓ ℓ'} {Cᴰ : Categoryᴰ C ℓᴰ ℓᴰ'}
+   PshProdⱽ≡ᴰ = Functorᴰ≡
+     (λ Aᴰ → funExt λ (p , q) → ΣPathPProp (λ _ → isPropIsSet) refl)
+     λ fᴰ → funExt λ (p , q) → funExt λ (pᴰ , qᴰ) → ΣPathP $
+-      (Pᴰ.rectify $ Pᴰ.≡out $ Pᴰ.reind-filler _)
+-      , (Qᴰ.rectify $ Qᴰ.≡out $ Qᴰ.reind-filler _)
++      (Pᴰ.rectifyOut $ Pᴰ.reind-filler _)
++      , (Qᴰ.rectifyOut $ Qᴰ.reind-filler _)
+ 
+   -- This one is only Eq.refl on objects, would need a corresponding eqToPshIsoⱽ' like reindF''
+   PshProdⱽ≅ᴰ :
+     PshIsoⱽ (Pᴰ ×ᴰPsh Qᴰ) (reind (π₁ P Q) Pᴰ ×ⱽPsh reind (π₂ P Q) Qᴰ)
+   PshProdⱽ≅ᴰ .fst .N-obᴰ x = x
+   PshProdⱽ≅ᴰ .fst .N-homᴰ =
+-    ΣPathP ( (Pᴰ.rectify $ Pᴰ.≡out $ Pᴰ.reind-filler _)
+-           , (Qᴰ.rectify $ Qᴰ.≡out $ Qᴰ.reind-filler _))
++    ΣPathP ( (Pᴰ.rectifyOut $ Pᴰ.reind-filler _)
++           , (Qᴰ.rectifyOut $ Qᴰ.reind-filler _))
+   PshProdⱽ≅ᴰ .snd .inv _ x = x
+   PshProdⱽ≅ᴰ .snd .rightInv _ _ = refl
+   PshProdⱽ≅ᴰ .snd .leftInv _ _ = refl
+diff --git a/Cubical/Categories/Displayed/Presheaf/Constructions/Curry.agda b/Cubical/Categories/Displayed/Presheaf/Constructions/Curry.agda
+index 67e02a3d..e300616a 100644
+--- a/Cubical/Categories/Displayed/Presheaf/Constructions/Curry.agda
++++ b/Cubical/Categories/Displayed/Presheaf/Constructions/Curry.agda
+@@ -70,8 +70,8 @@ module _ {C : Category ℓC ℓC'} (P : Presheaf C ℓP)(Cᴰ : Categoryᴰ C 
+     CurryPshᴰ : Presheafᴰ P Cᴰ ℓPᴰ
+     CurryPshᴰ .F-obᴰ {x} xᴰ p = Pᴰ' .F-ob (x , xᴰ , p)
+     CurryPshᴰ .F-homᴰ {f = f} fᴰ p pᴰ = fᴰ Pᴰ'.⋆ᴰ pᴰ
+-    CurryPshᴰ .F-idᴰ = funExt (λ p → funExt λ pᴰ → Pᴰ'.rectify $ Pᴰ'.≡out $ Pᴰ'.⋆IdLᴰ pᴰ)
+-    CurryPshᴰ .F-seqᴰ fᴰ gᴰ = funExt λ p → funExt λ pᴰ → Pᴰ'.rectify $ Pᴰ'.≡out $ Pᴰ'.⋆Assocᴰ gᴰ fᴰ pᴰ
++    CurryPshᴰ .F-idᴰ = funExt (λ p → funExt λ pᴰ → Pᴰ'.rectifyOut $ Pᴰ'.⋆IdLᴰ pᴰ)
++    CurryPshᴰ .F-seqᴰ fᴰ gᴰ = funExt λ p → funExt λ pᴰ → Pᴰ'.rectifyOut $ Pᴰ'.⋆Assocᴰ gᴰ fᴰ pᴰ
+ 
+   module _ (Pᴰ : Presheafᴰ P Cᴰ ℓPᴰ) where
+     private
+@@ -81,9 +81,9 @@ module _ {C : Category ℓC ℓC'} (P : Presheaf C ℓP)(Cᴰ : Categoryᴰ C 
+     UncurryPshᴰ .F-hom {x = (x , xᴰ , p)}{y = (y , yᴰ , q)} (f , fᴰ , f⋆p≡q) pᴰ =
+       Pᴰ.reind f⋆p≡q (fᴰ Pᴰ.⋆ᴰ pᴰ)
+ 
+-    UncurryPshᴰ .F-id = funExt (λ pᴰ → Pᴰ.rectify $ Pᴰ.≡out $
++    UncurryPshᴰ .F-id = funExt (λ pᴰ → Pᴰ.rectifyOut $
+       sym (Pᴰ.reind-filler _) ∙ Pᴰ.⋆IdL _)
+-    UncurryPshᴰ .F-seq (f , fᴰ , f⋆p≡q) (g , gᴰ , g⋆q≡r) = funExt λ pᴰ → Pᴰ.rectify $ Pᴰ.≡out $
++    UncurryPshᴰ .F-seq (f , fᴰ , f⋆p≡q) (g , gᴰ , g⋆q≡r) = funExt λ pᴰ → Pᴰ.rectifyOut $
+       sym (Pᴰ.reind-filler _)
+       ∙ Pᴰ.⋆Assoc _ _ _
+       ∙ Pᴰ.⟨⟩⋆⟨ Pᴰ.reind-filler _ ⟩
+@@ -93,11 +93,11 @@ module _ {C : Category ℓC ℓC'} (P : Presheaf C ℓP)(Cᴰ : Categoryᴰ C 
+   CurryPshᴰIso .fun = CurryPshᴰ
+   CurryPshᴰIso .inv = UncurryPshᴰ
+   CurryPshᴰIso .sec Pᴰ = Functorᴰ≡ (λ _ → refl)
+-    λ fᴰ → funExt λ p → funExt λ pᴰ → Pᴰ.rectify $ Pᴰ.≡out $
++    λ fᴰ → funExt λ p → funExt λ pᴰ → Pᴰ.rectifyOut $
+       sym $ Pᴰ.reind-filler _
+     where module Pᴰ = PresheafᴰNotation Pᴰ
+   CurryPshᴰIso .ret Pᴰ' = Functor≡ (λ _ → refl) λ (f , fᴰ , f⋆p≡q) → funExt λ pᴰ →
+-    Pᴰ'.rectify $ Pᴰ'.≡out $
++    Pᴰ'.rectifyOut $
+       sym (Pᴰ.reind-filler _)
+       ∙ (Pᴰ'.≡in $ λ i → Pᴰ' .F-hom (f , fᴰ , λ j → f⋆p≡q (i ∧ j)) pᴰ)
+     where module Pᴰ = PresheafᴰNotation (CurryPshᴰ Pᴰ')
+@@ -117,7 +117,7 @@ module _ {C : Category ℓC ℓC'} {P : Presheaf C ℓP}{Q : Presheaf C ℓQ}{C
+ 
+   Uncurry-recᴰ : {α : PshHom P Q} → PshHomᴰ α Pᴰ (CurryPshᴰ Q Cᴰ Qᴰ') → Uncurried.PshHomᴰ α (UncurryPshᴰ P Cᴰ Pᴰ) Qᴰ'
+   Uncurry-recᴰ αᴰ .N-ob = λ c → N-obᴰ αᴰ
+-  Uncurry-recᴰ αᴰ .N-hom (Δ , Δᴰ , q) (Γ , Γᴰ , p) (γ , γᴰ , γ⋆p≡q) pᴰ = Qᴰ'.rectify $ Qᴰ'.≡out $
++  Uncurry-recᴰ αᴰ .N-hom (Δ , Δᴰ , q) (Γ , Γᴰ , p) (γ , γᴰ , γ⋆p≡q) pᴰ = Qᴰ'.rectifyOut $
+     αᴰ.N-obᴰ⟨ sym $ Pᴰ.reind-filler _ ⟩
+     ∙ αᴰ.N-hom _ _ _ _
+     ∙ (sym $ Qᴰ'.⋆ᴰ-reind _ _ _)
+@@ -133,7 +133,7 @@ module _ {C : Category ℓC ℓC'} {P : Presheaf C ℓP}{Cᴰ : Categoryᴰ C 
+     module Qᴰ' = Uncurried.PresheafᴰNotation Cᴰ P Qᴰ'
+   Uncurry-recⱽ : PshHomⱽ Pᴰ (CurryPshᴰ P Cᴰ Qᴰ') → Uncurried.PshHomⱽ (UncurryPshᴰ P Cᴰ Pᴰ) Qᴰ'
+   Uncurry-recⱽ αⱽ .N-ob = λ c → N-obᴰ αⱽ
+-  Uncurry-recⱽ αⱽ .N-hom (Δ , Δᴰ , q) (Γ , Γᴰ , p) (γ , γᴰ , γ⋆p≡q) pᴰ = Qᴰ'.rectify $ Qᴰ'.≡out $
++  Uncurry-recⱽ αⱽ .N-hom (Δ , Δᴰ , q) (Γ , Γᴰ , p) (γ , γᴰ , γ⋆p≡q) pᴰ = Qᴰ'.rectifyOut $
+     cong (αⱽ.N-ob _) (sym $ Pᴰ.reind-filler _)
+     ∙ αⱽ.N-hom (Δ , Δᴰ) (Γ , Γᴰ) (γ , γᴰ) (p , pᴰ)
+     ∙ (sym $ Qᴰ'.⋆ᴰ-reind _ _ _)
+@@ -142,14 +142,14 @@ module _ {C : Category ℓC ℓC'} {P : Presheaf C ℓP}{Cᴰ : Categoryᴰ C 
+   Curry-introⱽ : Uncurried.PshHomⱽ (UncurryPshᴰ P Cᴰ Pᴰ) Qᴰ' → PshHomⱽ Pᴰ (CurryPshᴰ P Cᴰ Qᴰ')
+   Curry-introⱽ αⱽ .N-obᴰ {x} {xᴰ} {p} pᴰ = αⱽ .N-ob (x , xᴰ , p) pᴰ
+   Curry-introⱽ αⱽ .N-homᴰ {x} {y} {xᴰ} {yᴰ} {f} {p} {fᴰ} {pᴰ} =
+-    cong (αⱽ .N-ob (x , xᴰ , (f P.⋆ p))) (Pᴰ.rectify $ Pᴰ.≡out $ Pᴰ.reind-filler _)
++    cong (αⱽ .N-ob (x , xᴰ , (f P.⋆ p))) (Pᴰ.rectifyOut $ Pᴰ.reind-filler _)
+     ∙ αⱽ .N-hom (x , xᴰ , f P.⋆ p) (y , yᴰ , p) (f , fᴰ , refl) pᴰ
+ 
+   Curry-recⱽ : PshHom Qᴰ' (UncurryPshᴰ P Cᴰ Pᴰ) → PshHomⱽ (CurryPshᴰ P Cᴰ Qᴰ') Pᴰ
+   Curry-recⱽ α .N-obᴰ x = α .N-ob _ x
+   Curry-recⱽ α .N-homᴰ {x} {y} {xᴰ} {yᴰ} {f} {p} {fᴰ} {pᴰ} =
+     α .N-hom (x , xᴰ , f P.⋆ p) (y , yᴰ , p) (f , fᴰ , refl) pᴰ
+-    ∙ (sym $ Pᴰ.rectify $ Pᴰ.≡out $ Pᴰ.reind-filler _)
++    ∙ (sym $ Pᴰ.rectifyOut $ Pᴰ.reind-filler _)
+ 
+   Uncurry-recⱽ-Iso :
+     Iso (Uncurried.PshHomⱽ (UncurryPshᴰ P Cᴰ Pᴰ) Qᴰ') (PshHomⱽ Pᴰ (CurryPshᴰ P Cᴰ Qᴰ'))
+@@ -171,7 +171,7 @@ module _ {C : Category ℓC ℓC'} {P : Presheaf C ℓP}{Cᴰ : Categoryᴰ C 
+ 
+   CurryPshHom⁻ : PshHomⱽ (CurryPshᴰ P Cᴰ Pᴰ') (CurryPshᴰ P Cᴰ Qᴰ') → PshHom Pᴰ' Qᴰ'
+   CurryPshHom⁻ α .PshHom.N-ob = λ c → α .PshHomᴰ.N-obᴰ
+-  CurryPshHom⁻ α .PshHom.N-hom c c' (f , fᴰ , f⋆p≡q) pᴰ = Qᴰ'.rectify $ Qᴰ'.≡out $
++  CurryPshHom⁻ α .PshHom.N-hom c c' (f , fᴰ , f⋆p≡q) pᴰ = Qᴰ'.rectifyOut $
+     α.N-obᴰ⟨ Pᴰ'.⋆ᴰ-reind _ _ _ ⟩
+     ∙ (Qᴰ'.≡in $ α .N-homᴰ {fᴰ = fᴰ}{pᴰ = pᴰ})
+     ∙ (sym $ Qᴰ'.⋆ᴰ-reind _ _ _)
+@@ -194,7 +194,7 @@ module _ {C : Category ℓC ℓC'} {P : Presheaf C ℓP}{Cᴰ : Categoryᴰ C 
+ 
+   UncurryPshHomⱽ : PshHomⱽ Pᴰ Qᴰ → PshHom (UncurryPshᴰ P Cᴰ Pᴰ) (UncurryPshᴰ P Cᴰ Qᴰ)
+   UncurryPshHomⱽ α .N-ob _ = α .N-obᴰ
+-  UncurryPshHomⱽ α .N-hom (x , xᴰ , f) (y , yᴰ , g) (h , hᴰ , h⋆g≡f) pᴰ = Qᴰ.rectify $ Qᴰ.≡out $
++  UncurryPshHomⱽ α .N-hom (x , xᴰ , f) (y , yᴰ , g) (h , hᴰ , h⋆g≡f) pᴰ = Qᴰ.rectifyOut $
+     N-obᴰ⟨ α ⟩ (sym $ Pᴰ.reind-filler _)
+     ∙ Qᴰ.≡in (α .N-homᴰ)
+     ∙ Qᴰ.reind-filler _
+diff --git a/Cubical/Categories/Displayed/Presheaf/Constructions/Exponential/Base.agda b/Cubical/Categories/Displayed/Presheaf/Constructions/Exponential/Base.agda
+index 9c6a7c11..e6dc7459 100644
+--- a/Cubical/Categories/Displayed/Presheaf/Constructions/Exponential/Base.agda
++++ b/Cubical/Categories/Displayed/Presheaf/Constructions/Exponential/Base.agda
+@@ -75,9 +75,9 @@ module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
+     _⇒PshSmallᴰ_ .F-obᴰ {Γ} Γᴰ = Qᴰ .F-obᴰ ((Γᴰ ×ᴰPᴰ) .vertexᴰ)
+     _⇒PshSmallᴰ_ .F-homᴰ {Γ} {Δ} {γ} {Γᴰ} {Δᴰ} γᴰ q qᴰ =
+       ((γ , γᴰ) ∫⇒Small.⋆ (q , qᴰ)) .snd
+-    _⇒PshSmallᴰ_ .F-idᴰ {Γ} {Γᴰ} = funExt λ q → funExt λ qᴰ → Qᴰ.rectify $ Qᴰ.≡out $
++    _⇒PshSmallᴰ_ .F-idᴰ {Γ} {Γᴰ} = funExt λ q → funExt λ qᴰ → Qᴰ.rectifyOut $
+       funExt⁻ (∫⇒Small .F-id) (q , qᴰ)
+-    _⇒PshSmallᴰ_ .F-seqᴰ γᴰ δᴰ = funExt λ q → funExt λ qᴰ → Qᴰ.rectify $ Qᴰ.≡out $
++    _⇒PshSmallᴰ_ .F-seqᴰ γᴰ δᴰ = funExt λ q → funExt λ qᴰ → Qᴰ.rectifyOut $
+       funExt⁻ (∫⇒Small .F-seq (_ , γᴰ) (_ , δᴰ)) (q , qᴰ)
+ 
+   -- TODO: ⇒PshLargeⱽ
+diff --git a/Cubical/Categories/Displayed/Presheaf/Constructions/Exponential/Properties.agda b/Cubical/Categories/Displayed/Presheaf/Constructions/Exponential/Properties.agda
+index 3b61ad66..82db3c26 100644
+--- a/Cubical/Categories/Displayed/Presheaf/Constructions/Exponential/Properties.agda
++++ b/Cubical/Categories/Displayed/Presheaf/Constructions/Exponential/Properties.agda
+@@ -96,18 +96,18 @@ module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'} where
+       reindPshᴰFunctor⇒PshSmall .fst .N-obᴰ {Γ} {Γᴰ} {p} qᴰ⟨Γ,p⟩ =
+         UEⱽ-essUniq (Fᴰ .F-obᴰ Γᴰ ×ⱽ p *Pᴰ) (preservesLocalReprⱽ→UEⱽ Fᴰ (reindPshᴰFunctor Fᴰ Pᴰ) Pᴰ idPshHomᴰ _×ⱽ_*Fᴰ*Pᴰ presLRⱽ Γᴰ p) .fst
+         Qᴰ.⋆ⱽᴰ qᴰ⟨Γ,p⟩
+-      reindPshᴰFunctor⇒PshSmall .fst .N-homᴰ {Δ} {Γ} {Δᴰ} {Γᴰ} {γ} {p} {γᴰ} {qᴰ⟨Γ,p⟩} = Qᴰ.rectify $ Qᴰ.≡out $
++      reindPshᴰFunctor⇒PshSmall .fst .N-homᴰ {Δ} {Γ} {Δᴰ} {Γᴰ} {γ} {p} {γᴰ} {qᴰ⟨Γ,p⟩} = Qᴰ.rectifyOut $
+         (sym $ Qᴰ.⋆Assocⱽᴰᴰ _ _ _)
+         ∙ Qᴰ.⟨ (sym $ Cᴰ.reind-filler _) ∙ presLRⱽ-Isoⱽ-natural Fᴰ Pᴰ _×ⱽ_*Fᴰ*Pᴰ _×ⱽ_*Pᴰ presLRⱽ γᴰ p ∙ Cᴰ.reind-filler _  ⟩⋆⟨ refl ⟩
+         ∙ Qᴰ.⋆Assocᴰⱽᴰ _ _ _
+       reindPshᴰFunctor⇒PshSmall .snd {Γ} {Γᴰ} .inv p qᴰ⟨Γ,p⟩ =
+         invIsoⱽ _ (UEⱽ-essUniq (Fᴰ .F-obᴰ Γᴰ ×ⱽ p *Pᴰ) (preservesLocalReprⱽ→UEⱽ Fᴰ (reindPshᴰFunctor Fᴰ Pᴰ) Pᴰ idPshHomᴰ _×ⱽ_*Fᴰ*Pᴰ presLRⱽ Γᴰ p)) .fst
+         Qᴰ.⋆ⱽᴰ qᴰ⟨Γ,p⟩
+-      reindPshᴰFunctor⇒PshSmall .snd {Γ} {Γᴰ} .rightInv p qᴰ⟨Γ,p⟩ = Qᴰ.rectify $ Qᴰ.≡out $
++      reindPshᴰFunctor⇒PshSmall .snd {Γ} {Γᴰ} .rightInv p qᴰ⟨Γ,p⟩ = Qᴰ.rectifyOut $
+         sym (Qᴰ.⋆Assocⱽⱽᴰ _ _ _)
+         ∙ Qᴰ.⟨  Cᴰ.≡in $ CatIsoⱽ→CatIso Cᴰ (UEⱽ-essUniq (Fᴰ .F-obᴰ Γᴰ ×ⱽ p *Pᴰ) (preservesLocalReprⱽ→UEⱽ Fᴰ (reindPshᴰFunctor Fᴰ Pᴰ) Pᴰ idPshHomᴰ _×ⱽ_*Fᴰ*Pᴰ presLRⱽ Γᴰ p)) .snd .isIso.ret ⟩⋆ⱽᴰ⟨ refl ⟩
+         ∙ Qᴰ.∫⋆ⱽIdL _
+-      reindPshᴰFunctor⇒PshSmall .snd {Γ} {Γᴰ} .leftInv p qᴰ⟨Γ,p⟩ = Qᴰ.rectify $ Qᴰ.≡out $
++      reindPshᴰFunctor⇒PshSmall .snd {Γ} {Γᴰ} .leftInv p qᴰ⟨Γ,p⟩ = Qᴰ.rectifyOut $
+         sym (Qᴰ.⋆Assocⱽⱽᴰ _ _ _)
+         ∙ Qᴰ.⟨  Cᴰ.≡in $ CatIsoⱽ→CatIso Cᴰ (UEⱽ-essUniq (Fᴰ .F-obᴰ Γᴰ ×ⱽ p *Pᴰ) (preservesLocalReprⱽ→UEⱽ Fᴰ (reindPshᴰFunctor Fᴰ Pᴰ) Pᴰ idPshHomᴰ _×ⱽ_*Fᴰ*Pᴰ presLRⱽ Γᴰ p)) .snd .isIso.sec ⟩⋆ⱽᴰ⟨ refl ⟩
+         ∙ Qᴰ.∫⋆ⱽIdL _
+diff --git a/Cubical/Categories/Displayed/Presheaf/Constructions/Exponential/UniversalProperty.agda b/Cubical/Categories/Displayed/Presheaf/Constructions/Exponential/UniversalProperty.agda
+index b353ece5..126591a7 100644
+--- a/Cubical/Categories/Displayed/Presheaf/Constructions/Exponential/UniversalProperty.agda
++++ b/Cubical/Categories/Displayed/Presheaf/Constructions/Exponential/UniversalProperty.agda
+@@ -120,7 +120,7 @@ module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'} where
+       ⇒PshSmallⱽ-app .N-obᴰ (α , pᴰ) =
+         Qᴰ.reind (P.⋆IdL _) $
+           introLR Cᴰ.idᴰ (Pᴰ.reind (sym $ P.⋆IdL _) pᴰ) Qᴰ.⋆ᴰ α
+-      ⇒PshSmallⱽ-app .N-homᴰ {Δ} {Γ} {Δᴰ} {Γᴰ} {γ} {p} {γᴰ} {α , pᴰ} = Qᴰ.rectify $ Qᴰ.≡out $
++      ⇒PshSmallⱽ-app .N-homᴰ {Δ} {Γ} {Δᴰ} {Γᴰ} {γ} {p} {γᴰ} {α , pᴰ} = Qᴰ.rectifyOut $
+         sym (Qᴰ.reind-filler _)
+         ∙ sym (Qᴰ.⋆Assoc _ _ _)
+         ∙ Qᴰ.⟨ app-naturality-lemma ⟩⋆⟨⟩
+@@ -183,7 +183,7 @@ module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'} where
+       -- opaque
+       --   ⇒PshSmallⱽ-β : ∀ (αᴰ : PshHomᴰ α (Rᴰ ×ⱽPsh reind α Pᴰ) Qᴰ)
+       --     → (⇒PshSmallⱽ-introᴰ αᴰ ×ⱽHom reind-π) ⋆PshHomᴰⱽ ⇒PshSmallⱽ-app ≡ αᴰ
+-      --   ⇒PshSmallⱽ-β αᴰ = makePshHomᴰPath λ {Γ} {Γᴰ} {r} → funExt λ rᴰpᴰ → Qᴰ.rectify $ Qᴰ.≡out $
++      --   ⇒PshSmallⱽ-β αᴰ = makePshHomᴰPath λ {Γ} {Γᴰ} {r} → funExt λ rᴰpᴰ → Qᴰ.rectifyOut $
+       --     {!!}
+       --     --  sym (Qᴰ.reind-filler _)
+       --     -- ∙ sym (∫PshHom αᴰ .N-hom _ _ ? ?)
+@@ -195,7 +195,7 @@ module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'} where
+ 
+       --   ⇒PshSmallⱽ-η : ∀ (αᴰ : PshHomᴰ α Rᴰ Pᴰ⇒Qᴰ)
+       --     → αᴰ ≡ ⇒PshSmallⱽ-introᴰ ((αᴰ ×ⱽHom reind-π) ⋆PshHomᴰⱽ ⇒PshSmallⱽ-app)
+-      --   ⇒PshSmallⱽ-η αᴰ = makePshHomᴰPath λ {Γ} {Γᴰ} {r} → funExt λ rᴰ → Qᴰ.rectify $ Qᴰ.≡out $
++      --   ⇒PshSmallⱽ-η αᴰ = makePshHomᴰPath λ {Γ} {Γᴰ} {r} → funExt λ rᴰ → Qᴰ.rectifyOut $
+       --     sym (Qᴰ.⋆IdL _)
+       --     ∙ Qᴰ.⟨
+       --         extensionalityLR
+diff --git a/Cubical/Categories/Displayed/Presheaf/Constructions/Quantifiers/Base.agda b/Cubical/Categories/Displayed/Presheaf/Constructions/Quantifiers/Base.agda
+index a961e406..eccfc9c4 100644
+--- a/Cubical/Categories/Displayed/Presheaf/Constructions/Quantifiers/Base.agda
++++ b/Cubical/Categories/Displayed/Presheaf/Constructions/Quantifiers/Base.agda
+@@ -108,7 +108,7 @@ module _
+         → (γᴰ : Cᴰ [ γ C.⋆ πF ⟦ Γ ⟧ ][ Δᴰ , Γᴰ ])
+         → introπF* γᴰ Cᴰ.⋆ᴰ π-πF* Γᴰ ≡ γᴰ
+       β-πF* {Γᴰ = Γᴰ} γᴰ =
+-        Cᴰ.rectify $ Cᴰ.≡out $
++        Cᴰ.rectifyOut $
+           Cᴰ.⟨ refl ⟩⋆⟨ sym $ Cᴰ.reind-filler _ ⟩
+           ∙ Cᴰ.reind-filler _
+           ∙ Cᴰ.reind-filler _
+@@ -135,7 +135,7 @@ module _
+       introπF* (Cᴰ.reind (sym $ πF .N-hom γ) $ (π-πF* Γᴰ Cᴰ.⋆ᴰ γᴰ))
+     weakenπFᴰ .F-idᴰ {xᴰ = Γᴰ} =
+         introπF*⟨ F .F-id  ⟩⟨
+-          Cᴰ.rectify $ Cᴰ.≡out $
++          Cᴰ.rectifyOut $
+             (sym $ Cᴰ.reind-filler _)
+             ∙ Cᴰ.⋆IdR _
+             ∙ (sym $ Cᴰ.reind-filler _)
+@@ -143,7 +143,7 @@ module _
+           ▷ (sym $ weak-ηⱽ (πF* Γᴰ))
+     weakenπFᴰ .F-seqᴰ γᴰ δᴰ =
+       introπF*⟨ F .F-seq _ _ ⟩⟨
+-        Cᴰ.rectify $ Cᴰ.≡out $
++        Cᴰ.rectifyOut $
+           (sym $ Cᴰ.reind-filler _)
+           ∙ Cᴰ.⟨ sym $ Cᴰ.reind-filler _ ⟩⋆⟨ refl ⟩
+           ∙ (sym $ Cᴰ.⋆Assoc _ _ _)
+@@ -154,7 +154,7 @@ module _
+           ∙ (Cᴰ.⋆Assoc _ _ _)
+           ∙ Cᴰ.⟨ refl ⟩⋆⟨ Cᴰ.reind-filler _ ⟩
+           ∙ Cᴰ.reind-filler _
+-      ⟩ ▷ (Cᴰ.rectify $ Cᴰ.≡out $ sym $ introᴰ-natural (πF* _))
++      ⟩ ▷ (Cᴰ.rectifyOut $ sym $ introᴰ-natural (πF* _))
+ 
+     opaque
+       unfolding hSetReasoning.reind
+@@ -162,7 +162,7 @@ module _
+       weakenπFNatTransᴰ .NatTransᴰ.N-obᴰ Γᴰ =
+         Cᴰ.reind (C.⋆IdL _) $ πF* Γᴰ .elementⱽ
+       weakenπFNatTransᴰ .NatTransᴰ.N-homᴰ fᴰ =
+-        Cᴰ.rectify $ Cᴰ.≡out $
++        Cᴰ.rectifyOut $
+           Cᴰ.⟨ refl ⟩⋆⟨ sym $ Cᴰ.reind-filler _ ⟩
+           ∙ Cᴰ.reind-filler _
+           ∙ Cᴰ.reind-filler _
+@@ -285,7 +285,7 @@ module _
+ --                 ∙ (sym $ C.⋆Assoc _ _ _))) $
+ --               (introπF* (Cᴰ.reind (sym bp.×β₁) $ Cᴰ.idᴰ) Pⱽ.⋆ᴰ αᴰ.N-obᴰ qᴰ)
+ --           ∀ⱽPsh-introᴰ⁻' .N-homᴰ =
+---             Pⱽ.rectify $ Pⱽ.≡out $
++--             Pⱽ.rectifyOut $
+ --               (sym $ Pⱽ.reind-filler _)
+ --               ∙ Pⱽ.⟨⟩⋆⟨ αᴰ.N-obᴰ⟨(sym $ Qᴰ.reind-filler _)⟩ ⟩
+ --               ∙ Pⱽ.⟨⟩⋆⟨ Pⱽ.≡in αᴰ.N-homᴰ ⟩
+@@ -372,7 +372,7 @@ module _
+ -- --             αᴰ .N-obᴰ {p = _ , bp.π₂} $
+ -- --               elementⱽ (π₁* _) Qᴰ.⋆ᴰ qᴰ
+ -- --         ∀ⱽPsh-introᴰ' .N-homᴰ =
+--- --           Pⱽ.rectify $ Pⱽ.≡out $
++-- --           Pⱽ.rectifyOut $
+ -- --             (sym $ Pⱽ.reind-filler _)
+ -- --             ∙ αᴰ.N-obᴰ⟨
+ -- --                 change-base _ Q.isSetPsh
+diff --git a/Cubical/Categories/Displayed/Presheaf/Constructions/Quantifiers/Properties.agda b/Cubical/Categories/Displayed/Presheaf/Constructions/Quantifiers/Properties.agda
+index 8561fe23..6906af3c 100644
+--- a/Cubical/Categories/Displayed/Presheaf/Constructions/Quantifiers/Properties.agda
++++ b/Cubical/Categories/Displayed/Presheaf/Constructions/Quantifiers/Properties.agda
+@@ -173,7 +173,7 @@ open UniversalElementⱽ
+ --           Dᴰ.reind (cong (F .F-hom) (C.⋆IdL _) ∙ (sym -×Fc.×β₁)) $
+ --             Fᴰ .F-homᴰ (elementⱽ (π₁*C xᴰ))
+ --       Fᴰ-weakening-NatTransᴰ .NatTransᴰ.N-homᴰ fᴰ =
+---         Dᴰ.rectify $ Dᴰ.≡out $
++--         Dᴰ.rectifyOut $
+ --           introᴰ-natural (π₁*D _)
+ --           ∙ introᴰ≡ (π₁*D _)
+ --               (change-base (D._⋆ -×Fc.π₁) D.isSetHom
+diff --git a/Cubical/Categories/Displayed/Presheaf/Constructions/Quantifiers/UniversalProperty/ComposeWeakening.agda b/Cubical/Categories/Displayed/Presheaf/Constructions/Quantifiers/UniversalProperty/ComposeWeakening.agda
+index 74d157e2..540a42dc 100644
+--- a/Cubical/Categories/Displayed/Presheaf/Constructions/Quantifiers/UniversalProperty/ComposeWeakening.agda
++++ b/Cubical/Categories/Displayed/Presheaf/Constructions/Quantifiers/UniversalProperty/ComposeWeakening.agda
+@@ -103,7 +103,7 @@ module _
+        -- TODO update to handle opaque paths
+        --   ∀ⱽPsh-ηᴰ' : ∀ⱽPsh-introᴰ' Pⱽ (∀ⱽPsh-introᴰ⁻' Pⱽ αᴰ) ≡ αᴰ
+        --   ∀ⱽPsh-ηᴰ' = makePshHomᴰPath λ {c}{cᴰ}{q} → funExt λ qᴰ →
+-       --     Pⱽ.rectify $ Pⱽ.≡out $
++       --     Pⱽ.rectifyOut $
+        --       (sym $ Pⱽ.reind-filler _ _)
+        --       ∙ (sym $ Pⱽ.reind-filler _ _)
+        --       ∙ Pⱽ.⟨⟩⋆⟨ Pⱽ.≡in αᴰ.N-homᴰ ⟩
+@@ -148,7 +148,7 @@ module _
+ 
+        --   ∀ⱽPsh-βᴰ' : ∀ⱽPsh-introᴰ⁻' Pⱽ (∀ⱽPsh-introᴰ' Pⱽ αᴰ) ≡ αᴰ
+        --   ∀ⱽPsh-βᴰ' = makePshHomᴰPath λ {c}{cᴰ}{q} → funExt λ qᴰ →
+-       --     Pⱽ.rectify $ Pⱽ.≡out $
++       --     Pⱽ.rectifyOut $
+        --       (sym $ Pⱽ.reind-filler _ _)
+        --       ∙ Pⱽ.⟨⟩⋆⟨ sym $ Pⱽ.reind-filler _ _ ⟩
+        --       ∙ (sym $ Pⱽ.≡in αᴰ.N-homᴰ)
+diff --git a/Cubical/Categories/Displayed/Presheaf/Constructions/Reindex/Base.agda b/Cubical/Categories/Displayed/Presheaf/Constructions/Reindex/Base.agda
+index e02ad793..874d54a8 100644
+--- a/Cubical/Categories/Displayed/Presheaf/Constructions/Reindex/Base.agda
++++ b/Cubical/Categories/Displayed/Presheaf/Constructions/Reindex/Base.agda
+@@ -55,10 +55,10 @@ module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'} where
+     reind .F-obᴰ {x} xᴰ p = Qᴰ .F-obᴰ xᴰ (α .N-ob x p)
+     reind .F-homᴰ {y} {x} {f} {yᴰ} {xᴰ} fᴰ p qᴰ =
+       Qᴰ.reind (sym $ α .N-hom _ _ _ _) (fᴰ Qᴰ.⋆ᴰ qᴰ)
+-    reind .F-idᴰ = funExt λ p → funExt λ qᴰ → Qᴰ.rectify $ Qᴰ.≡out $
++    reind .F-idᴰ = funExt λ p → funExt λ qᴰ → Qᴰ.rectifyOut $
+       (sym $ Qᴰ.reind-filler _)
+       ∙ Qᴰ.⋆IdL _
+-    reind .F-seqᴰ fᴰ gᴰ = funExt λ p → funExt λ qᴰ → Qᴰ.rectify $ Qᴰ.≡out $
++    reind .F-seqᴰ fᴰ gᴰ = funExt λ p → funExt λ qᴰ → Qᴰ.rectifyOut $
+       (sym $ Qᴰ.reind-filler _)
+       ∙ Qᴰ.⋆Assoc _ _ _
+       ∙ Qᴰ.⟨ refl ⟩⋆⟨ Qᴰ.reind-filler _ ⟩
+diff --git a/Cubical/Categories/Displayed/Presheaf/Constructions/Reindex/Properties.agda b/Cubical/Categories/Displayed/Presheaf/Constructions/Reindex/Properties.agda
+index 735cf27f..977ce390 100644
+--- a/Cubical/Categories/Displayed/Presheaf/Constructions/Reindex/Properties.agda
++++ b/Cubical/Categories/Displayed/Presheaf/Constructions/Reindex/Properties.agda
+@@ -65,7 +65,7 @@ module _ {C : Category ℓC ℓC'}{Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
+     reindPathIsoⱽ : PshIsoⱽ (reind α Qᴰ) (reind β Qᴰ)
+     reindPathIsoⱽ .fst .PshHomᴰ.N-obᴰ = Qᴰ.reind (funExt⁻ (funExt⁻ (cong N-ob α≡β) _) _)
+     reindPathIsoⱽ .fst .PshHomᴰ.N-homᴰ =
+-      Qᴰ.rectify $ Qᴰ.≡out $
++      Qᴰ.rectifyOut $
+         (sym (Qᴰ.reind-filler _)
+         ∙ sym (Qᴰ.reind-filler _)
+         ∙ Qᴰ.⟨⟩⋆⟨ Qᴰ.reind-filler _ ⟩)
+@@ -73,9 +73,9 @@ module _ {C : Category ℓC ℓC'}{Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
+     reindPathIsoⱽ .snd .isIsoOver.inv q =
+       Qᴰ.reind ((funExt⁻ (funExt⁻ (cong N-ob (sym α≡β)) _) _))
+     reindPathIsoⱽ .snd .isIsoOver.rightInv q qᴰ =
+-      Qᴰ.rectify $ Qᴰ.≡out $ sym $ Qᴰ.reind-filler _ ∙ Qᴰ.reind-filler _
++      Qᴰ.rectifyOut $ sym $ Qᴰ.reind-filler _ ∙ Qᴰ.reind-filler _
+     reindPathIsoⱽ .snd .isIsoOver.leftInv q qᴰ =
+-      Qᴰ.rectify $ Qᴰ.≡out $ sym $ Qᴰ.reind-filler _ ∙ Qᴰ.reind-filler _
++      Qᴰ.rectifyOut $ sym $ Qᴰ.reind-filler _ ∙ Qᴰ.reind-filler _
+ 
+ 
+ module _ {C : Category ℓC ℓC'}{Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
+@@ -87,7 +87,7 @@ module _ {C : Category ℓC ℓC'}{Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
+     module Qᴰ = PresheafᴰNotation Qᴰ
+   reind-π : PshHomᴰ α (reind α Qᴰ) Qᴰ
+   reind-π .N-obᴰ = λ z → z
+-  reind-π .N-homᴰ = Qᴰ.rectify $ Qᴰ.≡out $ sym $ Qᴰ.reind-filler _
++  reind-π .N-homᴰ = Qᴰ.rectifyOut $ sym $ Qᴰ.reind-filler _
+ 
+ module _ {C : Category ℓC ℓC'}{Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
+   {P : Presheaf C ℓP}{Q : Presheaf C ℓQ}
+@@ -103,7 +103,7 @@ module _ {C : Category ℓC ℓC'}{Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
+     → PshHomⱽ Pᴰ (reind α Qᴰ)
+   reind-introⱽ α .N-obᴰ = α .N-obᴰ
+   reind-introⱽ α .N-homᴰ =
+-    Qᴰ.rectify $ Qᴰ.≡out $ (Qᴰ.≡in $ α .N-homᴰ) ∙ Qᴰ.reind-filler _
++    Qᴰ.rectifyOut $ (Qᴰ.≡in $ α .N-homᴰ) ∙ Qᴰ.reind-filler _
+ 
+   opaque
+     reind-βⱽ :
+@@ -159,7 +159,7 @@ module _ {C : Category ℓC ℓC'}{Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
+     PshHomᴰ (α ⋆PshHom β) Pᴰ Rᴰ
+     → PshHomᴰ α Pᴰ (reind β Rᴰ)
+   reind-introᴰ αβᴰ .N-obᴰ = αβᴰ .N-obᴰ
+-  reind-introᴰ αβᴰ .N-homᴰ = Rᴰ.rectify $ Rᴰ.≡out $
++  reind-introᴰ αβᴰ .N-homᴰ = Rᴰ.rectifyOut $
+     (∫PshHom αβᴰ .N-hom _ _ _ _) ∙ Rᴰ.reind-filler _
+ 
+   opaque
+@@ -263,11 +263,11 @@ module _ {C : Category ℓC ℓC'}{Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
+     isisoover
+       (λ a qᴰ → Pᴰ.reind (α .nIso _ .snd .snd a) $ αᴰ⁻ .fst .N-obᴰ qᴰ)
+       (λ a p →
+-        Qᴰ.rectify $ Qᴰ.≡out $
++        Qᴰ.rectifyOut $
+           Qᴰ.≡in (congP (λ i → αᴰ .fst .N-obᴰ) (Pᴰ.≡out $ sym $ Pᴰ.reind-filler _))
+           ∙ (Qᴰ.≡in (αᴰ .snd .rightInv _ _)))
+       (λ b q →
+-        Pᴰ.rectify $ Pᴰ.≡out $
++        Pᴰ.rectifyOut $
+           (sym $ Pᴰ.reind-filler _)
+           ∙ Pᴰ.≡in (αᴰ .snd .leftInv _ q))
+     where
+@@ -290,7 +290,7 @@ module _
+     : PshHetᴰ (α ⋆PshHom (β ∘ˡ F)) Fᴰ Pᴰ Rᴰ
+     → PshHetᴰ α Fᴰ Pᴰ (reind β Rᴰ)
+   reind-introHet αβᴰ .N-obᴰ = αβᴰ .N-obᴰ
+-  reind-introHet αβᴰ .N-homᴰ = Rᴰ.rectify $ Rᴰ.≡out $
++  reind-introHet αβᴰ .N-homᴰ = Rᴰ.rectifyOut $
+     ∫PshHom αβᴰ .N-hom _ _ _ _ ∙ Rᴰ.reind-filler _
+ 
+ module _{C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
+@@ -335,7 +335,7 @@ module _ {C : Category ℓC ℓC'}{Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
+          (fᴰ Rᴰ.⋆ᴰ qᴰ))
+     reind-seq-path fᴰ =
+         funExt λ p → funExt λ rᴰ →
+-        Rᴰ.rectify $ Rᴰ.≡out $
++        Rᴰ.rectifyOut $
+             sym (Rᴰ.reind-filler _ ∙ Rᴰ.reind-filler _)
+             ∙ Rᴰ.reind-filler _
+ 
+@@ -354,7 +354,7 @@ module _ {C : Category ℓC ℓC'}{Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
+          (reind α (reind β Rᴰ) PresheafᴰNotation.⋆ᴰ fᴰ) pᴰ ]
+          (λ _ → (P PresheafNotation.⋆ f) p))
+         ((reind (α ⋆PshHom β) Rᴰ PresheafᴰNotation.⋆ᴰ fᴰ) pᴰ)
+-      opq = Rᴰ.rectify $ Rᴰ.≡out $
++      opq = Rᴰ.rectifyOut $
+         sym (Rᴰ.reind-filler _ ∙ Rᴰ.reind-filler _) ∙ Rᴰ.reind-filler _
+   reind-seqIsoⱽ .snd .isIsoOver.inv = λ a z → z
+   reind-seqIsoⱽ .snd .isIsoOver.rightInv b q = refl
+@@ -367,11 +367,11 @@ module _ {C : Category ℓC ℓC'}{Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
+     module Pᴰ = PresheafᴰNotation Pᴰ
+   reind-id : Pᴰ ≡ reind (idPshHom {P = P}) Pᴰ
+   reind-id = Functorᴰ≡ (λ _ → refl)
+-    (λ _ → funExt λ _ → funExt λ _ → Pᴰ.rectify $ Pᴰ.≡out $ Pᴰ.reind-filler _)
++    (λ _ → funExt λ _ → funExt λ _ → Pᴰ.rectifyOut $ Pᴰ.reind-filler _)
+ 
+   reind-idIsoⱽ : PshIsoⱽ Pᴰ (reind (idPshHom {P = P}) Pᴰ)
+   reind-idIsoⱽ .fst .PshHomᴰ.N-obᴰ = λ z → z
+-  reind-idIsoⱽ .fst .PshHomᴰ.N-homᴰ = Pᴰ.rectify $ Pᴰ.≡out $ Pᴰ.reind-filler _
++  reind-idIsoⱽ .fst .PshHomᴰ.N-homᴰ = Pᴰ.rectifyOut $ Pᴰ.reind-filler _
+   reind-idIsoⱽ .snd .isIsoOver.inv = λ a z → z
+   reind-idIsoⱽ .snd .isIsoOver.rightInv b q = refl
+   reind-idIsoⱽ .snd .isIsoOver.leftInv a p = refl
+@@ -404,7 +404,7 @@ module _ {C : Category ℓC ℓC'}{Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
+   reindPshIsoPshIsoᴰ : PshIsoᴰ α (reind (α .trans) Qᴰ) Qᴰ
+   reindPshIsoPshIsoᴰ = mkPshIsoᴰEquivOver α (reind (α .trans) Qᴰ) Qᴰ
+     (record { N-obᴰ = λ z → z
+-            ; N-homᴰ = Qᴰ.rectify $ Qᴰ.≡out $ sym $ Qᴰ.reind-filler _
++            ; N-homᴰ = Qᴰ.rectifyOut $ sym $ Qᴰ.reind-filler _
+             })
+     (λ a → record { equiv-proof = strictContrFibers _ })
+ 
+@@ -487,7 +487,7 @@ module _
+           Pⱽ.p[_][ vertexⱽ ueⱽ ] (λ i → F .F-id (~ i)) (elementⱽ ueⱽ))
+          ≡ pᴰ
+       opq =
+-        (Pⱽ.rectify $ Pⱽ.≡out $
++        (Pⱽ.rectifyOut $
+         (sym (Pⱽ.reind-filler _) ∙ sym (Pⱽ.reind-filler _)
+         ∙ Pⱽ.⟨⟩⋆⟨ sym $ Pⱽ.reind-filler _ ⟩ ∙ Pⱽ.reind-filler _))
+         ∙ βⱽ ueⱽ
+@@ -502,7 +502,7 @@ module _
+         Pⱽ.p[_][ vertexⱽ ueⱽ ] (λ i → F .F-id (~ i)) (elementⱽ ueⱽ)))
+         ≡ fᴰ
+       opq =
+-        cong (introᴰ ueⱽ) (Pⱽ.rectify $ Pⱽ.≡out $ sym (Pⱽ.reind-filler _) ∙ sym (Pⱽ.reind-filler _) ∙ Pⱽ.⟨⟩⋆⟨ sym $ Pⱽ.reind-filler _ ⟩ ∙ Pⱽ.reind-filler _)
++        cong (introᴰ ueⱽ) (Pⱽ.rectifyOut $ sym (Pⱽ.reind-filler _) ∙ sym (Pⱽ.reind-filler _) ∙ Pⱽ.⟨⟩⋆⟨ sym $ Pⱽ.reind-filler _ ⟩ ∙ Pⱽ.reind-filler _)
+         ∙ (sym $ ηⱽ ueⱽ)
+ 
+ module _
+diff --git a/Cubical/Categories/Displayed/Presheaf/Morphism.agda b/Cubical/Categories/Displayed/Presheaf/Morphism.agda
+index 641ae2a1..93dd40b8 100644
+--- a/Cubical/Categories/Displayed/Presheaf/Morphism.agda
++++ b/Cubical/Categories/Displayed/Presheaf/Morphism.agda
+@@ -358,7 +358,7 @@ module _ {C : Category ℓC ℓC'}{Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
+ 
+     _⋆PshHomᴰ_ : PshHomᴰ (α ⋆PshHom β) Pᴰ Rᴰ
+     _⋆PshHomᴰ_ .N-obᴰ = λ pᴰ → ∫⋆ .N-ob _ (_ , pᴰ) .snd
+-    _⋆PshHomᴰ_ .N-homᴰ = Rᴰ.rectify $ Rᴰ.≡out $ ∫⋆ .N-hom _ _ _ _
++    _⋆PshHomᴰ_ .N-homᴰ = Rᴰ.rectifyOut $ ∫⋆ .N-hom _ _ _ _
+ 
+     infixr 9 _⋆PshHomᴰ_
+ 
+@@ -374,9 +374,9 @@ module _ {C : Category ℓC ℓC'}{Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
+     _⋆PshIsoᴰ_ .fst = αᴰ .fst ⋆PshHomᴰ βᴰ .fst
+     _⋆PshIsoᴰ_ .snd .inv = λ r rᴰ → ∫⋆ .nIso _ .fst (r , rᴰ) .snd
+     _⋆PshIsoᴰ_ .snd .rightInv =
+-      λ r rᴰ → Rᴰ.rectify $ Rᴰ.≡out $ ∫⋆ .nIso _ .snd .fst (r , rᴰ)
++      λ r rᴰ → Rᴰ.rectifyOut $ ∫⋆ .nIso _ .snd .fst (r , rᴰ)
+     _⋆PshIsoᴰ_ .snd .leftInv =
+-      λ p pᴰ → Pᴰ.rectify $ Pᴰ.≡out $ ∫⋆ .nIso _ .snd .snd (p , pᴰ)
++      λ p pᴰ → Pᴰ.rectifyOut $ ∫⋆ .nIso _ .snd .snd (p , pᴰ)
+ 
+     infixr 9 _⋆PshIsoᴰ_
+ 
+@@ -395,7 +395,7 @@ module _ {C : Category ℓC ℓC'}{Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
+     invPshIsoᴰ : PshIsoᴰ (invPshIso α) Qᴰ Pᴰ
+     invPshIsoᴰ .fst .N-obᴰ = αᴰ .snd .inv _
+     invPshIsoᴰ .fst .N-homᴰ =
+-      Pᴰ.rectify $ Pᴰ.≡out $ ∫αᴰ⁻ .trans .N-hom _ _ _ _
++      Pᴰ.rectifyOut $ ∫αᴰ⁻ .trans .N-hom _ _ _ _
+     invPshIsoᴰ .snd .inv = λ a → αᴰ .fst .N-obᴰ
+     invPshIsoᴰ .snd .rightInv = αᴰ .snd .leftInv
+     invPshIsoᴰ .snd .leftInv = αᴰ .snd .rightInv
+@@ -604,7 +604,7 @@ module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
+         Functorᴰ≡
+         (λ xᴰ → CatIsoᴰ→P≡Q (PshIso→SETIso P Q α _) (PshIsoᴰ→SETᴰIsoᴰ αᴰ xᴰ))
+         λ {x = x}{xᴰ = xᴰ} fᴰ →
+-            toPathP (funExt (λ q → funExt (λ qᴰ → Qᴰ.rectify $ Qᴰ.≡out $
++            toPathP (funExt (λ q → funExt (λ qᴰ → Qᴰ.rectifyOut $
+             sym (Qᴰ.reind-filler _)
+             ∙ cong (∫αᴰ .trans .N-ob _) Pᴰ.⟨ refl ⟩⋆⟨ (sym $ Pᴰ.reind-filler _) ⟩
+             ∙ ∫αᴰ .trans .N-hom _ _ _ _
+@@ -707,7 +707,7 @@ module _ {C : Category ℓC ℓC'}
+           Qᴰ.reind (funExt₂⁻ (λ i → α≡β i .N-ob) x p) $
+             αᴰ .N-obᴰ pᴰ
+         PshHomPathPshHomᴰ .N-homᴰ =
+-          Qᴰ.rectify $ Qᴰ.≡out $
++          Qᴰ.rectifyOut $
+             (sym $ Qᴰ.reind-filler _)
+             ∙ Qᴰ.≡in (αᴰ .N-homᴰ)
+             ∙ Qᴰ.⟨⟩⋆⟨ Qᴰ.reind-filler _ ⟩
+diff --git a/Cubical/Categories/Displayed/Presheaf/Representable.agda b/Cubical/Categories/Displayed/Presheaf/Representable.agda
+index c001d5ef..3fdff5c2 100644
+--- a/Cubical/Categories/Displayed/Presheaf/Representable.agda
++++ b/Cubical/Categories/Displayed/Presheaf/Representable.agda
+@@ -113,7 +113,7 @@ module _ {C : Category ℓC ℓC'} (D : Categoryᴰ C ℓD ℓD')
+     fromPshIsoᴰ .vertexᴰ = vᴰ
+     fromPshIsoᴰ .elementᴰ = Pᴰ.reind (P.⋆IdL _) (αᴰ.N-obᴰ D.idᴰ)
+     fromPshIsoᴰ .universalᴰ .inv = αᴰ .snd .inv
+-    fromPshIsoᴰ .universalᴰ {x}{xᴰ} .rightInv p pᴰ = Pᴰ.rectify $ Pᴰ.≡out $
++    fromPshIsoᴰ .universalᴰ {x}{xᴰ} .rightInv p pᴰ = Pᴰ.rectifyOut $
+       _ , αᴰ .snd .inv p pᴰ Pᴰ.⋆ᴰ Pᴰ.reind (P.⋆IdL element) (αᴰ.N-obᴰ D.idᴰ)
+         ≡⟨ Pᴰ.⟨⟩⋆⟨ sym $ Pᴰ.reind-filler _ ⟩ ⟩
+       _ , αᴰ .snd .inv p pᴰ Pᴰ.⋆ᴰ (αᴰ.N-obᴰ D.idᴰ)
+@@ -123,7 +123,7 @@ module _ {C : Category ℓC ℓC'} (D : Categoryᴰ C ℓD ℓD')
+       _ , αᴰ.N-obᴰ (αᴰ .snd .inv p pᴰ)
+         ≡⟨ Pᴰ.≡in $ αᴰ .snd .rightInv p pᴰ ⟩
+       _ , pᴰ ∎
+-    fromPshIsoᴰ .universalᴰ {x}{xᴰ} .leftInv f fᴰ = D.rectify $ D.≡out $
++    fromPshIsoᴰ .universalᴰ {x}{xᴰ} .leftInv f fᴰ = D.rectifyOut $
+       _ , αᴰ .snd .inv _ (fᴰ Pᴰ.⋆ᴰ Pᴰ.reind (P.⋆IdL _) (αᴰ.N-obᴰ D.idᴰ))
+         ≡⟨ αᴰ⁻.N-obᴰ⟨ Pᴰ.⟨⟩⋆⟨ sym $ Pᴰ.reind-filler _ ⟩ ∙ sym (αᴰ.N-hom _ _ _ _) ∙ αᴰ.N-obᴰ⟨ D.⋆IdR _ ⟩ ⟩ ⟩
+       _ , αᴰ .snd .inv _ (αᴰ.N-obᴰ fᴰ)
+@@ -175,10 +175,10 @@ module _ {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ')
+       ∫repr→ue.intro (p , pᴰ) .snd
+     RepresentationPshIsoᴰ→UniversalElementᴰ .universalᴰ
+       {Γ} {Γᴰ} .rightInv p pᴰ =
+-      Pᴰ.rectify $ Pᴰ.≡out $ ∫repr→ue.β
++      Pᴰ.rectifyOut $ ∫repr→ue.β
+     RepresentationPshIsoᴰ→UniversalElementᴰ .universalᴰ
+       {Γ} {Γᴰ} .leftInv f fᴰ =
+-      Cᴰ.rectify $ Cᴰ.≡out $ sym $ ∫repr→ue.η
++      Cᴰ.rectifyOut $ sym $ ∫repr→ue.η
+ 
+ module _
+   {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ')
+@@ -213,8 +213,8 @@ module _
+     ( yoRecᴰ Pᴰ ueᴰ.elementᴰ
+     , (isisoover
+          (λ _ → ueᴰ.introᴰ)
+-         (λ p pᴰ → Pᴰ.rectify $ Pᴰ.≡out $ ueᴰ.βᴰ)
+-         λ f fᴰ → Cᴰ.rectify $ Cᴰ.≡out $ sym $ ueᴰ.ηᴰ))
++         (λ p pᴰ → Pᴰ.rectifyOut $ ueᴰ.βᴰ)
++         λ f fᴰ → Cᴰ.rectifyOut $ sym $ ueᴰ.ηᴰ))
+     where
+       module ueᴰ = UniversalElementᴰ ueᴰ
+ 
+@@ -231,13 +231,13 @@ module _
+     Representationᵁᴰ→RepresentationPshIsoᴰ .snd .fst .N-obᴰ pᴰ =
+       ∫reprpshiso .snd .trans .N-ob _ (_ , pᴰ) .snd
+     Representationᵁᴰ→RepresentationPshIsoᴰ .snd .fst .N-homᴰ =
+-      Pᴰ.rectify $ Pᴰ.≡out $ ∫reprpshiso .snd .trans .N-hom _ _ _ _
++      Pᴰ.rectifyOut $ ∫reprpshiso .snd .trans .N-hom _ _ _ _
+     Representationᵁᴰ→RepresentationPshIsoᴰ .snd .snd .inv p pᴰ =
+       ∫reprpshiso .snd .nIso _ .fst (p , pᴰ) .snd
+     Representationᵁᴰ→RepresentationPshIsoᴰ .snd .snd .rightInv p pᴰ =
+-      Pᴰ.rectify $ Pᴰ.≡out $ ∫reprpshiso .snd .nIso _ .snd .fst (p , pᴰ)
++      Pᴰ.rectifyOut $ ∫reprpshiso .snd .nIso _ .snd .fst (p , pᴰ)
+     Representationᵁᴰ→RepresentationPshIsoᴰ .snd .snd .leftInv f fᴰ =
+-      Cᴰ.rectify $ Cᴰ.≡out $ ∫reprpshiso .snd .nIso _ .snd .snd (f , fᴰ)
++      Cᴰ.rectifyOut $ ∫reprpshiso .snd .nIso _ .snd .snd (f , fᴰ)
+ 
+     Representationᵁᴰ→UniversalElementᴰ :
+       UniversalElementᴰ Cᴰ (Representationᵁ→UniversalElement C P repr) Pᴰ
+@@ -316,9 +316,9 @@ module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
+ 
+   yoRecⱽ-UMP : ∀ {xᴰ} → Iso (PshHomⱽ (Cᴰ [-][-, xᴰ ]) Pⱽ) Pⱽ.pⱽ[ xᴰ ]
+   yoRecⱽ-UMP = iso (λ αⱽ → αⱽ .N-obᴰ Cᴰ.idᴰ) yoRecⱽ
+-    (λ pⱽ → Pⱽ.rectify $ Pⱽ.≡out $ sym (Pⱽ.reind-filler _) ∙ Pⱽ.⋆IdL _)
++    (λ pⱽ → Pⱽ.rectifyOut $ sym (Pⱽ.reind-filler _) ∙ Pⱽ.⋆IdL _)
+     λ αⱽ → makePshHomᴰPathP (yoRecⱽ (αⱽ .N-obᴰ Cᴰ.idᴰ)) αⱽ refl
+-      (funExt (λ fᴰ → Pⱽ.rectify $ Pⱽ.≡out $
++      (funExt (λ fᴰ → Pⱽ.rectifyOut $
+         sym (Pⱽ.reind-filler _) ∙ sym ((∫PshHom αⱽ) .N-hom _ _ _ _)
+         ∙ cong (∫PshHom αⱽ .N-ob _) (Cᴰ.⋆IdR _)))
+ 
+@@ -349,11 +349,11 @@ module _ {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ')
+     toUniversalᴰ .UniversalElementᴰ.universalᴰ .isIsoOver.inv f fᴰ =
+       universalⱽ .fst fᴰ
+     toUniversalᴰ .UniversalElementᴰ.universalᴰ .isIsoOver.rightInv f fᴰ =
+-      Pⱽ.rectify $ Pⱽ.≡out $
++      Pⱽ.rectifyOut $
+         (Pⱽ.≡in $ Pⱽ.⋆ᴰid≡⋆ᴰⱽ _ _)
+         ∙ (Pⱽ.≡in $ universalⱽ .snd .fst fᴰ)
+     toUniversalᴰ .UniversalElementᴰ.universalᴰ .isIsoOver.leftInv f fᴰ =
+-      Cᴰ.rectify $ Cᴰ.≡out $
++      Cᴰ.rectifyOut $
+         (Cᴰ.≡in $ (λ i → universalⱽ .fst (Pⱽ.⋆ᴰid≡⋆ᴰⱽ fᴰ elementⱽ i)))
+         ∙ (Cᴰ.≡in $ universalⱽ .snd .snd fᴰ)
+ 
+@@ -372,7 +372,7 @@ module _ {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ')
+     ηⱽ = sym (universalⱽ .snd .snd _)
+ 
+     weak-ηⱽ : Cᴰ.idᴰ ≡ introᴰ (elementⱽ)
+-    weak-ηⱽ = ηⱽ ∙ (Cᴰ.rectify $ Cᴰ.≡out $ introᴰ≡ ((sym (Pⱽ.reind-filler _) ∙ Pⱽ.⋆IdL _) ∙ sym βᴰ))
++    weak-ηⱽ = ηⱽ ∙ (Cᴰ.rectifyOut $ introᴰ≡ ((sym (Pⱽ.reind-filler _) ∙ Pⱽ.⋆IdL _) ∙ sym βᴰ))
+ 
+ module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
+          {x : C .Category.ob} {Pⱽ : Presheafⱽ x Cᴰ ℓPᴰ} where
+@@ -387,8 +387,8 @@ module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
+     { vertexⱽ = ueᴰ.vertexᴰ
+     ; elementⱽ = ueᴰ.elementᴰ
+     ; universalⱽ = (ueᴰ.universalᴰ .inv _)
+-      , (λ pᴰ → Pⱽ.rectify $ Pⱽ.≡out $ (sym $ Pⱽ.reind-filler _) ∙ ueᴰ.βᴰ)
+-      , λ fᴰ → Cᴰ.rectify $ Cᴰ.≡out $ ueᴰ.∫ue.intro⟨ sym $ Pⱽ.reind-filler _ ⟩ ∙ sym ueᴰ.ηᴰ
++      , (λ pᴰ → Pⱽ.rectifyOut $ (sym $ Pⱽ.reind-filler _) ∙ ueᴰ.βᴰ)
++      , λ fᴰ → Cᴰ.rectifyOut $ ueᴰ.∫ue.intro⟨ sym $ Pⱽ.reind-filler _ ⟩ ∙ sym ueᴰ.ηᴰ
+     } where module ueᴰ = UniversalElementᴰ ueᴰ
+ 
+   module _ (ueⱽ : UniversalElementⱽ Cᴰ x Pⱽ) where
+@@ -414,13 +414,13 @@ module _
+   UEⱽ-essUniq : (ueⱽ ueⱽ' : UniversalElementⱽ Cᴰ c Pⱽ) → CatIsoⱽ Cᴰ (ueⱽ .vertexⱽ) (ueⱽ' .vertexⱽ)
+   UEⱽ-essUniq ueⱽ ueⱽ' .fst = introⱽ ueⱽ' (elementⱽ ueⱽ)
+   UEⱽ-essUniq ueⱽ ueⱽ' .snd .invᴰ = introⱽ ueⱽ (elementⱽ ueⱽ')
+-  UEⱽ-essUniq ueⱽ ueⱽ' .snd .secᴰ = Cᴰ.rectify $ Cᴰ.≡out $
++  UEⱽ-essUniq ueⱽ ueⱽ' .snd .secᴰ = Cᴰ.rectifyOut $
+     UniversalElementᴰ.extensionalityᴰ (toUniversalᴰ ueⱽ') $
+     Pⱽ.⋆Assoc _ _ _
+     ∙ Pⱽ.⟨⟩⋆⟨ UniversalElementᴰ.βᴰ (toUniversalᴰ ueⱽ') ⟩
+     ∙ UniversalElementᴰ.βᴰ (toUniversalᴰ ueⱽ)
+     ∙ (sym $ Pⱽ.⋆IdL _)
+-  UEⱽ-essUniq ueⱽ ueⱽ' .snd .retᴰ = Cᴰ.rectify $ Cᴰ.≡out $
++  UEⱽ-essUniq ueⱽ ueⱽ' .snd .retᴰ = Cᴰ.rectifyOut $
+     UniversalElementᴰ.extensionalityᴰ (toUniversalᴰ ueⱽ) $
+     Pⱽ.⋆Assoc _ _ _
+     ∙ Pⱽ.⟨⟩⋆⟨ UniversalElementᴰ.βᴰ (toUniversalᴰ ueⱽ) ⟩
+@@ -446,8 +446,8 @@ module _ {C : Category ℓC ℓC'}{Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
+     ; elementᴰ = ∫◁ .element .snd
+     ; universalᴰ = isisoover
+       (λ q qᴰ → ∫◁.intro (q , qᴰ) .snd)
+-      (λ q qᴰ → Qᴰ.rectify $ Qᴰ.≡out $ ∫◁.β)
+-      λ f fᴰ → Cᴰ.rectify $ Cᴰ.≡out $ sym $ ∫◁.η
++      (λ q qᴰ → Qᴰ.rectifyOut $ ∫◁.β)
++      λ f fᴰ → Cᴰ.rectifyOut $ sym $ ∫◁.η
+     } where
+       open UniversalElement
+       module Cᴰ = Fibers Cᴰ
+@@ -466,8 +466,8 @@ module _ {C : Category ℓC ℓC'}{Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
+     ; elementᴰ = ueⱽ◁αⱽ.elementᴰ -- ueᴰ◁αⱽ.elementᴰ
+     ; universalᴰ = isisoover
+       (λ _ → ueⱽ◁αⱽ.introᴰ)
+-      (λ _ _ → Qⱽ.rectify $ Qⱽ.≡out $ ueⱽ◁αⱽ.βᴰ)
+-      (λ _ _ → Cᴰ.rectify $ Cᴰ.≡out $ sym $ ueⱽ◁αⱽ.ηᴰ)
++      (λ _ _ → Qⱽ.rectifyOut $ ueⱽ◁αⱽ.βᴰ)
++      (λ _ _ → Cᴰ.rectifyOut $ sym $ ueⱽ◁αⱽ.ηᴰ)
+     } where
+       module ueⱽ = UniversalElementⱽ ueⱽ
+       ueᴰ◁αⱽ = ueⱽ.toUniversalᴰ ◁PshIsoᴰ αⱽ
+@@ -487,8 +487,8 @@ module _ {C : Category ℓC ℓC'}{Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
+     ; elementᴰ = ueᴰ◁αⱽ.elementᴰ
+     ; universalᴰ = isisoover
+       (λ p qᴰ → ueᴰ◁αⱽ.introᴰ qᴰ)
+-      (λ p qᴰ → Qᴰ.rectify $ Qᴰ.≡out $ ueᴰ◁αⱽ.βᴰ)
+-      (λ f fᴰ → Cᴰ.rectify $ Cᴰ.≡out $ sym $ ueᴰ◁αⱽ.ηᴰ)
++      (λ p qᴰ → Qᴰ.rectifyOut $ ueᴰ◁αⱽ.βᴰ)
++      (λ f fᴰ → Cᴰ.rectifyOut $ sym $ ueᴰ◁αⱽ.ηᴰ)
+     } where
+       ueᴰ◁αⱽ = ueᴰ ◁PshIsoᴰ αⱽ
+       module Cᴰ = Fibers Cᴰ
+@@ -510,12 +510,12 @@ module _ {C : Category ℓC ℓC'}{Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
+     ; elementᴰ = Qᴰ.reind (Q.⋆IdL _) (αᴰ .fst .N-obᴰ ueⱽ.elementⱽ)
+     ; universalᴰ = isisoover
+       (λ q qᴰ → ueⱽ.introᴰ (αᴰ .snd .inv q qᴰ))
+-      (λ q qᴰ → Qᴰ.rectify $ Qᴰ.≡out $
++      (λ q qᴰ → Qᴰ.rectifyOut $
+         Qᴰ.⟨⟩⋆⟨ (sym $ Qᴰ.reind-filler _) ∙ refl ⟩
+         ∙ (sym $ ∫α .trans .N-hom _ _ _ _)
+         ∙ cong (∫α .trans .N-ob _) ueⱽ.βᴰ
+         ∙ ∫α .nIso _ .snd .fst _)
+-      (λ f fᴰ → Cᴰ.rectify $ Cᴰ.≡out $
++      (λ f fᴰ → Cᴰ.rectifyOut $
+         ueⱽ.∫ue.intro≡ $
+           invPshIso ∫α .trans .N-hom _ _ _ _
+           ∙ Pⱽ.⟨⟩⋆⟨ cong (∫α .nIso _ .fst) (sym $ Qᴰ.reind-filler _)
+diff --git a/Cubical/Categories/Displayed/Presheaf/Uncurried/Base.agda b/Cubical/Categories/Displayed/Presheaf/Uncurried/Base.agda
+index 541f3df5..e520a827 100644
+--- a/Cubical/Categories/Displayed/Presheaf/Uncurried/Base.agda
++++ b/Cubical/Categories/Displayed/Presheaf/Uncurried/Base.agda
+@@ -106,7 +106,7 @@ module _ {C : Category ℓC ℓC'}{Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}{P : Pr
+     {f g : (Cᴰ / P) [ Δ3 , Γ3 ]}
+     → (p2 : f .snd .fst Cᴰ.∫≡ g .snd .fst)
+     → f ≡ g
+-  Hom/≡ p2 = ΣPathP (PathPΣ p2 .fst , ΣPathPProp (λ _ → PresheafNotation.isSetPsh P _ _) (Cᴰ.rectify $ Cᴰ.≡out $ p2))
++  Hom/≡ p2 = ΣPathP (PathPΣ p2 .fst , ΣPathPProp (λ _ → PresheafNotation.isSetPsh P _ _) (Cᴰ.rectifyOut $ p2))
+ 
+ -- The Beck-Chevalley stuff in the universal quantifier lemmas have to
+ -- do some annoying shuffling that wouldn't be necessary if we use
+@@ -322,7 +322,7 @@ module _
+     module Rᴰ = PresheafᴰNotation Cᴰ R Rᴰ
+   reindPshᴰNatTrans-seq : PshIso (reindPshᴰNatTrans (α ⋆PshHom β) Rᴰ) (reindPshᴰNatTrans α $ reindPshᴰNatTrans β Rᴰ)
+   reindPshᴰNatTrans-seq = Isos→PshIso (λ _ → idIso) λ _ _ →
+-    λ _ _ → Rᴰ.rectify $ Rᴰ.≡out $ Rᴰ.⋆ᴰ-reind _ _ _ ∙ (sym $ Rᴰ.⋆ᴰ-reind _ _ _)
++    λ _ _ → Rᴰ.rectifyOut $ Rᴰ.⋆ᴰ-reind _ _ _ ∙ (sym $ Rᴰ.⋆ᴰ-reind _ _ _)
+ 
+ module _
+   {C : Category ℓC ℓC'}{Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
+@@ -330,7 +330,7 @@ module _
+   private
+     module Pᴰ = PresheafᴰNotation Cᴰ P Pᴰ
+   reindPshᴰNatTrans-id : PshIso (reindPshᴰNatTrans idPshHom Pᴰ) Pᴰ
+-  reindPshᴰNatTrans-id = Isos→PshIso (λ _ → idIso) λ _ _ _ _ → Pᴰ.rectify $ Pᴰ.≡out $
++  reindPshᴰNatTrans-id = Isos→PshIso (λ _ → idIso) λ _ _ _ _ → Pᴰ.rectifyOut $
+     Pᴰ.⋆ᴰ-reind _ _ _ ∙ (sym $ Pᴰ.⋆ᴰ-reind _ _ _)
+ 
+ module _
+@@ -424,7 +424,7 @@ module _
+   reindPshᴰNatTransStrict-seq : PshIso (reindPshᴰNatTransStrict (α ⋆PshHomStrict β) Rᴰ)
+                                  (reindPshᴰNatTransStrict α $ reindPshᴰNatTransStrict β Rᴰ)
+   reindPshᴰNatTransStrict-seq = Isos→PshIso (λ _ → idIso) λ _ _ →
+-      λ _ _ → Rᴰ.rectify $ Rᴰ.≡out $ Rᴰ.⋆ᴰ-reind _ _ _ ∙ (sym $ Rᴰ.⋆ᴰ-reind _ _ _)
++      λ _ _ → Rᴰ.rectifyOut $ Rᴰ.⋆ᴰ-reind _ _ _ ∙ (sym $ Rᴰ.⋆ᴰ-reind _ _ _)
+ 
+ module _
+   {C : Category ℓC ℓC'}{Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
+@@ -432,7 +432,7 @@ module _
+   private
+     module Pᴰ = PresheafᴰNotation Cᴰ P Pᴰ
+   reindPshᴰNatTransStrict-id : PshIso (reindPshᴰNatTransStrict idPshHomStrict Pᴰ) Pᴰ
+-  reindPshᴰNatTransStrict-id = Isos→PshIso (λ _ → idIso) λ _ _ _ _ → Pᴰ.rectify $ Pᴰ.≡out $
++  reindPshᴰNatTransStrict-id = Isos→PshIso (λ _ → idIso) λ _ _ _ _ → Pᴰ.rectifyOut $
+     Pᴰ.⋆ᴰ-reind _ _ _ ∙ (sym $ Pᴰ.⋆ᴰ-reind _ _ _)
+ 
+ module _
+diff --git a/Cubical/Categories/Displayed/Presheaf/Uncurried/Constructions.agda b/Cubical/Categories/Displayed/Presheaf/Uncurried/Constructions.agda
+index 1656fbb1..3fa300c2 100644
+--- a/Cubical/Categories/Displayed/Presheaf/Uncurried/Constructions.agda
++++ b/Cubical/Categories/Displayed/Presheaf/Uncurried/Constructions.agda
+@@ -177,8 +177,8 @@ module _ {C : Category ℓC ℓC'}{Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'} where
+     ΣPsh .F-ob (Γ , Γᴰ , p) .fst = Σ[ q ∈ Q.p[ Γ ] ] Pᴰ.p[ p , q ][ Γᴰ ]
+     ΣPsh .F-ob (Γ , Γᴰ , p) .snd = isSetΣ (Q .F-ob Γ .snd) (λ x → Pᴰ .F-ob (Γ , Γᴰ , p , x) .snd)
+     ΣPsh .F-hom (γ , γᴰ , γ⋆p≡p') (q , pᴰ) = (γ Q.⋆ q) , Pᴰ .F-hom (γ , (γᴰ , (ΣPathP (γ⋆p≡p' , refl)))) pᴰ
+-    ΣPsh .F-id = funExt λ (q , pᴰ) → ΣPathP ((Q.⋆IdL q) , (Pᴰ.rectify $ Pᴰ.≡out $ Pᴰ.⋆ᴰ-reind _ _ _ ∙ Pᴰ.⋆IdL _))
+-    ΣPsh .F-seq _ _ = funExt λ (q , pᴰ) → ΣPathP (Q.⋆Assoc _ _ _ , (Pᴰ.rectify $ Pᴰ.≡out $
++    ΣPsh .F-id = funExt λ (q , pᴰ) → ΣPathP ((Q.⋆IdL q) , (Pᴰ.rectifyOut $ Pᴰ.⋆ᴰ-reind _ _ _ ∙ Pᴰ.⋆IdL _))
++    ΣPsh .F-seq _ _ = funExt λ (q , pᴰ) → ΣPathP (Q.⋆Assoc _ _ _ , (Pᴰ.rectifyOut $
+       Pᴰ.⋆ᴰ-reind _ _ _ ∙ Pᴰ.⋆Assoc _ _ _
+       ∙ Pᴰ.⟨⟩⋆⟨ sym (Pᴰ.⋆ᴰ-reind _ _ _) ⟩
+       ∙ sym (Pᴰ.⋆ᴰ-reind _ _ _)))
+@@ -186,7 +186,7 @@ module _ {C : Category ℓC ℓC'}{Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'} where
+     ΣPsh-σ : PshHomⱽ Pᴰ (wkPshᴰ Q ⟅ ΣPsh ⟆)
+     ΣPsh-σ .N-ob (x , xᴰ , (p , q)) pᴰ = q , pᴰ
+     ΣPsh-σ .N-hom (x , xᴰ , (p , q)) (x' , xᴰ' , (p' , q')) (f , fᴰ , f⋆p,f⋆q≡p',q') pᴰ =
+-      ΣPathP (((sym $ PathPΣ f⋆p,f⋆q≡p',q' .snd )) , (Pᴰ.rectify $ Pᴰ.≡out $ Pᴰ.⋆ᴰ-reind _ _ _ ∙ sym (Pᴰ.⋆ᴰ-reind _ _ _)))
++      ΣPathP (((sym $ PathPΣ f⋆p,f⋆q≡p',q' .snd )) , (Pᴰ.rectifyOut $ Pᴰ.⋆ᴰ-reind _ _ _ ∙ sym (Pᴰ.⋆ᴰ-reind _ _ _)))
+ 
+     -- TODO: reindΣ
+     -- (p ↦ Σ[ q ] Pᴰ(p,q))[α] = Σ[ q ] Pᴰ(α(p), q)
+@@ -197,7 +197,7 @@ module _ {C : Category ℓC ℓC'}{Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'} where
+       ΣPsh-rec : PshHomⱽ Pᴰ (wkPshᴰ Q ⟅ Rᴰ ⟆) → PshHomⱽ ΣPsh Rᴰ
+       ΣPsh-rec α .N-ob (x , xᴰ , p) (q , pᴰ) = α .N-ob (x , xᴰ , p , q) pᴰ
+       ΣPsh-rec α .N-hom (Δ , Δᴰ , p')(Γ , Γᴰ , p) (γ , γᴰ , γ⋆p≡p') (q , pᴰ) = α .N-hom _ _ _ _
+-        ∙ (Rᴰ.rectify $ Rᴰ.≡out $ Rᴰ.⋆ᴰ-reind _ _ _ ∙ (sym $ Rᴰ.⋆ᴰ-reind _ _ _))
++        ∙ (Rᴰ.rectifyOut $ Rᴰ.⋆ᴰ-reind _ _ _ ∙ (sym $ Rᴰ.⋆ᴰ-reind _ _ _))
+ 
+       -- (Σ[ q ] Pᴰ(p,q) ⊢ Rᴰ(p)) ≅ Pᴰ(p,q) ⊢ Rᴰ(p)
+       ΣPsh-UMP : Iso (PshHomⱽ ΣPsh Rᴰ) (PshHomⱽ Pᴰ (wkPshᴰ Q ⟅ Rᴰ ⟆))
+@@ -229,7 +229,7 @@ module _ {C : Category ℓC ℓC'}{Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'} where
+       PathPsh-rec αⱽ .N-ob (x , xᴰ , p , q) p≡q =
+         -- should I use formal-reind instead of reind?
+         Rᴰ.reind (ΣPathP (refl , p≡q)) (αⱽ .N-ob (x , xᴰ , p) tt)
+-      PathPsh-rec αⱽ .N-hom (Δ , Δᴰ , (p , q)) (Γ , Γᴰ , (p' , q')) (γ , γᴰ , γ⋆p,γ⋆q≡p',q') p≡q = Rᴰ.rectify $ Rᴰ.≡out $
++      PathPsh-rec αⱽ .N-hom (Δ , Δᴰ , (p , q)) (Γ , Γᴰ , (p' , q')) (γ , γᴰ , γ⋆p,γ⋆q≡p',q') p≡q = Rᴰ.rectifyOut $
+         (sym $ Rᴰ.reind-filler _)
+         ∙ Rᴰ.≡in (αⱽ .N-hom _ _  (γ , (γᴰ , (PathPΣ γ⋆p,γ⋆q≡p',q' .fst))) tt)
+         ∙ Rᴰ.⋆ᴰ-reind _ _ _
+@@ -244,10 +244,10 @@ module _ {C : Category ℓC ℓC'}{Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'} where
+       PathPsh-UMP .fun = λ αⱽ → Refl ⋆PshHom reindPshHom (Idᴰ /Fⱽ ΔPshHom) αⱽ
+       PathPsh-UMP .inv = PathPsh-rec
+       PathPsh-UMP .sec = λ αⱽ →
+-        makePshHomPath $ funExt λ (Γ , Γᴰ , p) → funExt λ _ → Rᴰ.rectify $ Rᴰ.≡out $ sym $ Rᴰ.reind-filler _
++        makePshHomPath $ funExt λ (Γ , Γᴰ , p) → funExt λ _ → Rᴰ.rectifyOut $ sym $ Rᴰ.reind-filler _
+       PathPsh-UMP .ret =
+         λ αⱽ → makePshHomPath $ funExt λ (Γ , Γᴰ , (p , q)) → funExt λ p≡q →
+-          sym (Rᴰ.rectify $ Rᴰ.≡out $ (Rᴰ.≡in $ (λ i → αⱽ .N-ob (Γ , (Γᴰ , (p , (p≡q (~ i))))) (λ j → p≡q ((~ i) ∧ j)))) ∙ Rᴰ.reind-filler _)
++          sym (Rᴰ.rectifyOut $ (Rᴰ.≡in $ (λ i → αⱽ .N-ob (Γ , (Γᴰ , (p , (p≡q (~ i))))) (λ j → p≡q ((~ i) ∧ j)))) ∙ Rᴰ.reind-filler _)
+ 
+   module _ {P : Presheaf C ℓP} {Q : Presheaf C ℓQ} (α : PshHom P Q) (Pᴰ : Presheafᴰ P Cᴰ ℓPᴰ) where
+     private
+@@ -271,7 +271,7 @@ module _ {C : Category ℓC ℓC'}{Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'} where
+     push-σ : PshHomᴰ α Pᴰ push
+     push-σ .N-ob (Γ , Γᴰ , p) pᴰ = p , (pᴰ , refl)
+     push-σ .N-hom _ _ (γ , Γᴰ , γ⋆p≡p') pᴰ = ΣPathP ((sym $ γ⋆p≡p') , (ΣPathPProp (λ _ → Q.isSetPsh _ _)
+-      (Pᴰ.rectify $ Pᴰ.≡out $ Pᴰ.⋆ᴰ-reind _ _ _ ∙ (sym $ Pᴰ.⋆ᴰ-reind _ _ _))))
++      (Pᴰ.rectifyOut $ Pᴰ.⋆ᴰ-reind _ _ _ ∙ (sym $ Pᴰ.⋆ᴰ-reind _ _ _))))
+   module _ {P : Presheaf C ℓP} {Q : Presheaf C ℓQ} (α : PshHom P Q) (Pᴰ : Presheafᴰ P Cᴰ ℓPᴰ) {Qᴰ : Presheafᴰ Q Cᴰ ℓQᴰ} where
+     private
+       module Q = PresheafNotation Q
+@@ -279,7 +279,7 @@ module _ {C : Category ℓC ℓC'}{Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'} where
+     -- TODO: less manual definition?
+     push-recⱽ : PshHomᴰ α Pᴰ Qᴰ → PshHomⱽ (push α Pᴰ) Qᴰ
+     push-recⱽ αᴰ .N-ob (Γ , Γᴰ , q) (p , pᴰ , q≡αp) = Qᴰ .F-hom ((C .id) , ((Categoryᴰ.idᴰ Cᴰ) , (Q.⋆IdL _ ∙ (sym $ q≡αp)))) $ αᴰ .N-ob (Γ , Γᴰ , p) pᴰ
+-    push-recⱽ αᴰ .N-hom (Δ , Δᴰ , q) (Γ , Γᴰ , q') (γ , γᴰ , γ⋆q'≡q) (p , pᴰ , q'≡αp) = Qᴰ.rectify $ Qᴰ.≡out $
++    push-recⱽ αᴰ .N-hom (Δ , Δᴰ , q) (Γ , Γᴰ , q') (γ , γᴰ , γ⋆q'≡q) (p , pᴰ , q'≡αp) = Qᴰ.rectifyOut $
+       Qᴰ.⋆ᴰ-reind _ _ _
+       ∙ Qᴰ.⟨⟩⋆⟨ (Qᴰ.≡in $ αᴰ .N-hom _ _ _ _) ∙ Qᴰ.⋆ᴰ-reind _ _ _ ⟩
+       ∙ sym (Qᴰ.⋆Assoc _ _ _)
+@@ -290,8 +290,8 @@ module _ {C : Category ℓC ℓC'}{Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'} where
+     push-UMP = iso
+       (λ βⱽ → push-σ α Pᴰ ⋆PshHom reindPshHom (Idᴰ /Fⱽ α) βⱽ)
+       push-recⱽ
+-      (λ βⱽ → makePshHomPath (funExt λ (Γ , Γᴰ , p) → funExt λ pᴰ → Qᴰ.rectify $ Qᴰ.≡out $ Qᴰ.⋆ᴰ-reind _ _ _ ∙ Qᴰ.⋆IdL _))
+-      (λ βⱽ → makePshHomPath (funExt λ (Γ , Γᴰ , q) → funExt (λ (p , pᴰ , q≡αp) → Qᴰ.rectify $ Qᴰ.≡out $
++      (λ βⱽ → makePshHomPath (funExt λ (Γ , Γᴰ , p) → funExt λ pᴰ → Qᴰ.rectifyOut $ Qᴰ.⋆ᴰ-reind _ _ _ ∙ Qᴰ.⋆IdL _))
++      (λ βⱽ → makePshHomPath (funExt λ (Γ , Γᴰ , q) → funExt (λ (p , pᴰ , q≡αp) → Qᴰ.rectifyOut $
+         Qᴰ.⋆ᴰ-reind _ _ _ ∙ Qᴰ.⋆IdL _
+         ∙ ΣPathP (sym q≡αp , λ i → βⱽ .N-ob (Γ , (Γᴰ , q≡αp (~ i))) (p , pᴰ , λ j → q≡αp ((~ i) ∨ j))))))
+ 
+@@ -316,8 +316,8 @@ module _ {C : Category ℓC ℓC'}{Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'} where
+           ((Σ[ p ∈ P.p[ Γ ] ] Pᴰ.p[ p ][ Γᴰ ] × (q ≡ α .N-ob Γ p)) × Qᴰ.p[ q ][ Γᴰ ])
+     FrobeniusReciprocity-ptwise (Γ , Γᴰ , q) .fun (p , (pᴰ , qᴰ) , q≡αΓp) = (p , pᴰ , q≡αΓp) , Qᴰ.reind (sym q≡αΓp) qᴰ
+     FrobeniusReciprocity-ptwise (Γ , Γᴰ , q) .inv ((p , pᴰ , q≡αΓp), qᴰ) = p , ((pᴰ , (Qᴰ.reind q≡αΓp qᴰ)) , q≡αΓp)
+-    FrobeniusReciprocity-ptwise (Γ , Γᴰ , q) .sec ((p , pᴰ , q≡αΓp), qᴰ) = ΣPathP (refl , (Qᴰ.rectify $ Qᴰ.≡out $ sym $ Qᴰ.reind-filler _ ∙ Qᴰ.reind-filler _))
+-    FrobeniusReciprocity-ptwise (Γ , Γᴰ , q) .ret (p , (pᴰ , qᴰ) , q≡αΓp) = ΣPathP (refl , ΣPathP ((ΣPathP (refl , (Qᴰ.rectify $ Qᴰ.≡out $ sym $ Qᴰ.reind-filler _ ∙ Qᴰ.reind-filler _))) , refl))
++    FrobeniusReciprocity-ptwise (Γ , Γᴰ , q) .sec ((p , pᴰ , q≡αΓp), qᴰ) = ΣPathP (refl , (Qᴰ.rectifyOut $ sym $ Qᴰ.reind-filler _ ∙ Qᴰ.reind-filler _))
++    FrobeniusReciprocity-ptwise (Γ , Γᴰ , q) .ret (p , (pᴰ , qᴰ) , q≡αΓp) = ΣPathP (refl , ΣPathP ((ΣPathP (refl , (Qᴰ.rectifyOut $ sym $ Qᴰ.reind-filler _ ∙ Qᴰ.reind-filler _))) , refl))
+ 
+     FrobeniusReciprocity-natural : ∀ Δ,Δᴰ,q Γ,Γᴰ,q' γ,γᴰ,γ⋆q≡q' p,⟨pᴰ,qᴰ⟩,q≡αp →
+       (fun (FrobeniusReciprocity-ptwise Δ,Δᴰ,q)
+@@ -329,7 +329,7 @@ module _ {C : Category ℓC ℓC'}{Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'} where
+       (fun (FrobeniusReciprocity-ptwise Γ,Γᴰ,q') p,⟨pᴰ,qᴰ⟩,q≡αp))
+ 
+     FrobeniusReciprocity-natural Δ,Δᴰ,q Γ,Γᴰ,q' γ,γᴰ,γ⋆q≡q' p,⟨pᴰ,qᴰ⟩,q≡αp =
+-      ΣPathP ((ΣPathP (refl , refl)) , (Qᴰ.rectify $ Qᴰ.≡out $
++      ΣPathP ((ΣPathP (refl , refl)) , (Qᴰ.rectifyOut $
+         sym (Qᴰ.reind-filler _)
+         ∙ Qᴰ.⋆ᴰ-reind _ _ _
+         ∙ Qᴰ.⟨⟩⋆⟨ Qᴰ.reind-filler _ ⟩
+@@ -361,7 +361,7 @@ module _ {C : Category ℓC ℓC'}{Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'} where
+       → PshIsoⱽ ((Cᴰ / P) [-, x , xᴰ , p ]) (pushⱽ P p (Cᴰ [-][-, xᴰ ]))
+     push-repr {x} {xᴰ} {p} .trans .N-ob (Γ , Γᴰ , q) (γ , γᴰ , γ⋆p≡q) = γ , γᴰ , (sym γ⋆p≡q)
+     push-repr {x} {xᴰ} {p} .trans .N-hom _ _ _ _ =
+-      ΣPathP (refl , (ΣPathPProp (λ _ → P.isSetPsh _ _) (Cᴰ.rectify $ Cᴰ.≡out $ Cᴰ.reind-filler _)))
++      ΣPathP (refl , (ΣPathPProp (λ _ → P.isSetPsh _ _) (Cᴰ.rectifyOut $ Cᴰ.reind-filler _)))
+     push-repr {x} {xᴰ} {p} .nIso =
+       λ (Γ , Γᴰ , q) → (λ (f , fᴰ , q≡f⋆p) → f , (fᴰ , (sym $ q≡f⋆p)))
+         , (λ _ → refl) , (λ _ → refl)
+@@ -411,7 +411,7 @@ module _ {C : Category ℓC ℓC'} where
+         BeckChevalley = Isos→PshIso (λ (Γ , Γᴰ , q) → BeckChevalley-ptwise Γ Γᴰ q)
+           λ (Δ , Δᴰ , q) (Γ , Γᴰ , q') (γ , γᴰ , γ⋆q≡q') (s , pᴰ , q'≡α's) →
+           ΣPathP ((β' .N-hom Δ Γ γ s) , ΣPathPProp (λ _ → R.isSetPsh _ _)
+-          (Pᴰ.rectify $ Pᴰ.≡out $ Pᴰ.⋆ᴰ-reind _ _ _ ∙ (sym $ Pᴰ.⋆ᴰ-reind _ _ _)))
++          (Pᴰ.rectifyOut $ Pᴰ.⋆ᴰ-reind _ _ _ ∙ (sym $ Pᴰ.⋆ᴰ-reind _ _ _)))
+ 
+ module _ {C : Category ℓC ℓC'}(Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ')
+   where
+diff --git a/Cubical/Categories/Displayed/Presheaf/Uncurried/Constructions/Exponential.agda b/Cubical/Categories/Displayed/Presheaf/Uncurried/Constructions/Exponential.agda
+index 8846a0d9..d73e251c 100644
+--- a/Cubical/Categories/Displayed/Presheaf/Uncurried/Constructions/Exponential.agda
++++ b/Cubical/Categories/Displayed/Presheaf/Uncurried/Constructions/Exponential.agda
+@@ -106,7 +106,7 @@ LRⱽPresheafᴰ P Cᴰ ℓPᴰ = Σ (Presheafᴰ P Cᴰ ℓPᴰ) LocallyReprese
+ module LRⱽPresheafᴰNotation {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ') {P : Presheaf C ℓP} (Pᴰ : LRⱽPresheafᴰ P Cᴰ ℓPᴰ) where
+   private
+     module C = Category C using (id; _⋆_; ob; ⋆IdL)
+-    module Cᴰ = Fibers Cᴰ using (ob[_]; Hom[_][_,_]; ⋆IdR; Hom[_,_]; idᴰ; _≡[_]_; _∫≡_; ≡in; ≡out; rectify; _⋆ᴰ_; reind; reind-filler)
++    module Cᴰ = Fibers Cᴰ using (ob[_]; Hom[_][_,_]; ⋆IdR; Hom[_,_]; idᴰ; _≡[_]_; _∫≡_; ≡in; ≡out; rectify; rectifyOut; _⋆ᴰ_; reind; reind-filler)
+     module P = PresheafNotation P using (p[_]; _⋆_)
+   open PresheafᴰNotation Cᴰ P (Pᴰ .fst)
+   _×ⱽ_* : ∀ {Γ} (Γᴰ : Cᴰ.ob[ Γ ])(p : P.p[ Γ ]) → Cᴰ.ob[ Γ ]
+@@ -275,7 +275,7 @@ module _
+   --   (λ {(Δ , Δᴰ , f) (Γ , Γᴰ , f')} (γ , γᴰ , γf'≡f) →
+   --     (γ , (×ⱽPᴰ.introᴰ (Cᴰ.reind (C.⋆IdL γ) (×ⱽPᴰ.π₁ⱽ Cᴰ.⋆ᴰ γᴰ)) (Pᴰ.reind (P.⋆IdL _ ∙ sym γf'≡f) ×ⱽPᴰ.π₂ⱽ) , γf'≡f)) ,
+   --     (ΣPathP ((C.⋆IdL _) , ΣPathPProp (λ _ → P.isSetPsh _ _)
+-  --       (Cᴰ.rectify $ Cᴰ.≡out $
++  --       (Cᴰ.rectifyOut $
+   --         ×ⱽPᴰ.cong-introᴰ (sym (Cᴰ.reind-filler _) ∙ Cᴰ.cong-reind _ _ refl)
+   --         (sym (Pᴰ.reind-filler _) ∙ sym (Pᴰ.reind-filler _) ∙ sym (Pᴰ.reind-filler _) ∙ (sym (Pᴰ.reind-filler _))
+   --         ∙ Pᴰ.reind-filler _)))))
+@@ -284,7 +284,7 @@ module _
+   -- ×LRⱽPshᴰ≅⇒ⱽPshSmallP-F = record { trans = natTrans (λ x → (Cᴰ / P) .id)
+   --   λ f → (Cᴰ / P) .⋆IdR _
+   --   ∙ ΣPathP ((sym $ C.⋆IdL _ ∙ C.⋆IdL _) , (ΣPathPProp (λ _ → P.isSetPsh _ _)
+-  --   (Cᴰ.rectify $ Cᴰ.≡out $
++  --   (Cᴰ.rectifyOut $
+   --   sym $ Cᴰ.⋆IdL _ ∙ Cᴰ.⋆IdL _)))
+   --   ∙ (Cᴰ / P) .⋆IdL _
+   --   ; nIso = λ x → idCatIso {C = Cᴰ / P} .snd }
+diff --git a/Cubical/Categories/Displayed/Presheaf/Uncurried/Constructions/ExponentialD.agda b/Cubical/Categories/Displayed/Presheaf/Uncurried/Constructions/ExponentialD.agda
+index e7112c10..132769e8 100644
+--- a/Cubical/Categories/Displayed/Presheaf/Uncurried/Constructions/ExponentialD.agda
++++ b/Cubical/Categories/Displayed/Presheaf/Uncurried/Constructions/ExponentialD.agda
+@@ -127,10 +127,10 @@ module _ {C : Category ℓC ℓC'} (P : LRPresheaf C ℓP) (Cᴰ : Categoryᴰ C
+     ×ᴰPᴰ-Fᴰ : Functorᴰ (LRPsh→Functor P) Cᴰ Cᴰ
+     ×ᴰPᴰ-Fᴰ .F-obᴰ {Γ} Γᴰ = Γᴰ ×ᴰPᴰ
+     ×ᴰPᴰ-Fᴰ .F-homᴰ {Δ} {Γ} {γ} {Δᴰ} {Γᴰ} γᴰ = ueᴰ.introᴰ ((π₁ᴰ Cᴰ.⋆ᴰ γᴰ) , π₂ᴰ)
+-    ×ᴰPᴰ-Fᴰ .F-idᴰ {x} {xᴰ} = Cᴰ.rectify $ Cᴰ.≡out $ ×-introᴰ≡
++    ×ᴰPᴰ-Fᴰ .F-idᴰ {x} {xᴰ} = Cᴰ.rectifyOut $ ×-introᴰ≡
+       (Cᴰ.⋆IdR _ ∙ sym (Cᴰ.⋆IdL _))
+       (sym $ formal-reind-filler _ _)
+-    ×ᴰPᴰ-Fᴰ .F-seqᴰ {x} {y} {z} {f} {g} {xᴰ} {yᴰ} {zᴰ} fᴰ gᴰ = Cᴰ.rectify $ Cᴰ.≡out $ ×-introᴰ≡
++    ×ᴰPᴰ-Fᴰ .F-seqᴰ {x} {y} {z} {f} {g} {xᴰ} {yᴰ} {zᴰ} fᴰ gᴰ = Cᴰ.rectifyOut $ ×-introᴰ≡
+       (sym $ Cᴰ.⋆Assoc _ _ _ ∙ Cᴰ.⟨⟩⋆⟨ ×β₁ᴰ ⟩ ∙ sym (Cᴰ.⋆Assoc _ _ _) ∙ Cᴰ.⟨ ×β₁ᴰ ⟩⋆⟨⟩ ∙ Cᴰ.⋆Assoc _ _ _)
+       (sym $ ⋆Assoc _ _ _ ∙ ⟨⟩⋆⟨ ×β₂ᴰ ⟩ ∙ ×β₂ᴰ)
+ 
+diff --git a/Cubical/Categories/Displayed/Presheaf/Uncurried/Constructions/UniversalQuantifier.agda b/Cubical/Categories/Displayed/Presheaf/Uncurried/Constructions/UniversalQuantifier.agda
+index ff1571eb..77fa7f33 100644
+--- a/Cubical/Categories/Displayed/Presheaf/Uncurried/Constructions/UniversalQuantifier.agda
++++ b/Cubical/Categories/Displayed/Presheaf/Uncurried/Constructions/UniversalQuantifier.agda
+@@ -144,8 +144,8 @@ module _ {C : Category ℓC ℓC'} {F : Functor C C} {Cᴰ : Categoryᴰ C ℓC
+   wkFᴰ : Functorᴰ F Cᴰ Cᴰ
+   wkFᴰ = record { F-obᴰ = λ {Γ} Γᴰ → π* Γ Γᴰ .fst
+     ; F-homᴰ = wkFᴰ-homᴰ
+-    ; F-idᴰ = λ {x}{xᴰ} → Cᴰ.rectify $ Cᴰ.≡out $ cartLift-sq-id Cᴰ (π* _ _) (F .F-id)
+-    ; F-seqᴰ = λ {x} {y} {z} {f} {g} {xᴰ} {yᴰ} {zᴰ} fᴰ gᴰ → Cᴰ.rectify $ Cᴰ.≡out $
++    ; F-idᴰ = λ {x}{xᴰ} → Cᴰ.rectifyOut $ cartLift-sq-id Cᴰ (π* _ _) (F .F-id)
++    ; F-seqᴰ = λ {x} {y} {z} {f} {g} {xᴰ} {yᴰ} {zᴰ} fᴰ gᴰ → Cᴰ.rectifyOut $
+       cartLift-sq-seq Cᴰ (π* _ xᴰ) (π* _ _) (π* _ _) fᴰ gᴰ (F .F-seq f g)
+     }
+ 
+@@ -219,10 +219,10 @@ module _ {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ') where
+       π*Fᴰ .F-obᴰ {Γ} Γᴰ = π* Γ Γᴰ .fst
+       π*Fᴰ .F-homᴰ {f = γ} γᴰ = cartLift-sq-filler Cᴰ (π* _ _) (π* _ _) γᴰ
+         (sym $ fst $ PathPΣ $ β $ P .snd _)
+-      π*Fᴰ .F-idᴰ {x} {xᴰ} = Cᴰ.rectify $ Cᴰ.≡out $
++      π*Fᴰ .F-idᴰ {x} {xᴰ} = Cᴰ.rectifyOut $
+         cartLift-sq-id Cᴰ (π* _ _) $
+         intro≡ (P .snd x) (ΣPathP ((C.⋆IdR _ ∙ sym (C.⋆IdL _)) , (sym $ P.⋆IdL _)))
+-      π*Fᴰ .F-seqᴰ {x} {y} {z} {f} {g} {xᴰ} {yᴰ} {zᴰ} fᴰ gᴰ = Cᴰ.rectify $ Cᴰ.≡out $
++      π*Fᴰ .F-seqᴰ {x} {y} {z} {f} {g} {xᴰ} {yᴰ} {zᴰ} fᴰ gᴰ = Cᴰ.rectifyOut $
+         cartLift-sq-seq Cᴰ (π* _ _) (π* _ _) (π* _ _) fᴰ gᴰ $
+         (intro≡ (P .snd z) (sym $ ΣPathP
+           ( C.⋆Assoc _ _ _ ∙ C.⟨ refl ⟩⋆⟨ fst $ PathPΣ $ β $ P .snd z ⟩
+diff --git a/Cubical/Categories/Displayed/Presheaf/Uncurried/Fibration.agda b/Cubical/Categories/Displayed/Presheaf/Uncurried/Fibration.agda
+index b912c962..3cdd498b 100644
+--- a/Cubical/Categories/Displayed/Presheaf/Uncurried/Fibration.agda
++++ b/Cubical/Categories/Displayed/Presheaf/Uncurried/Fibration.agda
+@@ -98,7 +98,7 @@ module _ {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ') where
+               (g , introᴰ gfᴰ)
+               (g' , introᴰ g'fᴰ)
+       cong-introᴰ g≡g' gfᴰ≡g'fᴰ =
+-        ΣPathP (g≡g' , (congP-introᴰ (Cᴰ.rectify $ Cᴰ.≡out gfᴰ≡g'fᴰ)))
++        ΣPathP (g≡g' , (congP-introᴰ (Cᴰ.rectifyOut gfᴰ≡g'fᴰ)))
+ 
+       ⟨_⟩⋆πⱽ : ∀ {Γ}{Γᴰ : Cᴰ.ob[ Γ ]}{g g'}
+         → {gᴰ : Cᴰ [ g ][ Γᴰ , f*yᴰ .fst ]}
+@@ -169,7 +169,7 @@ module _ {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ') where
+             (g C.⋆ f , gᴰ ⋆πⱽ)
+             (g' C.⋆ f , g'ᴰ ⋆πⱽ)
+         → gᴰ Cᴰ.≡[ g≡g' ] g'ᴰ
+-      extensionalityᴰin g≡g' gᴰπⱽ≡g'ᴰπⱽ = Cᴰ.rectify $ Cᴰ.≡out $ extensionalityᴰ g≡g' gᴰπⱽ≡g'ᴰπⱽ
++      extensionalityᴰin g≡g' gᴰπⱽ≡g'ᴰπⱽ = Cᴰ.rectifyOut $ extensionalityᴰ g≡g' gᴰπⱽ≡g'ᴰπⱽ
+ 
+       introᴰ≡ : ∀ {Γ}{Γᴰ : Cᴰ.ob[ Γ ]}{g}
+         → {gfᴰ : Cᴰ [ g C.⋆ f ][ Γᴰ , yᴰ ]}
+diff --git a/Cubical/Categories/Displayed/Presheaf/Uncurried/Representable.agda b/Cubical/Categories/Displayed/Presheaf/Uncurried/Representable.agda
+index 6136ae23..f9d138f7 100644
+--- a/Cubical/Categories/Displayed/Presheaf/Uncurried/Representable.agda
++++ b/Cubical/Categories/Displayed/Presheaf/Uncurried/Representable.agda
+@@ -108,7 +108,7 @@ module _ {C : Category ℓC ℓC'} {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'} where
+     yoRecⱽ pⱽ .N-hom (Γ , Γᴰ , f) (Δ , Δᴰ , g) (h , hᴰ , h⋆g≡f) gᴰ =
+       congS (λ z → Pⱽ .F-hom z pⱽ)
+         (ΣPathP ((sym h⋆g≡f) ,
+-                 (ΣPathP ((Cᴰ.rectify $ Cᴰ.≡out $ sym $ Cᴰ.reind-filler _) ,
++                 (ΣPathP ((Cᴰ.rectifyOut $ sym $ Cᴰ.reind-filler _) ,
+                  isProp→PathP (λ _ → C.isSetHom _ _) _ _))))
+       ∙ funExt⁻ (Pⱽ .F-seq (g , gᴰ , C.⋆IdR g) (h , hᴰ , h⋆g≡f)) pⱽ
+ 
+@@ -237,14 +237,14 @@ module _ {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ')
+   Representableᴰ→UniversalElementᴰOverUE ue yᴰxᴰ≅Pᴰ .snd .snd Γ Γᴰ .inv =
+     yᴰxᴰ≅Pᴰ .snd .snd Γ Γᴰ .inv
+   Representableᴰ→UniversalElementᴰOverUE ue yᴰxᴰ≅Pᴰ .snd .snd Γ Γᴰ .rightInv =
+-    λ p pᴰ → Pᴰ.rectify $ Pᴰ.≡out $
++    λ p pᴰ → Pᴰ.rectifyOut $
+         Pᴰ.⟨⟩⋆⟨ sym $ Pᴰ.reind-filler _ ⟩
+         ∙ sym (∫PshHomᴰ {α = yoRec P (UniversalElement.element ue)} (yᴰxᴰ≅Pᴰ .snd .fst) .N-hom _ _ _ _)
+         ∙ cong (∫PshHomᴰ {α = yoRec P (UniversalElement.element ue)} (yᴰxᴰ≅Pᴰ .snd .fst) .N-ob _)
+                  ((sym $ Cᴰ.reind-filler _) ∙ Cᴰ.⋆IdR _)
+         ∙ Pᴰ.≡in (yᴰxᴰ≅Pᴰ .snd .snd Γ Γᴰ .rightInv _ _)
+   Representableᴰ→UniversalElementᴰOverUE ue yᴰxᴰ≅Pᴰ .snd .snd Γ Γᴰ .leftInv =
+-      λ f fᴰ → Cᴰ.rectify $ Cᴰ.≡out $
++      λ f fᴰ → Cᴰ.rectifyOut $
+         cong (invPshIso (∫PshIsoᴰ {α = yoRecIso {P = P} ue} (yᴰxᴰ≅Pᴰ .snd)) .trans .N-ob _)
+           (Pᴰ.⟨⟩⋆⟨ (sym $ Pᴰ.reind-filler _) ⟩
+                     ∙ sym (∫PshHomᴰ {α = yoRec P (UniversalElement.element ue)} (yᴰxᴰ≅Pᴰ .snd .fst) .N-hom _ _ _ _)
+@@ -277,7 +277,7 @@ module _ {C : Category ℓC ℓC'}{D : Category ℓD ℓD'}
+   Functorᴰ→PshHetᴰ : ∀ {x} (xᴰ : Cᴰ.ob[ x ])
+     → PshHomⱽ (Cᴰ [-][-, xᴰ ]) (reindPsh (Fᴰ /FᴰYo x) (Dᴰ [-][-, Fᴰ .F-obᴰ xᴰ ]))
+   Functorᴰ→PshHetᴰ xᴰ .N-ob (Γ , Γᴰ , f) fᴰ = Fᴰ .F-homᴰ fᴰ
+-  Functorᴰ→PshHetᴰ xᴰ .N-hom (Δ , Δᴰ , f) (Γ , Γᴰ , f') (γ , γᴰ , γf≡f') f'ᴰ = Dᴰ.rectify $ Dᴰ.≡out $
++  Functorᴰ→PshHetᴰ xᴰ .N-hom (Δ , Δᴰ , f) (Γ , Γᴰ , f') (γ , γᴰ , γf≡f') f'ᴰ = Dᴰ.rectifyOut $
+     cong (∫F Fᴰ .F-hom) (sym $ Cᴰ.reind-filler _)
+     ∙ ∫F Fᴰ .F-seq _ _
+     ∙ Dᴰ.reind-filler _
+@@ -300,7 +300,7 @@ module _ {C : Category ℓC ℓC'}{D : Category ℓD ℓD'}
+   reindexRepresentable-seq = /NatIso
+     -- TODO: eqToNatIso didn't type check even though it did interactively
+     (record { trans = natTrans (λ _ → D .id) (λ _ → idTrans Id .N-hom _) ; nIso = λ _ → idNatIso Id .nIso _ })
+-    (record { transᴰ = record { N-obᴰ = λ _ → Dᴰ.idᴰ ; N-homᴰ = λ _ → Dᴰ.rectify $ Dᴰ.≡out $ Dᴰ.⋆IdR _ ∙ sym (Dᴰ.⋆IdL _) } ; nIsoᴰ = λ _ → idᴰCatIsoᴰ Dᴰ .snd })
++    (record { transᴰ = record { N-obᴰ = λ _ → Dᴰ.idᴰ ; N-homᴰ = λ _ → Dᴰ.rectifyOut $ Dᴰ.⋆IdR _ ∙ sym (Dᴰ.⋆IdL _) } ; nIsoᴰ = λ _ → idᴰCatIsoᴰ Dᴰ .snd })
+     λ _ → D .⋆IdL _ ∙ F .F-seq _ _
+ 
+ module _ {C : Category ℓC ℓC'}{Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
+diff --git a/Cubical/Categories/Displayed/Presheaf/Uncurried/UniversalProperties.agda b/Cubical/Categories/Displayed/Presheaf/Uncurried/UniversalProperties.agda
+index 68e1648c..f73f18aa 100644
+--- a/Cubical/Categories/Displayed/Presheaf/Uncurried/UniversalProperties.agda
++++ b/Cubical/Categories/Displayed/Presheaf/Uncurried/UniversalProperties.agda
+@@ -114,13 +114,13 @@ module _ {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ') where
+     ×βⱽ₁ : ∀ {Γ} {Γᴰ : Cᴰ.ob[ Γ ]} {f : C [ Γ , x ]}
+       {fᴰ : Cᴰ [ f ][ Γᴰ , Aᴰ ]} {gᴰ : Cᴰ [ f ][ Γᴰ , Bᴰ ]}
+       → ((fᴰ ,ⱽ gᴰ) Cᴰ.⋆ᴰ π₁) Cᴰ.≡[ C.⋆IdR f ] fᴰ
+-    ×βⱽ₁ = Cᴰ.rectify $ Cᴰ.≡out $
++    ×βⱽ₁ = Cᴰ.rectifyOut $
+       Cᴰ.reind-filler _ ∙ (Cᴰ.≡in $ PathPΣ (PathPΣ ue.β .snd) .fst)
+ 
+     ×βⱽ₂ : ∀ {Γ} {Γᴰ : Cᴰ.ob[ Γ ]} {f : C [ Γ , x ]}
+       {fᴰ : Cᴰ [ f ][ Γᴰ , Aᴰ ]} {gᴰ : Cᴰ [ f ][ Γᴰ , Bᴰ ]}
+       → ((fᴰ ,ⱽ gᴰ) Cᴰ.⋆ᴰ π₂) Cᴰ.≡[ C.⋆IdR f ] gᴰ
+-    ×βⱽ₂ = Cᴰ.rectify $ Cᴰ.≡out $
++    ×βⱽ₂ = Cᴰ.rectifyOut $
+       Cᴰ.reind-filler _ ∙ (Cᴰ.≡in $ PathPΣ (PathPΣ ue.β .snd) .snd)
+ 
+     ×ηⱽ : ∀ {Γ} {Γᴰ : Cᴰ.ob[ Γ ]} {f : C [ Γ , x ]}
+@@ -194,7 +194,7 @@ module _ {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ') where
+       (fᴰ : Cᴰ [ f ][ Γᴰ , Aᴰ ])
+       (gᴰ : Cᴰ [ g ][ Γᴰ , Bᴰ ])
+       → (introᴰ (fᴰ , gᴰ) Cᴰ.⋆ᴰ πᴰ₁) Cᴰ.≡[ PathPΣ (A×B.β {p = (f , g)}) .fst ] fᴰ
+-    ×βᴰ₁ {Γ}{Γᴰ}{f}{g} fᴰ gᴰ = Cᴰ.rectify $ Cᴰ.≡out $
++    ×βᴰ₁ {Γ}{Γᴰ}{f}{g} fᴰ gᴰ = Cᴰ.rectifyOut $
+       Cᴰ.reind-filler _ ∙ (Cᴰ.≡in $ PathPΣ (βᴰ {p = (f , g)} (fᴰ , gᴰ)) .fst)
+ 
+     ×βᴰ₂ : ∀ {Γ Γᴰ}
+@@ -203,14 +203,14 @@ module _ {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ') where
+       (fᴰ : Cᴰ [ f ][ Γᴰ , Aᴰ ])
+       (gᴰ : Cᴰ [ g ][ Γᴰ , Bᴰ ])
+       → (introᴰ (fᴰ , gᴰ) Cᴰ.⋆ᴰ πᴰ₂) Cᴰ.≡[ PathPΣ (A×B.β {p = (f , g)}) .snd ] gᴰ
+-    ×βᴰ₂ {Γ}{Γᴰ}{f}{g} fᴰ gᴰ = Cᴰ.rectify $ Cᴰ.≡out $
++    ×βᴰ₂ {Γ}{Γᴰ}{f}{g} fᴰ gᴰ = Cᴰ.rectifyOut $
+       Cᴰ.reind-filler _ ∙ (Cᴰ.≡in $ PathPΣ (βᴰ {p = (f , g)} (fᴰ , gᴰ)) .snd)
+ 
+     ×ηᴰ : ∀ {Γ Γᴰ}
+       → {f : C [ Γ , A×B .vertex ]}
+       → (fᴰ : Cᴰ [ f ][ Γᴰ , Aᴰ×ᴰBᴰ .fst ])
+       → fᴰ Cᴰ.≡[ A×B.η {f = f} ] introᴰ ((fᴰ Cᴰ.⋆ᴰ πᴰ₁) , (fᴰ Cᴰ.⋆ᴰ πᴰ₂))
+-    ×ηᴰ {Γ} {Γᴰ} {f} fᴰ = Cᴰ.rectify $ Cᴰ.≡out $
++    ×ηᴰ {Γ} {Γᴰ} {f} fᴰ = Cᴰ.rectifyOut $
+       Cᴰ.≡in (ηᴰ {f = f} fᴰ)
+       ∙ cong (∫PshIsoᴰ (asReprᴰ .snd) .nIso _ .fst)
+           (ΣPathPᴰ
+@@ -293,10 +293,9 @@ module _ {C : Category ℓC ℓC'}
+       → PathP (λ i → Cᴰᴰ [ η i ][ Γᴰᴰ , vertexᴰ ])
+           fᴰᴰ (Cᴰᴰ.reind intro≡g !ⱽᴰ)
+     !ηⱽᴰ {Γ = Γ} {Γᴰ = Γᴰ} {f = f} {fᴰ = fᴰ} intro≡g η fᴰᴰ =
+-      Cᴰᴰ.rectify {e' = η}
+-        (Cᴰᴰ.≡out
+-          ((Cᴰᴰ.≡in (!η-genericᴰ (η ∙ sym intro≡g) fᴰᴰ))
+-          ∙ Cᴰᴰ.reind-filler {p = !ⱽᴰ} intro≡g))
++      Cᴰᴰ.rectifyOut {e' = η}
++        ((Cᴰᴰ.≡in (!η-genericᴰ (η ∙ sym intro≡g) fᴰᴰ))
++        ∙ Cᴰᴰ.reind-filler {p = !ⱽᴰ} intro≡g)
+ 
+   BinProductⱽᴰSpec : ∀ {x} {Aᴰ Bᴰ : Cᴰ.ob[ x ]}
+     (bpⱽ : BinProductⱽ Cᴰ Aᴰ Bᴰ)
+@@ -430,9 +429,10 @@ module _ {C : Category ℓC ℓC'}
+       (fᴰᴰ : Cᴰᴰ [ f , fᴰ ][ Γᴰᴰ , Aᴰᴰ ]) (gᴰᴰ : Cᴰᴰ [ f , gᴰ ][ Γᴰᴰ , Bᴰᴰ ])
+       → ((fᴰᴰ ,ⱽᴰ gᴰᴰ) Cᴰᴰ.⋆ᴰ πᴰ₁)
+         Cᴰᴰ.≡[ Cᴰ.≡in bpⱽ.×βⱽ₁ ] fᴰᴰ
+-    ×βⱽᴰ₁ fᴰᴰ gᴰᴰ = Cᴰᴰ.rectify $ Cᴰᴰ.≡out $
++    ×βⱽᴰ₁ {f = f} {fᴰ = fᴰ} {gᴰ = gᴰ} fᴰᴰ gᴰᴰ = Cᴰᴰ.rectifyOut $
+       Cᴰᴰ.reind-filler _ ∙
+-      (Cᴰᴰ.≡in $ PathPΣ (PathPΣ bpᴰ.β .snd) .fst)
++      (Cᴰᴰ.≡in $ PathPΣ (PathPΣ
++        (bpᴰ.β {p = ((f , fᴰ , gᴰ) , fᴰᴰ , gᴰᴰ)}) .snd) .fst)
+ 
+     ×βⱽᴰ₂ : ∀ {Γ} {Γᴰ : Cᴰ.ob[ Γ ]} {Γᴰᴰ : Cᴰᴰ.ob[ Γ , Γᴰ ]}
+       {f : C [ Γ , x ]}
+@@ -440,9 +440,10 @@ module _ {C : Category ℓC ℓC'}
+       (fᴰᴰ : Cᴰᴰ [ f , fᴰ ][ Γᴰᴰ , Aᴰᴰ ]) (gᴰᴰ : Cᴰᴰ [ f , gᴰ ][ Γᴰᴰ , Bᴰᴰ ])
+       → ((fᴰᴰ ,ⱽᴰ gᴰᴰ) Cᴰᴰ.⋆ᴰ πᴰ₂)
+         Cᴰᴰ.≡[ Cᴰ.≡in bpⱽ.×βⱽ₂ ] gᴰᴰ
+-    ×βⱽᴰ₂ fᴰᴰ gᴰᴰ = Cᴰᴰ.rectify $ Cᴰᴰ.≡out $
++    ×βⱽᴰ₂ {f = f} {fᴰ = fᴰ} {gᴰ = gᴰ} fᴰᴰ gᴰᴰ = Cᴰᴰ.rectifyOut $
+       Cᴰᴰ.reind-filler _ ∙
+-      (Cᴰᴰ.≡in $ PathPΣ (PathPΣ bpᴰ.β .snd) .snd)
++      (Cᴰᴰ.≡in $ PathPΣ (PathPΣ
++        (bpᴰ.β {p = ((f , fᴰ , gᴰ) , fᴰᴰ , gᴰᴰ)}) .snd) .snd)
+ 
+     ×βⱽᴰ₁-on : ∀ {Γ} {Γᴰ : Cᴰ.ob[ Γ ]} {Γᴰᴰ : Cᴰᴰ.ob[ Γ , Γᴰ ]}
+       {f : C [ Γ , x ]}
+@@ -457,7 +458,7 @@ module _ {C : Category ℓC ℓC'}
+       → PathP (λ i → Cᴰᴰ [ β' i ][ Γᴰᴰ , Aᴰᴰ ])
+           ((Cᴰᴰ.reind (ΣPathP (refl , refl)) (fᴰᴰ ,ⱽᴰ gᴰᴰ))
+             Cᴰᴰ.⋆ᴰ Cᴰᴰ.reind π≡π' πᴰ₁) fᴰᴰ
+-    ×βⱽᴰ₁-on π≡π' β' fᴰᴰ gᴰᴰ = Cᴰᴰ.rectify {e' = β'} $ Cᴰᴰ.≡out $
++    ×βⱽᴰ₁-on π≡π' β' fᴰᴰ gᴰᴰ = Cᴰᴰ.rectifyOut {e' = β'} $
+       Cᴰᴰ.⟨ Cᴰᴰ.reind-filler⁻ (ΣPathP (refl , refl)) ⟩⋆⟨⟩
+       ∙ Cᴰᴰ.⟨⟩⋆⟨ Cᴰᴰ.reind-filler⁻ π≡π' ⟩
+       ∙ Cᴰᴰ.≡in (×βⱽᴰ₁ fᴰᴰ gᴰᴰ)
+@@ -475,7 +476,7 @@ module _ {C : Category ℓC ℓC'}
+       → PathP (λ i → Cᴰᴰ [ β' i ][ Γᴰᴰ , Bᴰᴰ ])
+           ((Cᴰᴰ.reind (ΣPathP (refl , refl)) (fᴰᴰ ,ⱽᴰ gᴰᴰ))
+             Cᴰᴰ.⋆ᴰ Cᴰᴰ.reind π≡π' πᴰ₂) gᴰᴰ
+-    ×βⱽᴰ₂-on π≡π' β' fᴰᴰ gᴰᴰ = Cᴰᴰ.rectify {e' = β'} $ Cᴰᴰ.≡out $
++    ×βⱽᴰ₂-on π≡π' β' fᴰᴰ gᴰᴰ = Cᴰᴰ.rectifyOut {e' = β'} $
+       Cᴰᴰ.⟨ Cᴰᴰ.reind-filler⁻ (ΣPathP (refl , refl)) ⟩⋆⟨⟩
+       ∙ Cᴰᴰ.⟨⟩⋆⟨ Cᴰᴰ.reind-filler⁻ π≡π' ⟩
+       ∙ Cᴰᴰ.≡in (×βⱽᴰ₂ fᴰᴰ gᴰᴰ)
+@@ -485,11 +486,13 @@ module _ {C : Category ℓC ℓC'}
+       (hᴰᴰ : Cᴰᴰ [ f , hᴰ ][ Γᴰᴰ , vertexᴰ ])
+       → hᴰᴰ Cᴰᴰ.≡[ Cᴰ.≡in bpⱽ.×ηⱽ ]
+           (bpᴰ.intro (((f , hᴰ) , hᴰᴰ) specᴰ.⋆ bpᴰ.element) .snd)
+-    ×ηⱽᴰ hᴰᴰ = subst
++    ×ηⱽᴰ {f = f} {hᴰ = hᴰ} hᴰᴰ = subst
+       (λ p → hᴰᴰ Cᴰᴰ.≡[ p ]
+         (bpᴰ.intro ((_ , hᴰᴰ) specᴰ.⋆ bpᴰ.element) .snd))
+-      (Cᴰ.isSetHom _ _ (cong fst bpᴰ.η) (Cᴰ.≡in bpⱽ.×ηⱽ))
+-      (PathPΣ bpᴰ.η .snd)
++      (Cᴰ.isSetHom _ _ (cong fst η') (Cᴰ.≡in bpⱽ.×ηⱽ))
++      (PathPΣ η' .snd)
++      where
++      η' = bpᴰ.η {f = ((f , hᴰ) , hᴰᴰ)}
+ 
+     ×ηⱽᴰ-on : ∀ {Γ} {Γᴰ : Cᴰ.ob[ Γ ]} {Γᴰᴰ : Cᴰᴰ.ob[ Γ , Γᴰ ]}
+       {f : C [ Γ , x ]} {hᴰ : Cᴰ [ f ][ Γᴰ , bpⱽ.vert ]}
+@@ -506,7 +509,7 @@ module _ {C : Category ℓC ℓC'}
+             ((hᴰᴰ Cᴰᴰ.⋆ᴰ Cᴰᴰ.reind (ΣPathP (refl , π₁≡π₁')) πᴰ₁) ,ⱽᴰ
+              (hᴰᴰ Cᴰᴰ.⋆ᴰ Cᴰᴰ.reind (ΣPathP (refl , π₂≡π₂')) πᴰ₂)))
+     ×ηⱽᴰ-on {Γ = Γ} {Γᴰ = Γᴰ} {Γᴰᴰ = Γᴰᴰ} {f = f} {hᴰ = hᴰ}
+-      {π₁' = π₁'} {π₂' = π₂'} π₁≡π₁' π₂≡π₂' η' hᴰᴰ = Cᴰᴰ.rectify {e' = η'} $ Cᴰᴰ.≡out $
++      {π₁' = π₁'} {π₂' = π₂'} π₁≡π₁' π₂≡π₂' η' hᴰᴰ = Cᴰᴰ.rectifyOut {e' = η'} $
+       Cᴰᴰ.≡in (×ηⱽᴰ hᴰᴰ)
+       ∙ cong bpᴰ.intro (normalize-ηᴰ ∙ align-ηᴰ)
+       ∙ Cᴰᴰ.reind-filler (ΣPathP (refl , refl))
+diff --git a/Cubical/Categories/Displayed/Profunctor.agda b/Cubical/Categories/Displayed/Profunctor.agda
+index c00be90c..96b857ae 100644
+--- a/Cubical/Categories/Displayed/Profunctor.agda
++++ b/Cubical/Categories/Displayed/Profunctor.agda
+@@ -109,25 +109,25 @@ module _ (C : Category ℓC ℓC') (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ') where
+                                                       (ℓ-max (ℓ-max (ℓ-max (ℓ-max (ℓ-max ℓC ℓC') ℓCᴰ) ℓCᴰ') ℓQᴰ) ℓP) ℓPᴰ)
+   PshHomᴰPshᴰ Qᴰ .F-obᴰ Pᴰ α = (PshHomᴰ α Pᴰ Qᴰ) , (isSetPshHomᴰ _ _ _)
+   PshHomᴰPshᴰ Qᴰ .F-homᴰ αᴰ _ βᴰ = NatTransᴰ→PshHomᴰ αᴰ ⋆PshHomᴰ βᴰ
+-  PshHomᴰPshᴰ Qᴰ .F-idᴰ = funExt (λ q → funExt λ qᴰ → makePshHomᴰPathP _ _ _ (funExt (λ αᴰ → Qᴰ.rectify $ Qᴰ.≡out $ refl))) where
++  PshHomᴰPshᴰ Qᴰ .F-idᴰ = funExt (λ q → funExt λ qᴰ → makePshHomᴰPathP _ _ _ (funExt (λ αᴰ → Qᴰ.rectifyOut $ refl))) where
+     module Qᴰ = PresheafᴰNotation Qᴰ
+   PshHomᴰPshᴰ Qᴰ .F-seqᴰ αᴰ βᴰ = funExt (λ q → funExt λ qᴰ → makePshHomᴰPathP _ _ _ (funExt λ γᴰ →
+-    Qᴰ.rectify $ Qᴰ.≡out $ refl)) where
++    Qᴰ.rectifyOut $ refl)) where
+     module Qᴰ = PresheafᴰNotation Qᴰ
+ 
+   PshHomᴰProfᴰ : Profunctorᴰ PshHomProf (PRESHEAFᴰ Cᴰ ℓP ℓPᴰ) (PRESHEAFᴰ Cᴰ ℓQ ℓQᴰ) _
+   PshHomᴰProfᴰ .F-obᴰ Qᴰ = PshHomᴰPshᴰ Qᴰ
+   PshHomᴰProfᴰ .F-homᴰ αᴰ .N-obᴰ Qᴰ β βᴰ = βᴰ ⋆PshHomᴰ NatTransᴰ→PshHomᴰ αᴰ
+   PshHomᴰProfᴰ .F-homᴰ {P}{Q}{α}{Pᴰ}{Qᴰ} αᴰ .N-homᴰ {R}{S}{β}{Rᴰ}{Sᴰ} βᴰ = funExt λ γ → funExt λ γᴰ →
+-    makePshHomᴰPathP _ _ _ (funExt λ sᴰ → Qᴰ.rectify $ Qᴰ.≡out $ refl)
++    makePshHomᴰPathP _ _ _ (funExt λ sᴰ → Qᴰ.rectifyOut $ refl)
+     where
+       module Qᴰ = PresheafᴰNotation Qᴰ
+   -- funExt (λ γ → funExt λ γᴰ → makePshHomᴰPathP _ _ _ (funExt (λ qᴰ → {!!})))
+   PshHomᴰProfᴰ .F-idᴰ {P} {Pᴰ} = makeNatTransPathᴰ _ _ _ (implicitFunExt (funExt (λ Qᴰ → funExt (λ β → funExt λ βᴰ →
+-    makePshHomᴰPathP _ _ _ (funExt (λ qᴰ → Pᴰ.rectify $ Pᴰ.≡out $ refl)))))) where
++    makePshHomᴰPathP _ _ _ (funExt (λ qᴰ → Pᴰ.rectifyOut $ refl)))))) where
+       module Pᴰ = PresheafᴰNotation Pᴰ
+   PshHomᴰProfᴰ .F-seqᴰ {P} {P'} {P''} {α} {α'} {Pᴰ} {Pᴰ'} {Pᴰ''} αᴰ αᴰ' = makeNatTransPathᴰ _ _ _ (implicitFunExt (funExt (λ Qᴰ → funExt (λ β → funExt λ βᴰ →
+-    makePshHomᴰPathP _ _ _ (funExt λ qᴰ → Pᴰ''.rectify $ Pᴰ''.≡out $ refl))))) where
++    makePshHomᴰPathP _ _ _ (funExt λ qᴰ → Pᴰ''.rectifyOut $ refl))))) where
+       module Pᴰ'' = PresheafᴰNotation Pᴰ''
+ 
+ -- Neologism?
+diff --git a/Cubical/Categories/Instances/Fiber.agda b/Cubical/Categories/Instances/Fiber.agda
+index 80f876ba..b42bfe1e 100644
+--- a/Cubical/Categories/Instances/Fiber.agda
++++ b/Cubical/Categories/Instances/Fiber.agda
+@@ -59,11 +59,11 @@ module Fibers {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ')
+   v[ x ] .Category.id = idᴰ
+   v[ x ] .Category._⋆_ fⱽ gⱽ = R.reind (C.⋆IdL _) (fⱽ ⋆ᴰ gⱽ)
+   v[ x ] .Category.⋆IdL fⱽ =
+-    R.rectify $ R.≡out $ (sym $ R.reind-filler _) ∙ ∫Cᴰ.⋆IdL _
++    R.rectifyOut $ (sym $ R.reind-filler _) ∙ ∫Cᴰ.⋆IdL _
+   v[ x ] .Category.⋆IdR fⱽ =
+-    R.rectify $ R.≡out $ (sym $ R.reind-filler _) ∙ ∫Cᴰ.⋆IdR _
++    R.rectifyOut $ (sym $ R.reind-filler _) ∙ ∫Cᴰ.⋆IdR _
+   v[ x ] .Category.⋆Assoc fⱽ gⱽ hⱽ =
+-    R.rectify $ R.≡out $
++    R.rectifyOut $
+       (sym $ R.reind-filler _)
+       ∙ ∫Cᴰ.⟨ sym $ R.reind-filler _ ⟩⋆⟨ refl ⟩
+       ∙ ∫Cᴰ.⋆Assoc _ _ _
+@@ -101,13 +101,13 @@ module Fibers {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ')
+   _⋆ᴰⱽ_ : Hom[ f ][ xᴰ , yᴰ ] → v[ y ] [ yᴰ , yᴰ' ] → Hom[ f ][ xᴰ , yᴰ' ]
+   _⋆ᴰⱽ_ {f = f} fᴰ gⱽ = R.reind (C.⋆IdR _) (fᴰ ⋆ᴰ gⱽ)
+   ⋆IdLᴰⱽ : idᴰ ⋆ᴰⱽ fⱽ ≡ fⱽ
+-  ⋆IdLᴰⱽ = R.rectify $ R.≡out $ (sym $ R.reind-filler _) ∙ ∫Cᴰ.⋆IdL _
++  ⋆IdLᴰⱽ = R.rectifyOut $ (sym $ R.reind-filler _) ∙ ∫Cᴰ.⋆IdL _
+ 
+   ⋆IdRᴰⱽ : fᴰ ⋆ᴰⱽ idⱽ ≡ fᴰ
+-  ⋆IdRᴰⱽ = R.rectify $ R.≡out $ (sym $ R.reind-filler _) ∙ ∫Cᴰ.⋆IdR _
++  ⋆IdRᴰⱽ = R.rectifyOut $ (sym $ R.reind-filler _) ∙ ∫Cᴰ.⋆IdR _
+ 
+   ⋆Assocᴰⱽⱽ : (fᴰ ⋆ᴰⱽ gⱽ) ⋆ᴰⱽ hⱽ ≡ (fᴰ ⋆ᴰⱽ (gⱽ ⋆ⱽ hⱽ))
+-  ⋆Assocᴰⱽⱽ = R.rectify $ R.≡out $
++  ⋆Assocᴰⱽⱽ = R.rectifyOut $
+       (sym $ R.reind-filler _)
+       ∙ ∫Cᴰ.⟨ sym $ R.reind-filler _ ⟩⋆⟨ refl ⟩
+       ∙ ∫Cᴰ.⋆Assoc _ _ _
+@@ -118,13 +118,13 @@ module Fibers {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ')
+   _⋆ⱽᴰ_ {f = f} gⱽ fᴰ = R.reind (C.⋆IdL _) (gⱽ ⋆ᴰ fᴰ)
+ 
+   ⋆IdLⱽᴰ : ∀ (fᴰ : Hom[ f ][ xᴰ , yᴰ ]) → idⱽ ⋆ⱽᴰ fᴰ ≡ fᴰ
+-  ⋆IdLⱽᴰ fᴰ = R.rectify $ R.≡out $ (sym $ R.reind-filler _) ∙ ∫Cᴰ.⋆IdL _
++  ⋆IdLⱽᴰ fᴰ = R.rectifyOut $ (sym $ R.reind-filler _) ∙ ∫Cᴰ.⋆IdL _
+ 
+   ⋆IdRⱽᴰ : ∀ (fⱽ : v[ x ] [ xᴰ , xᴰ' ]) → fⱽ ⋆ⱽᴰ idᴰ ≡ fⱽ
+-  ⋆IdRⱽᴰ fⱽ = R.rectify $ R.≡out $ (sym $ R.reind-filler _) ∙ ∫Cᴰ.⋆IdR _
++  ⋆IdRⱽᴰ fⱽ = R.rectifyOut $ (sym $ R.reind-filler _) ∙ ∫Cᴰ.⋆IdR _
+ 
+   ⋆Assocⱽⱽᴰ : (fⱽ ⋆ⱽ gⱽ) ⋆ⱽᴰ hᴰ ≡ (fⱽ ⋆ⱽᴰ (gⱽ ⋆ⱽᴰ hᴰ))
+-  ⋆Assocⱽⱽᴰ = R.rectify $ R.≡out $
++  ⋆Assocⱽⱽᴰ = R.rectifyOut $
+       (sym $ R.reind-filler _)
+       ∙ ∫Cᴰ.⟨ sym $ R.reind-filler _ ⟩⋆⟨ refl ⟩
+       ∙ ∫Cᴰ.⋆Assoc _ _ _
+@@ -132,7 +132,7 @@ module Fibers {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ')
+       ∙ R.reind-filler _
+ 
+   ⋆Assocⱽᴰⱽ : (fⱽ ⋆ⱽᴰ gᴰ) ⋆ᴰⱽ hⱽ ≡ (fⱽ ⋆ⱽᴰ (gᴰ ⋆ᴰⱽ hⱽ))
+-  ⋆Assocⱽᴰⱽ = R.rectify $ R.≡out $
++  ⋆Assocⱽᴰⱽ = R.rectifyOut $
+       (sym $ R.reind-filler _)
+       ∙ ∫Cᴰ.⟨ sym $ R.reind-filler _ ⟩⋆⟨ refl ⟩
+       ∙ ∫Cᴰ.⋆Assoc _ _ _
+@@ -140,7 +140,7 @@ module Fibers {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ')
+       ∙ R.reind-filler _
+ 
+   ⋆Assocᴰⱽᴰ : (fᴰ ⋆ᴰⱽ gⱽ) ⋆ᴰ hᴰ ≡ (fᴰ ⋆ᴰ (gⱽ ⋆ⱽᴰ hᴰ))
+-  ⋆Assocᴰⱽᴰ = R.rectify $ R.≡out $
++  ⋆Assocᴰⱽᴰ = R.rectifyOut $
+     ∫Cᴰ.⟨ sym $ R.reind-filler _ ⟩⋆⟨ refl ⟩
+     ∙ ∫Cᴰ.⋆Assoc _ _ _
+     ∙ ∫Cᴰ.⟨ refl ⟩⋆⟨ R.reind-filler _ ⟩
+diff --git a/Cubical/Categories/Instances/Free/BiCartesianClosedCategory/Forded.agda b/Cubical/Categories/Instances/Free/BiCartesianClosedCategory/Forded.agda
+index 55e8d94d..1b98f4cb 100644
+--- a/Cubical/Categories/Instances/Free/BiCartesianClosedCategory/Forded.agda
++++ b/Cubical/Categories/Instances/Free/BiCartesianClosedCategory/Forded.agda
+@@ -246,8 +246,8 @@ module _ (Q : +×⇒Quiver ℓQ ℓQ') where
+       -- Exponentials
+       elimHom (eval Eq.refl Eq.refl) = appᴰ
+       elimHom (lam e Eq.refl) = λᴰ (elimHom e)
+-      elimHom (λβ Eq.refl t i) = Cᴰ.rectify {e' = λβ Eq.refl t} (Cᴰ.≡out $ ⇒βᴰ (elimHom t)) i
+-      elimHom (λη Eq.refl t i) = Cᴰ.rectify {e' = λη Eq.refl t} (Cᴰ.≡out $ ⇒ηᴰ (elimHom t)) i
++      elimHom (λβ Eq.refl t i) = Cᴰ.rectifyOut {e' = λβ Eq.refl t} (⇒βᴰ (elimHom t)) i
++      elimHom (λη Eq.refl t i) = Cᴰ.rectifyOut {e' = λη Eq.refl t} (⇒ηᴰ (elimHom t)) i
+ 
+       elim : GlobalSection Cᴰ
+       elim .F-obᴰ = elimOb ı-ob
+diff --git a/Cubical/Categories/Instances/Free/CartesianClosedCategory/Forded.agda b/Cubical/Categories/Instances/Free/CartesianClosedCategory/Forded.agda
+index d28c3885..5e8a79e9 100644
+--- a/Cubical/Categories/Instances/Free/CartesianClosedCategory/Forded.agda
++++ b/Cubical/Categories/Instances/Free/CartesianClosedCategory/Forded.agda
+@@ -194,8 +194,8 @@ module _ (Q : ×⇒Quiver ℓQ ℓQ') where
+       elimHom (×η {Δ} {Δ'} Eq.refl t i) = Cᴰ.rectify {e' = ×η Eq.refl t} (bpᴰ.×ηᴰ (elimHom t)) i
+       elimHom (eval Eq.refl Eq.refl) = appᴰ
+       elimHom (lam e Eq.refl) = λᴰ (elimHom e)
+-      elimHom (λβ Eq.refl t i) = Cᴰ.rectify {e' = λβ Eq.refl t} (Cᴰ.≡out $ ⇒βᴰ (elimHom t)) i
+-      elimHom (λη Eq.refl t i) = Cᴰ.rectify {e' = λη Eq.refl t} (Cᴰ.≡out $ ⇒ηᴰ (elimHom t)) i
++      elimHom (λβ Eq.refl t i) = Cᴰ.rectifyOut {e' = λβ Eq.refl t} (⇒βᴰ (elimHom t)) i
++      elimHom (λη Eq.refl t i) = Cᴰ.rectifyOut {e' = λη Eq.refl t} (⇒ηᴰ (elimHom t)) i
+ 
+       elim : GlobalSection Cᴰ
+       elim .F-obᴰ = elimOb ı-ob
+diff --git a/Cubical/Categories/Instances/Free/CartesianClosedCategory/UncurriedElim.agda b/Cubical/Categories/Instances/Free/CartesianClosedCategory/UncurriedElim.agda
+index 60020404..4e5d599c 100644
+--- a/Cubical/Categories/Instances/Free/CartesianClosedCategory/UncurriedElim.agda
++++ b/Cubical/Categories/Instances/Free/CartesianClosedCategory/UncurriedElim.agda
+@@ -80,8 +80,8 @@ module _ (Q : ×⇒Quiver ℓQ ℓQ') where
+       elimHom (×η {Γ}{A}{B}{f} i) = Cᴰ.rectify {e' = ×η} (bpᴰ.×ηᴰ (elimHom f)) i
+       elimHom eval = appᴰ
+       elimHom (λ- e) = λᴰ (elimHom e)
+-      elimHom (λβ e i) = Cᴰ.rectify {e' = λβ e} (Cᴰ.≡out $ ⇒βᴰ (elimHom e)) i
+-      elimHom (λη e i) = Cᴰ.rectify {e' = λη e} (Cᴰ.≡out $ ⇒ηᴰ (elimHom e)) i
++      elimHom (λβ e i) = Cᴰ.rectifyOut {e' = λβ e} (⇒βᴰ (elimHom e)) i
++      elimHom (λη e i) = Cᴰ.rectifyOut {e' = λη e} (⇒ηᴰ (elimHom e)) i
+ 
+       elim : GlobalSection Cᴰ
+       elim .F-obᴰ = elimOb ı-ob
+diff --git a/Cubical/Categories/Instances/Free/Category/QuiverPath.agda b/Cubical/Categories/Instances/Free/Category/QuiverPath.agda
+index 599cb885..d50359aa 100644
+--- a/Cubical/Categories/Instances/Free/Category/QuiverPath.agda
++++ b/Cubical/Categories/Instances/Free/Category/QuiverPath.agda
+@@ -191,7 +191,7 @@ module _ (Q : Quiver ℓg ℓg') where
+ 
+     elim-F-homᴰ-ı : ∀ g →
+       elim-F-homᴰ (ı <$g> g) ≡ (ıᴰ <$g>ᴰ g)
+-    elim-F-homᴰ-ı g = Cᴰ.rectify $ Cᴰ.≡out $ Cᴰ.⋆IdR _
++    elim-F-homᴰ-ı g = Cᴰ.rectifyOut $ Cᴰ.⋆IdR _
+ 
+     -- Why doesn't this hold definitionally?
+     elim-F-homᴰ∷ :
+@@ -226,12 +226,12 @@ module _ (Q : Quiver ℓg ℓg') where
+     elimFreeCat .F-homᴰ = elim-F-homᴰ
+     elimFreeCat .F-idᴰ = refl
+     elimFreeCat .F-seqᴰ f g =
+-      Cᴰ.rectify $ Cᴰ.≡out $ elim-F-seqᴰ f g
++      Cᴰ.rectifyOut $ elim-F-seqᴰ f g
+ 
+     extends-ıᴰ-hom : (g : Q .snd .mor) →
+       (ıᴰ <$g>ᴰ g) ≡
+       ((ıᴰ <$g>ᴰ g) Cᴰ.⋆ᴰ Cᴰ.idᴰ)
+-    extends-ıᴰ-hom g = Cᴰ.rectify $ Cᴰ.≡out $ sym $ Cᴰ.⋆IdR _
++    extends-ıᴰ-hom g = Cᴰ.rectifyOut $ sym $ Cᴰ.⋆IdR _
+ 
+   isFreeCat : isFreeCategory Q FreeCategory ı
+   isFreeCat Cᴰ ıᴰ .fst = elimFreeCat Cᴰ ıᴰ
+diff --git a/Cubical/Categories/Instances/Free/Lambda/ArrowOnly.agda b/Cubical/Categories/Instances/Free/Lambda/ArrowOnly.agda
+index 2eae1537..a56d7f62 100644
+--- a/Cubical/Categories/Instances/Free/Lambda/ArrowOnly.agda
++++ b/Cubical/Categories/Instances/Free/Lambda/ArrowOnly.agda
+@@ -196,8 +196,8 @@ module Lambda⇒
+         elimTm (,x=η M i) = Cᴰ.rectify {e' = ,x=η M} (bpᴰ.×ηᴰ (elimCtx _) (elimOb _) (elimTm M)) i
+         elimTm [app] = ⇒ᴰ.appᴰ (elimOb _) (elimOb _)
+         elimTm ([λ] M) = ⇒ᴰ.λᴰ _ _ (elimTm M)
+-        elimTm (⇒β M i) = Cᴰ.rectify {e' = ⇒β M} (Cᴰ.≡out $ ⇒ᴰ.⇒βᴰ _ _ (elimTm M)) i
+-        elimTm (⇒η M i) = Cᴰ.rectify {e' = ⇒η M} (Cᴰ.≡out $ ⇒ᴰ.⇒ηᴰ _ _ (elimTm M)) i
++        elimTm (⇒β M i) = Cᴰ.rectifyOut {e' = ⇒β M} (⇒ᴰ.⇒βᴰ _ _ (elimTm M)) i
++        elimTm (⇒η M i) = Cᴰ.rectifyOut {e' = ⇒η M} (⇒ᴰ.⇒ηᴰ _ _ (elimTm M)) i
+         elimTm (gen f) = ı-const f
+ 
+         elim : GlobalSection Cᴰ
+diff --git a/Cubical/Categories/Instances/Free/Lambda/Negative.agda b/Cubical/Categories/Instances/Free/Lambda/Negative.agda
+index 118ee1e8..7835c5a6 100644
+--- a/Cubical/Categories/Instances/Free/Lambda/Negative.agda
++++ b/Cubical/Categories/Instances/Free/Lambda/Negative.agda
+@@ -222,8 +222,8 @@ module Lambda1×⇒
+         elimTm (,x=η M i) = Cᴰ.rectify {e' = ,x=η M} (bpᴰ.×ηᴰ (elimCtx _) (elimOb _) (elimTm M)) i
+         elimTm [app] = ⇒ᴰ.appᴰ (elimOb _) (elimOb _)
+         elimTm ([λ] M) = ⇒ᴰ.λᴰ _ _ (elimTm M)
+-        elimTm (⇒β M i) = Cᴰ.rectify {e' = ⇒β M} (Cᴰ.≡out $ ⇒ᴰ.⇒βᴰ _ _ (elimTm M)) i
+-        elimTm (⇒η M i) = Cᴰ.rectify {e' = ⇒η M} (Cᴰ.≡out $ ⇒ᴰ.⇒ηᴰ _ _ (elimTm M)) i
++        elimTm (⇒β M i) = Cᴰ.rectifyOut {e' = ⇒β M} (⇒ᴰ.⇒βᴰ _ _ (elimTm M)) i
++        elimTm (⇒η M i) = Cᴰ.rectifyOut {e' = ⇒η M} (⇒ᴰ.⇒ηᴰ _ _ (elimTm M)) i
+         elimTm (gen f) = ı-const f
+         elimTm [[]] = 1ᴰ .snd .snd _ (elimCtx _) .isIsoOver.inv _ _
+         elimTm (1η M i) = Cᴰ.rectify {e' = 1η M} (1ᴰ.ηᴰ (elimTm M)) i
+diff --git a/Cubical/Categories/LocallySmall/Displayed/Bifunctor/Base.agda b/Cubical/Categories/LocallySmall/Displayed/Bifunctor/Base.agda
+index c39ff960..011b78de 100644
+--- a/Cubical/Categories/LocallySmall/Displayed/Bifunctor/Base.agda
++++ b/Cubical/Categories/LocallySmall/Displayed/Bifunctor/Base.agda
+@@ -231,7 +231,7 @@ record Bifunctorⱽ {C : Category Cob CHom-ℓ}{E : Category Eob EHom-ℓ}
+       , (λ i → Bif-hom×ᴰ (fᴰ≡fᴰ' i .snd) (rectified-gᴰ≡gᴰ' i)))
+       where
+       rectified-gᴰ≡gᴰ' : gᴰ Dᴰ.≡[ PathPΣ fᴰ≡fᴰ' .fst ] gᴰ'
+-      rectified-gᴰ≡gᴰ' = Dᴰ.rectify $ Dᴰ.≡out $ gᴰ≡gᴰ'
++      rectified-gᴰ≡gᴰ' = Dᴰ.rectifyOut $ gᴰ≡gᴰ'
+ 
+   Bif-iso×ᴰ : ∀ {c c'}{cᴰ cᴰ' dᴰ dᴰ'}
+       {f : C.ISOC.Hom[ c , c' ]}
+diff --git a/Cubical/Categories/LocallySmall/Displayed/Category/Base.agda b/Cubical/Categories/LocallySmall/Displayed/Category/Base.agda
+index 73926077..540dbbd9 100644
+--- a/Cubical/Categories/LocallySmall/Displayed/Category/Base.agda
++++ b/Cubical/Categories/LocallySmall/Displayed/Category/Base.agda
+@@ -186,6 +186,14 @@ module _ (C : Category Cob CHom-ℓ) where
+         → fᴰ ≡[ p ] gᴰ → fᴰ ≡[ p' ] gᴰ
+       rectify {fᴰ = fᴰ}{gᴰ} pᴰ = subst (fᴰ ≡[_] gᴰ) (C.isSetHom _ _ _ _) pᴰ
+ 
++      rectifyOut : {x y : Cob}{f g : C.Hom[ x , y ]}{p' : f ≡ g}
++        {xᴰ : ob[ x ]}{yᴰ : ob[ y ]}
++        {fᴰ : Hom[ f ][ xᴰ , yᴰ ]}
++        {gᴰ : Hom[ g ][ xᴰ , yᴰ ]}
++        → (ppᴰ : Path ∫Hom[ _ , _ ] (_ , fᴰ) (_ , gᴰ))
++        → fᴰ ≡[ p' ] gᴰ
++      rectifyOut e = rectify (≡out e)
++
+       reind-filler : {x y : Cob}{f g : C.Hom[ x , y ]}
+         {xᴰ : ob[ x ]}{yᴰ : ob[ y ]}
+         (p : f ≡ g)
+diff --git a/Cubical/Categories/LocallySmall/Displayed/Category/Notation.agda b/Cubical/Categories/LocallySmall/Displayed/Category/Notation.agda
+index 8337071c..9197f8f6 100644
+--- a/Cubical/Categories/LocallySmall/Displayed/Category/Notation.agda
++++ b/Cubical/Categories/LocallySmall/Displayed/Category/Notation.agda
+@@ -69,9 +69,9 @@ module _ {C : Category Cob CHom-ℓ}(Cᴰ : Categoryᴰ C Cobᴰ CHom-ℓᴰ) wh
+       → IsoOver (C.CatIso⋆-Iso f) Cᴰ.Hom[_][ yᴰ , zᴰ ] Cᴰ.Hom[_][ xᴰ , zᴰ ]
+     CatIsoᴰ⋆ᴰ-Iso-over fᴰ .IsoOver.fun g gᴰ = fᴰ .CatIsoᴰ.funᴰ Cᴰ.⋆ᴰ gᴰ
+     CatIsoᴰ⋆ᴰ-Iso-over fᴰ .IsoOver.inv g gᴰ = fᴰ .CatIsoᴰ.invᴰ Cᴰ.⋆ᴰ gᴰ
+-    CatIsoᴰ⋆ᴰ-Iso-over fᴰ .IsoOver.rightInv g gᴰ = Cᴰ.rectify $ Cᴰ.≡out $
++    CatIsoᴰ⋆ᴰ-Iso-over fᴰ .IsoOver.rightInv g gᴰ = Cᴰ.rectifyOut $
+       sym (Cᴰ.⋆Assoc _ _ _) ∙ Cᴰ.⟨ fᴰ .CatIsoᴰ.retᴰ ⟩⋆⟨⟩ ∙ Cᴰ.⋆IdL _
+-    CatIsoᴰ⋆ᴰ-Iso-over fᴰ .IsoOver.leftInv g gᴰ = Cᴰ.rectify $ Cᴰ.≡out $
++    CatIsoᴰ⋆ᴰ-Iso-over fᴰ .IsoOver.leftInv g gᴰ = Cᴰ.rectifyOut $
+       sym (Cᴰ.⋆Assoc _ _ _) ∙ Cᴰ.⟨ fᴰ .CatIsoᴰ.secᴰ ⟩⋆⟨⟩ ∙ Cᴰ.⋆IdL _
+ 
+     v[_] : (c : Cob) → Category (Cobᴰ c) (CHom-ℓᴰ c c)
+@@ -88,11 +88,11 @@ module _ {C : Category Cob CHom-ℓ}(Cᴰ : Categoryᴰ C Cobᴰ CHom-ℓᴰ) wh
+       → CatIso v[ x ] xᴰ yᴰ
+     CatIsoⱽ→CatIsoFiber fⱽ .CatIso.fun = fⱽ .CatIsoᴰ.funᴰ
+     CatIsoⱽ→CatIsoFiber fⱽ .CatIso.inv = fⱽ .CatIsoᴰ.invᴰ
+-    CatIsoⱽ→CatIsoFiber fⱽ .CatIso.sec = Cᴰ.rectify $ Cᴰ.≡out $
++    CatIsoⱽ→CatIsoFiber fⱽ .CatIso.sec = Cᴰ.rectifyOut $
+       sym (Cᴰ.reind-filler _ _)
+       ∙ fⱽ .CatIsoᴰ.secᴰ
+       ∙ Cᴰ.reind-filler _ _
+-    CatIsoⱽ→CatIsoFiber fⱽ .CatIso.ret = Cᴰ.rectify $ Cᴰ.≡out $
++    CatIsoⱽ→CatIsoFiber fⱽ .CatIso.ret = Cᴰ.rectifyOut $
+       sym (Cᴰ.reind-filler _ _)
+       ∙ fⱽ .CatIsoᴰ.retᴰ
+       ∙ Cᴰ.reind-filler _ _
+diff --git a/Cubical/Categories/LocallySmall/Displayed/Category/Small.agda b/Cubical/Categories/LocallySmall/Displayed/Category/Small.agda
+index 169d107a..aed4dc7d 100644
+--- a/Cubical/Categories/LocallySmall/Displayed/Category/Small.agda
++++ b/Cubical/Categories/LocallySmall/Displayed/Category/Small.agda
+@@ -156,9 +156,9 @@ module _
+   SmallLocallySmallCategoryᴰ→SmallCategoryᴰ .idᴰ = Cᴰ.idᴰ
+   SmallLocallySmallCategoryᴰ→SmallCategoryᴰ ._⋆ᴰ_ = Cᴰ._⋆ᴰ_
+   SmallLocallySmallCategoryᴰ→SmallCategoryᴰ .⋆IdLᴰ _ =
+-    Cᴰ.rectify $ Cᴰ.≡out (Cᴰ.⋆IdLᴰ _)
++    Cᴰ.rectifyOut (Cᴰ.⋆IdLᴰ _)
+   SmallLocallySmallCategoryᴰ→SmallCategoryᴰ .⋆IdRᴰ _ =
+-    Cᴰ.rectify $ Cᴰ.≡out (Cᴰ.⋆IdRᴰ _)
++    Cᴰ.rectifyOut (Cᴰ.⋆IdRᴰ _)
+   SmallLocallySmallCategoryᴰ→SmallCategoryᴰ .⋆Assocᴰ _ _ _ =
+-    Cᴰ.rectify $ Cᴰ.≡out (Cᴰ.⋆Assocᴰ _ _ _)
++    Cᴰ.rectifyOut (Cᴰ.⋆Assocᴰ _ _ _)
+   SmallLocallySmallCategoryᴰ→SmallCategoryᴰ .isSetHomᴰ = Cᴰ.isSetHomᴰ
+diff --git a/Cubical/Categories/LocallySmall/Displayed/Functor/Base.agda b/Cubical/Categories/LocallySmall/Displayed/Functor/Base.agda
+index dc8b0c22..f43045b7 100644
+--- a/Cubical/Categories/LocallySmall/Displayed/Functor/Base.agda
++++ b/Cubical/Categories/LocallySmall/Displayed/Functor/Base.agda
+@@ -228,6 +228,6 @@ module _ {C : SmallCategory ℓC ℓC'} {D : SmallCategory ℓD ℓD'} where
+       SmallLocallySmallFunctorᴰ→SmallFunctorᴰ .SmallFᴰ.Functorᴰ.F-obᴰ = λ z → F-obᴰ Fᴰ (liftω z) .Liftω.lowerω
+       SmallLocallySmallFunctorᴰ→SmallFunctorᴰ .SmallFᴰ.Functorᴰ.F-homᴰ = F-homᴰ Fᴰ
+       SmallLocallySmallFunctorᴰ→SmallFunctorᴰ .SmallFᴰ.Functorᴰ.F-idᴰ =
+-        Dᴰ'.rectify $ Dᴰ'.≡out (F-idᴰ Fᴰ)
++        Dᴰ'.rectifyOut (F-idᴰ Fᴰ)
+       SmallLocallySmallFunctorᴰ→SmallFunctorᴰ .SmallFᴰ.Functorᴰ.F-seqᴰ _ _ =
+-        Dᴰ'.rectify $ Dᴰ'.≡out (F-seqᴰ Fᴰ _ _)
++        Dᴰ'.rectifyOut (F-seqᴰ Fᴰ _ _)
+diff --git a/Cubical/Categories/LocallySmall/Displayed/Functor/Properties.agda b/Cubical/Categories/LocallySmall/Displayed/Functor/Properties.agda
+index b5ab8744..ab1c6413 100644
+--- a/Cubical/Categories/LocallySmall/Displayed/Functor/Properties.agda
++++ b/Cubical/Categories/LocallySmall/Displayed/Functor/Properties.agda
+@@ -88,13 +88,13 @@ module _ {C : Category Cob CHom-ℓ}{D : Category Dob DHom-ℓ}
+   Fv .F-ob = Fᴰ.F-obᴰ
+   Fv .F-hom fᴰ = Dᴰ.reind F.F-id $ Fᴰ.F-homᴰ fᴰ
+   Fv .F-id =
+-    Dᴰ.rectify $ Dᴰ.≡out $
++    Dᴰ.rectifyOut $
+       (sym $ Dᴰ.reind-filler _ _)
+       ∙ Fᴰ.F-hom⟨ sym $ Cᴰ.reind-filler _ _ ⟩
+       ∙ Fᴰ.F-idᴰ
+       ∙ Dᴰ.reind-filler _ _
+   Fv .F-seq fᴰ gᴰ =
+-    Dᴰ.rectify $ Dᴰ.≡out $
++    Dᴰ.rectifyOut $
+       (sym $ Dᴰ.reind-filler _ _)
+       ∙ Fᴰ.F-homᴰ⟨ (sym $ Cᴰ.reind-filler _ _) ⟩
+       ∙ Fᴰ.F-seqᴰ _ _
+diff --git a/Cubical/Categories/LocallySmall/Displayed/Instances/BinProduct/Base.agda b/Cubical/Categories/LocallySmall/Displayed/Instances/BinProduct/Base.agda
+index 100e67a4..55292355 100644
+--- a/Cubical/Categories/LocallySmall/Displayed/Instances/BinProduct/Base.agda
++++ b/Cubical/Categories/LocallySmall/Displayed/Instances/BinProduct/Base.agda
+@@ -51,18 +51,18 @@ module _
+   _×Cᴰ_ .⋆IdLᴰ _ =
+     ΣPathP (
+       ΣPathP ((C.⋆IdL _) , (D.⋆IdL _)) ,
+-      ΣPathP ((Cᴰ.rectify $ Cᴰ.≡out $ Cᴰ.⋆IdLᴰ _) ,
+-              (Dᴰ.rectify $ Dᴰ.≡out $ Dᴰ.⋆IdLᴰ _)))
++      ΣPathP ((Cᴰ.rectifyOut $ Cᴰ.⋆IdLᴰ _) ,
++              (Dᴰ.rectifyOut $ Dᴰ.⋆IdLᴰ _)))
+   _×Cᴰ_ .⋆IdRᴰ _ =
+     ΣPathP (
+       ΣPathP ((C.⋆IdR _) , (D.⋆IdR _)) ,
+-      ΣPathP ((Cᴰ.rectify $ Cᴰ.≡out $ Cᴰ.⋆IdRᴰ _) ,
+-              (Dᴰ.rectify $ Dᴰ.≡out $ Dᴰ.⋆IdRᴰ _)))
++      ΣPathP ((Cᴰ.rectifyOut $ Cᴰ.⋆IdRᴰ _) ,
++              (Dᴰ.rectifyOut $ Dᴰ.⋆IdRᴰ _)))
+   _×Cᴰ_ .⋆Assocᴰ _ _ _ =
+     ΣPathP (
+       ΣPathP ((C.⋆Assoc _ _ _) , (D.⋆Assoc _ _ _)) ,
+-      ΣPathP ((Cᴰ.rectify $ Cᴰ.≡out $ Cᴰ.⋆Assocᴰ _ _ _) ,
+-              (Dᴰ.rectify $ Dᴰ.≡out $ Dᴰ.⋆Assocᴰ _ _ _)))
++      ΣPathP ((Cᴰ.rectifyOut $ Cᴰ.⋆Assocᴰ _ _ _) ,
++              (Dᴰ.rectifyOut $ Dᴰ.⋆Assocᴰ _ _ _)))
+   _×Cᴰ_ .isSetHomᴰ = isSet× Cᴰ.isSetHomᴰ Dᴰ.isSetHomᴰ
+ 
+   π₁ᴰ : Functorᴰ (π₁ C D) _×Cᴰ_ Cᴰ
+@@ -136,12 +136,12 @@ module _
+   introS-×Cᴰ .F-homᴰ = λ f → F-homᴰ Fᴰ f , F-homᴰ Gᴰ f
+   introS-×Cᴰ .F-idᴰ =
+     ΣPathP (ΣPathP ((Functor.F-id F) , (Functor.F-id G)) ,
+-      ΣPathP ((Cᴰ.rectify $ Cᴰ.≡out $ Fᴰ .F-idᴰ) ,
+-              (Dᴰ.rectify $ Dᴰ.≡out $ Gᴰ .F-idᴰ)))
++      ΣPathP ((Cᴰ.rectifyOut $ Fᴰ .F-idᴰ) ,
++              (Dᴰ.rectifyOut $ Gᴰ .F-idᴰ)))
+   introS-×Cᴰ .F-seqᴰ fᴰ gᴰ =
+     ΣPathP (ΣPathP ((Functor.F-seq F fᴰ gᴰ) , (Functor.F-seq G fᴰ gᴰ)) ,
+-      ΣPathP ((Cᴰ.rectify $ Cᴰ.≡out $ Fᴰ .F-seqᴰ fᴰ gᴰ) ,
+-              (Dᴰ.rectify $ Dᴰ.≡out $ Gᴰ .F-seqᴰ fᴰ gᴰ)))
++      ΣPathP ((Cᴰ.rectifyOut $ Fᴰ .F-seqᴰ fᴰ gᴰ) ,
++              (Dᴰ.rectifyOut $ Gᴰ .F-seqᴰ fᴰ gᴰ)))
+ 
+ module _
+   {C : Category Cob CHom-ℓ}
+@@ -164,12 +164,12 @@ module _
+   introF-×Cᴰ .Functorᴰ.F-homᴰ = λ fᴰ → Functorᴰ.F-homᴰ Fᴰ fᴰ , Functorᴰ.F-homᴰ Gᴰ fᴰ
+   introF-×Cᴰ .Functorᴰ.F-idᴰ =
+     ΣPathP (ΣPathP ((Functor.F-id F) , (Functor.F-id G)) ,
+-      ΣPathP ((Cᴰ.rectify $ Cᴰ.≡out $ Fᴰ .F-idᴰ) ,
+-              (Dᴰ.rectify $ Dᴰ.≡out $ Gᴰ .F-idᴰ)))
++      ΣPathP ((Cᴰ.rectifyOut $ Fᴰ .F-idᴰ) ,
++              (Dᴰ.rectifyOut $ Gᴰ .F-idᴰ)))
+   introF-×Cᴰ .Functorᴰ.F-seqᴰ fᴰ gᴰ =
+     ΣPathP (ΣPathP ((Functor.F-seq F _ _) , (Functor.F-seq G _ _)) ,
+-      ΣPathP ((Cᴰ.rectify $ Cᴰ.≡out $ Fᴰ .F-seqᴰ fᴰ gᴰ) ,
+-              (Dᴰ.rectify $ Dᴰ.≡out $ Gᴰ .F-seqᴰ fᴰ gᴰ)))
++      ΣPathP ((Cᴰ.rectifyOut $ Fᴰ .F-seqᴰ fᴰ gᴰ) ,
++              (Dᴰ.rectifyOut $ Gᴰ .F-seqᴰ fᴰ gᴰ)))
+ 
+ module _
+   {C : Category Cob CHom-ℓ}
+@@ -189,12 +189,12 @@ module _
+   introS .F-homᴰ = λ f → F-homᴰ Fᴰ f , F-homᴰ Gᴰ f
+   introS .F-idᴰ =
+     ΣPathP (Functor.F-id F ,
+-      ΣPathP ((Cᴰ.rectify $ Cᴰ.≡out $ Fᴰ .F-idᴰ) ,
+-              (Dᴰ.rectify $ Dᴰ.≡out $ Gᴰ .F-idᴰ)))
++      ΣPathP ((Cᴰ.rectifyOut $ Fᴰ .F-idᴰ) ,
++              (Dᴰ.rectifyOut $ Gᴰ .F-idᴰ)))
+   introS .F-seqᴰ fᴰ gᴰ =
+     ΣPathP (Functor.F-seq F _ _ ,
+-      ΣPathP ((Cᴰ.rectify $ Cᴰ.≡out $ Fᴰ .F-seqᴰ fᴰ gᴰ) ,
+-              (Dᴰ.rectify $ Dᴰ.≡out $ Gᴰ .F-seqᴰ fᴰ gᴰ)))
++      ΣPathP ((Cᴰ.rectifyOut $ Fᴰ .F-seqᴰ fᴰ gᴰ) ,
++              (Dᴰ.rectifyOut $ Gᴰ .F-seqᴰ fᴰ gᴰ)))
+ 
+ module _
+   {C : Category Cob CHom-ℓ}
+@@ -290,18 +290,18 @@ module _
+   _×CᴰSF_ .⋆IdLᴰ _ =
+     ΣPathP (
+       ΣPathP ((C.⋆IdL _) , (D.⋆IdL _)) ,
+-      ΣPathP ((Cᴰ.rectify $ Cᴰ.≡out $ Cᴰ.⋆IdLᴰ _) ,
+-              (Dᴰ.rectify $ Dᴰ.≡out $ Dᴰ.⋆IdLᴰ _)))
++      ΣPathP ((Cᴰ.rectifyOut $ Cᴰ.⋆IdLᴰ _) ,
++              (Dᴰ.rectifyOut $ Dᴰ.⋆IdLᴰ _)))
+   _×CᴰSF_ .⋆IdRᴰ _ =
+     ΣPathP (
+       ΣPathP ((C.⋆IdR _) , (D.⋆IdR _)) ,
+-      ΣPathP ((Cᴰ.rectify $ Cᴰ.≡out $ Cᴰ.⋆IdRᴰ _) ,
+-              (Dᴰ.rectify $ Dᴰ.≡out $ Dᴰ.⋆IdRᴰ _)))
++      ΣPathP ((Cᴰ.rectifyOut $ Cᴰ.⋆IdRᴰ _) ,
++              (Dᴰ.rectifyOut $ Dᴰ.⋆IdRᴰ _)))
+   _×CᴰSF_ .⋆Assocᴰ _ _ _ =
+     ΣPathP (
+       ΣPathP ((C.⋆Assoc _ _ _) , (D.⋆Assoc _ _ _)) ,
+-      ΣPathP ((Cᴰ.rectify $ Cᴰ.≡out $ Cᴰ.⋆Assocᴰ _ _ _) ,
+-              (Dᴰ.rectify $ Dᴰ.≡out $ Dᴰ.⋆Assocᴰ _ _ _)))
++      ΣPathP ((Cᴰ.rectifyOut $ Cᴰ.⋆Assocᴰ _ _ _) ,
++              (Dᴰ.rectifyOut $ Dᴰ.⋆Assocᴰ _ _ _)))
+   _×CᴰSF_ .isSetHomᴰ = isSet× Cᴰ.isSetHomᴰ Dᴰ.isSetHomᴰ
+ 
+ module _
+@@ -369,8 +369,8 @@ module _
+   ,Fⱽ .F-homᴰ {xᴰ = xᴰ}{yᴰ = yᴰ} (α , β) .NatTransDᴰ×Eᴰ.N-hom g =
+        (ΣPathP (D×E.⋆IdL _ ∙ (sym $ D×E.⋆IdR _) ,
+                ΣPathP (
+-                 (Dᴰ.rectify (Dᴰ.≡out $ NatTransDᴰ.N-hom α g)) ,
+-                 (Eᴰ.rectify (Eᴰ.≡out $ NatTransEᴰ.N-hom β g)))))
++                 (Dᴰ.rectifyOut (NatTransDᴰ.N-hom α g)) ,
++                 (Eᴰ.rectifyOut (NatTransEᴰ.N-hom β g)))))
+   ,Fⱽ .F-idᴰ =
+     FuncDᴰ×Eᴰ.makeNatTransPath refl (λ _ → refl)
+   ,Fⱽ .F-seqᴰ _ _ =
+diff --git a/Cubical/Categories/LocallySmall/Displayed/Instances/Reindex/Base.agda b/Cubical/Categories/LocallySmall/Displayed/Instances/Reindex/Base.agda
+index f476f1e7..95f822c4 100644
+--- a/Cubical/Categories/LocallySmall/Displayed/Instances/Reindex/Base.agda
++++ b/Cubical/Categories/LocallySmall/Displayed/Instances/Reindex/Base.agda
+@@ -52,14 +52,14 @@ module _
+         subst (λ gᴰ → gᴰ Cᴰ.≡[ C.⋆IdL _ ] fᴰ)
+           (⋆ᴰ' Cᴰ.idᴰ fᴰ .snd
+           ∙ cong₂ (λ u v → ⋆ᴰ' u v .fst) (idᴰ' .snd) refl)
+-          (Cᴰ.rectify $ Cᴰ.≡out $ Cᴰ.⋆IdLᴰ _))
++          (Cᴰ.rectifyOut $ Cᴰ.⋆IdLᴰ _))
+     redefine-idᴰ-⋆ᴰ .⋆IdRᴰ fᴰ =
+       ΣPathP (
+         (C.⋆IdR _) ,
+         subst (λ gᴰ → gᴰ Cᴰ.≡[ C.⋆IdR _ ] fᴰ)
+           (⋆ᴰ' fᴰ Cᴰ.idᴰ .snd
+           ∙ cong₂ (λ u v → ⋆ᴰ' u v .fst) refl (idᴰ' .snd))
+-          (Cᴰ.rectify $ Cᴰ.≡out $ Cᴰ.⋆IdRᴰ _))
++          (Cᴰ.rectifyOut $ Cᴰ.⋆IdRᴰ _))
+     redefine-idᴰ-⋆ᴰ .⋆Assocᴰ fᴰ gᴰ hᴰ =
+       ΣPathP (
+         (C.⋆Assoc _ _ _) ,
+@@ -69,7 +69,7 @@ module _
+           ∙ cong (λ z → ⋆ᴰ' z hᴰ .fst) (⋆ᴰ' fᴰ gᴰ .snd))
+           (⋆ᴰ' fᴰ (gᴰ Cᴰ.⋆ᴰ hᴰ) .snd
+           ∙ cong (λ z → ⋆ᴰ' fᴰ z .fst) (⋆ᴰ' gᴰ hᴰ .snd))
+-          (Cᴰ.rectify $ Cᴰ.≡out $ Cᴰ.⋆Assocᴰ _ _ _)
++          (Cᴰ.rectifyOut $ Cᴰ.⋆Assocᴰ _ _ _)
+         )
+     redefine-idᴰ-⋆ᴰ .isSetHomᴰ = Cᴰ.isSetHomᴰ
+ 
+@@ -101,21 +101,21 @@ module _
+     reindex .⋆IdLᴰ fᴰ =
+       ΣPathP (
+         (C.⋆IdL _) ,
+-        (Dᴰ.rectify $ Dᴰ.≡out $
++        (Dᴰ.rectifyOut $
+           (sym $ Dᴰ.reind-filler _ _)
+           ∙ Dᴰ.⟨ sym $ Dᴰ.reind-filler _ _ ⟩⋆⟨⟩
+           ∙ Dᴰ.⋆IdLᴰ _))
+     reindex .⋆IdRᴰ fᴰ =
+       ΣPathP (
+         (C.⋆IdR _) ,
+-        (Dᴰ.rectify $ Dᴰ.≡out $
++        (Dᴰ.rectifyOut $
+           (sym $ Dᴰ.reind-filler _ _)
+           ∙ Dᴰ.⟨⟩⋆⟨ sym $ Dᴰ.reind-filler _ _ ⟩
+           ∙ Dᴰ.⋆IdRᴰ _))
+     reindex .⋆Assocᴰ fᴰ gᴰ hᴰ =
+       ΣPathP (
+         (C.⋆Assoc _ _ _) ,
+-        (Dᴰ.rectify $ Dᴰ.≡out $
++        (Dᴰ.rectifyOut $
+           (sym $ Dᴰ.reind-filler _ _)
+           ∙ Dᴰ.⟨ sym $ Dᴰ.reind-filler _ _ ⟩⋆⟨⟩
+           ∙ Dᴰ.⋆Assocᴰ _ _ _
+@@ -131,11 +131,11 @@ module _
+     π .F-idᴰ =
+       ΣPathP (
+         F.F-id ,
+-        (Dᴰ.rectify $ Dᴰ.≡out $ sym $ Dᴰ.reind-filler _ _))
++        (Dᴰ.rectifyOut $ sym $ Dᴰ.reind-filler _ _))
+     π .F-seqᴰ _ _ =
+       ΣPathP (
+         F.F-seq _ _ ,
+-        (Dᴰ.rectify $ Dᴰ.≡out $ sym $ Dᴰ.reind-filler _ _))
++        (Dᴰ.rectifyOut $ sym $ Dᴰ.reind-filler _ _))
+ 
+     module _
+       (F-id' : {x : Cob} → D .id {x = F.F-ob x} Eq.≡ F.F-hom (C .id))
+@@ -215,17 +215,17 @@ module _
+       ΣPathP ((C.⋆IdL _) ,
+         ΣPathP ((D.⋆IdL Ff) ,
+           ΣPathP ((isSet→SquareP (λ _ _ → D.isSetHom) _ _ _ _) ,
+-            (Dᴰ.rectify $ Dᴰ.≡out $ Dᴰ.⋆IdLᴰ fᴰ))))
++            (Dᴰ.rectifyOut $ Dᴰ.⋆IdLᴰ fᴰ))))
+     reindex' .⋆IdRᴰ (Ff , p , fᴰ) =
+       ΣPathP ((C.⋆IdR _) ,
+         ΣPathP ((D.⋆IdR Ff) ,
+           ΣPathP ((isSet→SquareP (λ _ _ → D.isSetHom) _ _ _ _) ,
+-            (Dᴰ.rectify $ Dᴰ.≡out $ Dᴰ.⋆IdRᴰ fᴰ))))
++            (Dᴰ.rectifyOut $ Dᴰ.⋆IdRᴰ fᴰ))))
+     reindex' .⋆Assocᴰ (Ff , p , fᴰ) (Fg , q , gᴰ) (Fh , r , hᴰ) =
+       ΣPathP ((C.⋆Assoc _ _ _) ,
+         ΣPathP ((D.⋆Assoc Ff Fg Fh) ,
+           ΣPathP ((isSet→SquareP (λ _ _ → D.isSetHom) _ _ _ _) ,
+-            (Dᴰ.rectify $ Dᴰ.≡out $ Dᴰ.⋆Assocᴰ fᴰ gᴰ hᴰ))))
++            (Dᴰ.rectifyOut $ Dᴰ.⋆Assocᴰ fᴰ gᴰ hᴰ))))
+     reindex' .isSetHomᴰ =
+       isSetΣ D.isSetHom (λ _ → isSetΣ (isProp→isSet (D.isSetHom _ _))
+         (λ _ → Dᴰ.isSetHomᴰ))
+@@ -267,12 +267,12 @@ module _
+       reindex→reindexEq .F-homᴰ = λ fᴰ → fᴰ
+       reindex→reindexEq .F-idᴰ =
+         ΣPathP (refl ,
+-          (Dᴰ.rectify $ Dᴰ.≡out $
++          (Dᴰ.rectifyOut $
+             (sym $ Dᴰ.reind-filler _ _)
+             ∙ Dᴰ.reindEq-pathFiller F-id' Dᴰ.idᴰ))
+       reindex→reindexEq .F-seqᴰ {f = f}{g = g} fᴰ gᴰ =
+         ΣPathP (refl ,
+-          (Dᴰ.rectify $ Dᴰ.≡out $
++          (Dᴰ.rectifyOut $
+             (sym $ Dᴰ.reind-filler _ _)
+             ∙ Dᴰ.reindEq-pathFiller _ _))
+ 
+@@ -282,12 +282,12 @@ module _
+       reindexEq→reindex .F-homᴰ = λ fᴰ → fᴰ
+       reindexEq→reindex .F-idᴰ =
+         ΣPathP (refl ,
+-          (Dᴰ.rectify $ Dᴰ.≡out $
++          (Dᴰ.rectifyOut $
+            (sym $ Dᴰ.reindEq-pathFiller _ _)
+             ∙ Dᴰ.reind-filler _ _))
+       reindexEq→reindex .F-seqᴰ {f = f}{g = g} fᴰ gᴰ =
+         ΣPathP (refl ,
+-          (Dᴰ.rectify $ Dᴰ.≡out $
++          (Dᴰ.rectifyOut $
+            (sym $ Dᴰ.reindEq-pathFiller _ _)
+             ∙ Dᴰ.reind-filler _ _))
+ 
+diff --git a/Cubical/Categories/LocallySmall/Displayed/Instances/Reindex/Properties.agda b/Cubical/Categories/LocallySmall/Displayed/Instances/Reindex/Properties.agda
+index 26d8ef5f..1956e210 100644
+--- a/Cubical/Categories/LocallySmall/Displayed/Instances/Reindex/Properties.agda
++++ b/Cubical/Categories/LocallySmall/Displayed/Instances/Reindex/Properties.agda
+@@ -34,10 +34,10 @@ module _
+     fib→fibEq .Functor.F-ob = λ z → z
+     fib→fibEq .Functor.F-hom = λ z → z
+     fib→fibEq .Functor.F-id =
+-      Cᴰ.rectify $ Cᴰ.≡out $
++      Cᴰ.rectifyOut $
+         sym $ Cᴰ.reind-filler _ _
+     fib→fibEq .Functor.F-seq {x = x}{y = y}{z = z} f g =
+-      Cᴰ.rectify $ Cᴰ.≡out $
++      Cᴰ.rectifyOut $
+         (sym $ Cᴰ.reind-filler _ _)
+         ∙ Cᴰ.reindEq-pathFiller _ _
+ 
+@@ -56,9 +56,9 @@ module _
+     fibEq→fib .Functor.F-ob = λ z → z
+     fibEq→fib .Functor.F-hom = λ z → z
+     fibEq→fib .Functor.F-id =
+-      Cᴰ.rectify $ Cᴰ.≡out $ Cᴰ.reind-filler _ _
++      Cᴰ.rectifyOut $ Cᴰ.reind-filler _ _
+     fibEq→fib .Functor.F-seq f g =
+-      Cᴰ.rectify $ Cᴰ.≡out $
++      Cᴰ.rectifyOut $
+         (sym $ Cᴰ.reindEq-pathFiller _ _)
+         ∙ Cᴰ.reind-filler _ _
+ 
+diff --git a/Cubical/Categories/LocallySmall/Displayed/Instances/Total.agda b/Cubical/Categories/LocallySmall/Displayed/Instances/Total.agda
+index 8d87000a..720dcefd 100644
+--- a/Cubical/Categories/LocallySmall/Displayed/Instances/Total.agda
++++ b/Cubical/Categories/LocallySmall/Displayed/Instances/Total.agda
+@@ -33,16 +33,16 @@ module _ {C : Category Cob CHom-ℓ}(Cᴰ : Categoryᴰ C Cobᴰ CHom-ℓᴰ) wh
+     ∫Cᴰ ._⋆ᴰ_ ffᴰ ggᴰ = (ffᴰ .fst Cᴰ.⋆ᴰ ggᴰ .fst) , (ffᴰ .snd Cᴰᴰ.⋆ᴰ ggᴰ .snd)
+     ∫Cᴰ .⋆IdLᴰ ffᴰ =
+       ΣPathP ((C.⋆IdL _) , (
+-      ΣPathP ((Cᴰ.rectify $ Cᴰ.≡out $ Cᴰ.⋆IdLᴰ (ffᴰ .fst)) ,
+-      (Cᴰᴰ.rectify $ Cᴰᴰ.≡out $ Cᴰᴰ.⋆IdLᴰ (ffᴰ .snd)))))
++      ΣPathP ((Cᴰ.rectifyOut $ Cᴰ.⋆IdLᴰ (ffᴰ .fst)) ,
++      (Cᴰᴰ.rectifyOut $ Cᴰᴰ.⋆IdLᴰ (ffᴰ .snd)))))
+     ∫Cᴰ .⋆IdRᴰ ffᴰ =
+       ΣPathP ((C.⋆IdR _) , (
+-      ΣPathP ((Cᴰ.rectify $ Cᴰ.≡out $ Cᴰ.⋆IdRᴰ (ffᴰ .fst)) ,
+-      (Cᴰᴰ.rectify $ Cᴰᴰ.≡out $ Cᴰᴰ.⋆IdRᴰ (ffᴰ .snd)))))
++      ΣPathP ((Cᴰ.rectifyOut $ Cᴰ.⋆IdRᴰ (ffᴰ .fst)) ,
++      (Cᴰᴰ.rectifyOut $ Cᴰᴰ.⋆IdRᴰ (ffᴰ .snd)))))
+     ∫Cᴰ .⋆Assocᴰ ffᴰ ggᴰ hhᴰ =
+       ΣPathP (C.⋆Assoc _ _ _ ,
+-      (ΣPathP ((Cᴰ.rectify $ Cᴰ.≡out $ Cᴰ.⋆Assoc _ _ _) ,
+-      (Cᴰᴰ.rectify $ Cᴰᴰ.≡out $ Cᴰᴰ.⋆Assoc _ _ _))))
++      (ΣPathP ((Cᴰ.rectifyOut $ Cᴰ.⋆Assoc _ _ _) ,
++      (Cᴰᴰ.rectifyOut $ Cᴰᴰ.⋆Assoc _ _ _))))
+     ∫Cᴰ .isSetHomᴰ = isSetΣ Cᴰ.isSetHomᴰ (λ _ → Cᴰᴰ.isSetHomᴰ)
+ 
+ module _
+@@ -86,14 +86,14 @@ module _
+       (fᴰ .snd Cᴰᴰ.⋆ᴰ gᴰ .snd)
+     ∫CᴰSF .⋆IdLᴰ ffᴰ =
+       ΣPathP ((C.⋆IdL _) , (
+-      ΣPathP ((Cᴰ.rectify $ Cᴰ.≡out $ Cᴰ.⋆IdLᴰ (ffᴰ .fst)) ,
+-      (Cᴰᴰ.rectify $ Cᴰᴰ.≡out $ Cᴰᴰ.⋆IdLᴰ (ffᴰ .snd)))))
++      ΣPathP ((Cᴰ.rectifyOut $ Cᴰ.⋆IdLᴰ (ffᴰ .fst)) ,
++      (Cᴰᴰ.rectifyOut $ Cᴰᴰ.⋆IdLᴰ (ffᴰ .snd)))))
+     ∫CᴰSF .⋆IdRᴰ ffᴰ =
+       ΣPathP ((C.⋆IdR _) , (
+-      ΣPathP ((Cᴰ.rectify $ Cᴰ.≡out $ Cᴰ.⋆IdRᴰ (ffᴰ .fst)) ,
+-      (Cᴰᴰ.rectify $ Cᴰᴰ.≡out $ Cᴰᴰ.⋆IdRᴰ (ffᴰ .snd)))))
++      ΣPathP ((Cᴰ.rectifyOut $ Cᴰ.⋆IdRᴰ (ffᴰ .fst)) ,
++      (Cᴰᴰ.rectifyOut $ Cᴰᴰ.⋆IdRᴰ (ffᴰ .snd)))))
+     ∫CᴰSF .⋆Assocᴰ ffᴰ ggᴰ hhᴰ =
+       ΣPathP (C.⋆Assoc _ _ _ ,
+-      (ΣPathP ((Cᴰ.rectify $ Cᴰ.≡out $ Cᴰ.⋆Assoc _ _ _) ,
+-      (Cᴰᴰ.rectify $ Cᴰᴰ.≡out $ Cᴰᴰ.⋆Assoc _ _ _))))
++      (ΣPathP ((Cᴰ.rectifyOut $ Cᴰ.⋆Assoc _ _ _) ,
++      (Cᴰᴰ.rectifyOut $ Cᴰᴰ.⋆Assoc _ _ _))))
+     ∫CᴰSF .isSetHomᴰ = isSetΣ Cᴰ.isSetHomᴰ (λ _ → Cᴰᴰ.isSetHomᴰ)
+diff --git a/Cubical/Categories/LocallySmall/Displayed/NaturalTransformation/IntoFiberCategory/Base.agda b/Cubical/Categories/LocallySmall/Displayed/NaturalTransformation/IntoFiberCategory/Base.agda
+index 217c51cc..b308afb1 100644
+--- a/Cubical/Categories/LocallySmall/Displayed/NaturalTransformation/IntoFiberCategory/Base.agda
++++ b/Cubical/Categories/LocallySmall/Displayed/NaturalTransformation/IntoFiberCategory/Base.agda
+@@ -289,4 +289,4 @@ module NatTransᴰDefs
+         (gᴰα≡gᴰ'β ,
+         makeNatTransᴰPathP αᴰ βᴰ
+           (λ i → (gᴰα≡gᴰ'β i .fst) , (gᴰα≡gᴰ'β i .snd .fst)) (λ i → gᴰα≡gᴰ'β i .snd .snd)
+-          (implicitFunExt λ {x} → funExt λ xᴰ → Dᴰᴰ.rectify $ Dᴰᴰ.≡out $ p xᴰ))
++          (implicitFunExt λ {x} → funExt λ xᴰ → Dᴰᴰ.rectifyOut $ p xᴰ))
+diff --git a/Cubical/Categories/LocallySmall/Displayed/NaturalTransformation/IntoFiberCategory/Eq.agda b/Cubical/Categories/LocallySmall/Displayed/NaturalTransformation/IntoFiberCategory/Eq.agda
+index b8b05827..fbffcece 100644
+--- a/Cubical/Categories/LocallySmall/Displayed/NaturalTransformation/IntoFiberCategory/Eq.agda
++++ b/Cubical/Categories/LocallySmall/Displayed/NaturalTransformation/IntoFiberCategory/Eq.agda
+@@ -83,11 +83,11 @@ module FunctorEqᴰDefs
+     Functorᴰ→FunctorEqᴰ Fᴰ .F-idᴰ =
+       F-idᴰ Fᴰ
+       ∙ ΣPathP (fib→fibEq Eᴰ D-⋆ _ .F-id ,
+-        (Dᴰᴰ.rectify $ Dᴰᴰ.≡out $ sym $ Dᴰᴰ.reind-filler _ _))
++        (Dᴰᴰ.rectifyOut $ sym $ Dᴰᴰ.reind-filler _ _))
+     Functorᴰ→FunctorEqᴰ Fᴰ .F-seqᴰ _ _ =
+       F-seqᴰ Fᴰ _ _
+       ∙ ΣPathP (fib→fibEq Eᴰ D-⋆ _ .F-seq _ _ ,
+-        (Dᴰᴰ.rectify $ Dᴰᴰ.≡out $
++        (Dᴰᴰ.rectifyOut $
+           (sym $ Dᴰᴰ.reind-filler _ _)
+           ∙ Dᴰᴰ.reindEq-pathFiller _ _))
+ 
+@@ -100,10 +100,10 @@ module FunctorEqᴰDefs
+     FunctorEqᴰ→Functorᴰ Fᴰ .F-idᴰ =
+       F-idᴰ Fᴰ
+       ∙ ΣPathP (fibEq→fib Eᴰ D-⋆ _ .F-id ,
+-        (Dᴰᴰ.rectify $ Dᴰᴰ.≡out $ Dᴰᴰ.reind-filler _ _))
++        (Dᴰᴰ.rectifyOut $ Dᴰᴰ.reind-filler _ _))
+     FunctorEqᴰ→Functorᴰ Fᴰ .F-seqᴰ _ _ =
+       F-seqᴰ Fᴰ _ _
+       ∙ ΣPathP (fibEq→fib Eᴰ D-⋆ _ .F-seq _ _ ,
+-        (Dᴰᴰ.rectify $ Dᴰᴰ.≡out $
++        (Dᴰᴰ.rectifyOut $
+           (sym $ Dᴰᴰ.reindEq-pathFiller _ _)
+           ∙ Dᴰᴰ.reind-filler _ _))
+diff --git a/Cubical/Categories/LocallySmall/Displayed/Presheaf/GloballySmall/IntoFiberCategory/Properties.agda b/Cubical/Categories/LocallySmall/Displayed/Presheaf/GloballySmall/IntoFiberCategory/Properties.agda
+index 27718be2..3dcf96c7 100644
+--- a/Cubical/Categories/LocallySmall/Displayed/Presheaf/GloballySmall/IntoFiberCategory/Properties.agda
++++ b/Cubical/Categories/LocallySmall/Displayed/Presheaf/GloballySmall/IntoFiberCategory/Properties.agda
+@@ -127,9 +127,9 @@ module _
+   Presheafᴰ→SmallPresheafᴰ Pᴰ .SmallFunctorᴰ.Functorᴰ.F-obᴰ = λ z → F-obᴰ Pᴰ (liftω z) .lowerω
+   Presheafᴰ→SmallPresheafᴰ Pᴰ .SmallFunctorᴰ.Functorᴰ.F-homᴰ = F-homᴰ Pᴰ
+   Presheafᴰ→SmallPresheafᴰ Pᴰ .SmallFunctorᴰ.Functorᴰ.F-idᴰ =
+-    SETⱽᴰ'.rectify $ SETⱽᴰ'.≡out $ F-idᴰ Pᴰ
++    SETⱽᴰ'.rectifyOut $ F-idᴰ Pᴰ
+   Presheafᴰ→SmallPresheafᴰ Pᴰ .SmallFunctorᴰ.Functorᴰ.F-seqᴰ fᴰ gᴰ =
+-    SETⱽᴰ'.rectify $ SETⱽᴰ'.≡out $ F-seqᴰ Pᴰ fᴰ gᴰ
++    SETⱽᴰ'.rectifyOut $ F-seqᴰ Pᴰ fᴰ gᴰ
+ 
+ module _
+   {C : SmallCategory ℓC ℓC'}
+@@ -178,9 +178,9 @@ module _
+   _[-][-,_]' .F-obᴰ cᴰ' = liftω λ f → Cᴰ.Hom[ f ][ cᴰ' , liftω cᴰ ] , Cᴰ.isSetHomᴰ
+   _[-][-,_]' .F-homᴰ fᴰ = λ _ gᴰ → fᴰ Cᴰ.⋆ᴰ gᴰ
+   _[-][-,_]' .F-idᴰ  =
+-    ΣPathP ((funExt λ _ → C.⋆IdL _) , (funExt₂ λ _ _ → Cᴰ.rectify $ Cᴰ.≡out $ Cᴰ.⋆IdLᴰ _))
++    ΣPathP ((funExt λ _ → C.⋆IdL _) , (funExt₂ λ _ _ → Cᴰ.rectifyOut $ Cᴰ.⋆IdLᴰ _))
+   _[-][-,_]' .F-seqᴰ fᴰ gᴰ =
+-    ΣPathP ((funExt λ _ → C.⋆Assoc _ _ _) , funExt₂ λ _ _ → Cᴰ.rectify $ Cᴰ.≡out $ Cᴰ.⋆Assocᴰ _ _ _)
++    ΣPathP ((funExt λ _ → C.⋆Assoc _ _ _) , funExt₂ λ _ _ → Cᴰ.rectifyOut $ Cᴰ.⋆Assocᴰ _ _ _)
+ 
+   private
+     -- The manual definition and the compositional definition
+diff --git a/Cubical/Categories/LocallySmall/Displayed/Presheaf/GloballySmall/Uncurried/Representable.agda b/Cubical/Categories/LocallySmall/Displayed/Presheaf/GloballySmall/Uncurried/Representable.agda
+index 1f5f01db..f00a58d9 100644
+--- a/Cubical/Categories/LocallySmall/Displayed/Presheaf/GloballySmall/Uncurried/Representable.agda
++++ b/Cubical/Categories/LocallySmall/Displayed/Presheaf/GloballySmall/Uncurried/Representable.agda
+@@ -36,9 +36,9 @@ module _ where
+     _[-][-,_] cᴰ .F-hom (f , fᴰ , the-≡) gᴰ =
+       Cᴰ.reind the-≡ (fᴰ Cᴰ.⋆ᴰ gᴰ)
+     _[-][-,_] cᴰ .F-id = funExt λ gᴰ →
+-      Cᴰ.rectify $ Cᴰ.≡out $ (sym $ Cᴰ.reind-filler _ _) ∙ Cᴰ.⋆IdLᴰ _
++      Cᴰ.rectifyOut $ (sym $ Cᴰ.reind-filler _ _) ∙ Cᴰ.⋆IdLᴰ _
+     _[-][-,_] cᴰ .F-seq (f , fᴰ , the-≡) (g , gᴰ , the-≡') = funExt λ gᴰ →
+-      Cᴰ.rectify $ Cᴰ.≡out $
++      Cᴰ.rectifyOut $
+         (sym $ Cᴰ.reind-filler _ _)
+         ∙ Cᴰ.⋆Assocᴰ _ _ _
+         ∙ Cᴰ.⟨⟩⋆⟨ Cᴰ.reind-filler _ _ ⟩
+diff --git a/Cubical/Categories/LocallySmall/NaturalTransformation/IntoFiberCategory.agda b/Cubical/Categories/LocallySmall/NaturalTransformation/IntoFiberCategory.agda
+index 6cf778aa..f4b2c6d5 100644
+--- a/Cubical/Categories/LocallySmall/NaturalTransformation/IntoFiberCategory.agda
++++ b/Cubical/Categories/LocallySmall/NaturalTransformation/IntoFiberCategory.agda
+@@ -148,4 +148,4 @@ module NatTransDefs
+     makeNatTransPath =
+       ΣPathP
+         (g≡g' ,
+-        makeNatTransPathP g≡g' (funExt λ x → Dᴰ.rectify (Dᴰ.≡out (p x))))
++        makeNatTransPathP g≡g' (funExt λ x → Dᴰ.rectifyOut ( (p x))))
+diff --git a/Cubical/Categories/Presheaf/Constructions/Comprehension.agda b/Cubical/Categories/Presheaf/Constructions/Comprehension.agda
+index 2a2c8fd7..06f12c82 100644
+--- a/Cubical/Categories/Presheaf/Constructions/Comprehension.agda
++++ b/Cubical/Categories/Presheaf/Constructions/Comprehension.agda
+@@ -48,11 +48,11 @@ module _ {C : Category ℓ ℓ'} where
+       (δ C.⋆ γ) , Pᴰ.reind (sym $ P.⋆Assoc _ _ _)
+         (_ Pᴰ.⋆ᴰ pᴰ)
+     Comprehension Γ p .F-id = funExt (λ (γ , q) → ΣPathP ((C.⋆IdL _) ,
+-      (Pᴰ.rectify $ Pᴰ.≡out $
++      (Pᴰ.rectifyOut $
+         sym (Pᴰ.reind-filler _)
+         ∙ Pᴰ.⋆IdL _)))
+     Comprehension Γ p .F-seq f g = funExt λ (γ , q) → ΣPathP (C.⋆Assoc _ _ _
+-      , (Pᴰ.rectify $ Pᴰ.≡out $
++      , (Pᴰ.rectifyOut $
+         sym (Pᴰ.reind-filler _)
+         ∙ Pᴰ.⋆Assoc _ _ _
+         ∙ Pᴰ.⟨ refl ⟩⋆⟨ Pᴰ.reind-filler _ ⟩
+diff --git a/Cubical/Categories/WithFamilies/Simple/Instances/Free/Base.agda b/Cubical/Categories/WithFamilies/Simple/Instances/Free/Base.agda
+index bf8aa532..10b30769 100644
+--- a/Cubical/Categories/WithFamilies/Simple/Instances/Free/Base.agda
++++ b/Cubical/Categories/WithFamilies/Simple/Instances/Free/Base.agda
+@@ -254,13 +254,13 @@ module _ (Σ₀ : hGroupoid ℓ) where
+       elimSection : GlobalSection (M .fst)
+       elimSection .F-obᴰ = elimS-F-ob
+       elimSection .F-homᴰ = elimRen
+-      elimSection .F-idᴰ = M.Cᴰ.rectify $ M.Cᴰ.≡out $ elimRen-Id _
+-      elimSection .F-seqᴰ δ γ = M.Cᴰ.rectify $ M.Cᴰ.≡out $ elimRen-Seq γ
++      elimSection .F-idᴰ = M.Cᴰ.rectifyOut $ elimRen-Id _
++      elimSection .F-seqᴰ δ γ = M.Cᴰ.rectifyOut $ elimRen-Seq γ
+ 
+       elimPshSection : ∀ {A} → PshSection elimSection (M.Tmᴰ $ ı A)
+       elimPshSection .N-ob x = elimVar x
+       elimPshSection .N-hom γ x =
+-        M.Tmᴰ.rectify $ M.Tmᴰ.≡out $ elimRen-Var _ _
++        M.Tmᴰ.rectifyOut $ elimRen-Var _ _
+ 
+       elim : StrictSection FreeSCwF M
+       elim .fst = elimSection
+@@ -269,7 +269,7 @@ module _ (Σ₀ : hGroupoid ℓ) where
+       elim .snd .snd .snd .fst = refl
+       elim .snd .snd .snd .snd A Γ =
+         ΣPathP (refl , (ΣPathP
+-          ((M.Cᴰ.rectify $ M.Cᴰ.≡out $
++          ((M.Cᴰ.rectifyOut $
+             elimRenWkRen _
+             ∙ M.Cᴰ.⟨ refl ⟩⋆⟨ elimRen-Id _ ⟩
+             ∙ M.Cᴰ.⋆IdR _)

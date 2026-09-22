@@ -1,0 +1,28 @@
+Option --cubical no longer has any effect, and is only accepted for compatibility.
+
+/home/steven/mikan-bench/x2-main/Guarded/Later/Base.agda:1.1-26: warning: -W[no]OptionRedundant
+Option --cubical no longer has any effect, and is only accepted for compatibility.
+ 328,550,389,320 bytes allocated in the heap
+  21,641,748,448 bytes copied during GC
+   1,486,650,432 bytes maximum residency (14 sample(s))
+       2,499,520 bytes maximum slop
+            4925 MiB total memory in use (0 MiB lost due to fragmentation)
+
+                                     Tot time (elapsed)  Avg pause  Max pause
+  Gen  0       139 colls,     0 par   15.823s  15.931s     0.1146s    0.8028s
+  Gen  1        14 colls,     0 par    1.524s   1.533s     0.1095s    0.5753s
+
+  TASKS: 4 (1 bound, 3 peak workers (3 total), using -N1)
+
+  SPARKS: 0 (0 converted, 0 overflowed, 0 dud, 0 GC'd, 0 fizzled)
+
+  INIT    time    0.015s  (  0.015s elapsed)
+  MUT     time  112.232s  (112.979s elapsed)
+  GC      time   17.347s  ( 17.464s elapsed)
+  EXIT    time    0.000s  (  0.000s elapsed)
+  Total   time  129.593s  (130.458s elapsed)
+
+  Alloc rate    2,927,432,389 bytes per MUT second
+
+  Productivity  86.6% of total user, 86.6% of total elapsed
+

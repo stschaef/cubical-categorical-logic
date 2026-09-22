@@ -1,0 +1,356 @@
+diff --git a/Cubical/Categories/Displayed/CBPV/Unary/Instances/StateAlg/Additive.agda b/Cubical/Categories/Displayed/CBPV/Unary/Instances/StateAlg/Additive.agda
+index a0d3b75e..658a4acf 100644
+--- a/Cubical/Categories/Displayed/CBPV/Unary/Instances/StateAlg/Additive.agda
++++ b/Cubical/Categories/Displayed/CBPV/Unary/Instances/StateAlg/Additive.agda
+@@ -43,6 +43,18 @@ private
+   variable
+     ℓ : Level
+ 
++  SACBPV : ∀ ℓ → Category _ _
++  SACBPV ℓ = ∫C (StateAlgCBPV {ℓ = ℓ} .fst)
++
++  SACBPVᴰ : ∀ ℓ → Categoryᴰ (SACBPV ℓ) (ℓ-suc ℓ) ℓ
++  SACBPVᴰ ℓ = StateAlgCBPVᴰ ℓ ℓ
++
++  SACBPVᵒᵖ : ∀ ℓ → Category _ _
++  SACBPVᵒᵖ ℓ = SACBPV ℓ ^op
++
++  SACBPVᴰᵒᵖ : ∀ ℓ → Categoryᴰ (SACBPVᵒᵖ ℓ) (ℓ-suc ℓ) ℓ
++  SACBPVᴰᵒᵖ ℓ = SACBPVᴰ ℓ ^opᴰ
++
+ StateAlgTerminal : StateAlgebra ℓ
+ StateAlgTerminal .fst = Unit* , isSetUnit*
+ StateAlgTerminal .snd .StateAlg.rd _ _ = tt*
+@@ -171,7 +183,7 @@ private
+     EqFibration→Fibration (StateAlgAssoc ℓ) (STATEALGᴰ ℓ ℓ)
+       (StateAlgᴰFibrationEq ℓ)
+ 
+-  StateAlgCBPVIdR : ∀ ℓ → EqPsh.EqIdR (∫C (StateAlgCBPV {ℓ = ℓ} .fst))
++  StateAlgCBPVIdR : ∀ ℓ → EqPsh.EqIdR (SACBPV ℓ)
+   StateAlgCBPVIdR ℓ {x = 𝓥 , A} {y = 𝓥 , B} f = Eq.refl
+   StateAlgCBPVIdR ℓ {x = 𝓥 , A} {y = 𝓒 , B} f =
+     Eq.refl
+@@ -180,7 +192,7 @@ private
+     Eq.refl
+ 
+   StateAlgCBPVAssoc : ∀ ℓ →
+-    EqPsh.ReprEqAssoc (∫C (StateAlgCBPV {ℓ = ℓ} .fst))
++    EqPsh.ReprEqAssoc (SACBPV ℓ)
+   StateAlgCBPVAssoc ℓ (𝓥 , A)
+     {c = 𝓥 , W} {c' = 𝓥 , X} {c'' = 𝓥 , Y}
+     _ _ _ _ Eq.refl = Eq.refl
+@@ -196,20 +208,20 @@ private
+   StateAlgCBPVAssoc ℓ _ f g p f⋆g e = Eq.pathToEq
+     (sym (TC.⋆Assoc f g p)
+     ∙ cong (λ fg → fg TC.⋆ p) (Eq.eqToPath e))
+-    where module TC = Category (∫C (StateAlgCBPV {ℓ = ℓ} .fst))
++    where module TC = Category (SACBPV ℓ)
+ 
+   StateAlgCBPVValueTerminalsEqⱽ : ∀ ℓ A →
+     EqPsh.Reprⱽ
+       (EqPsh.UnitⱽPsh
+-        {Cᴰ = StateAlgCBPVᴰ ℓ ℓ}
+-        {P = (∫C (StateAlgCBPV {ℓ = ℓ} .fst)) [-, (𝓥 , A) ]})
++        {Cᴰ = SACBPVᴰ ℓ}
++        {P = (SACBPV ℓ) [-, (𝓥 , A) ]})
+   StateAlgCBPVValueTerminalsEqⱽ ℓ A =
+     EqPsh.UEⱽ→Reprⱽ _ (StateAlgCBPVIdR ℓ) ue
+     where
+     ue : EqPsh.UEⱽ
+       (EqPsh.UnitⱽPsh
+-        {Cᴰ = StateAlgCBPVᴰ ℓ ℓ}
+-        {P = (∫C (StateAlgCBPV {ℓ = ℓ} .fst)) [-, (𝓥 , A) ]})
++        {Cᴰ = SACBPVᴰ ℓ}
++        {P = (SACBPV ℓ) [-, (𝓥 , A) ]})
+       (StateAlgCBPVIdR ℓ)
+     ue .EqPsh.UEⱽ.v _ = Unit* , isSetUnit*
+     ue .EqPsh.UEⱽ.e = tt
+@@ -228,18 +240,18 @@ private
+ 
+   StateAlgCBPVValueBinProductsEqⱽ : ∀ ℓ
+     {A : Fibers.ob[_] (StateAlgCBPV {ℓ = ℓ} .fst) 𝓥}
+-    (A₁ᴰ A₂ᴰ : Fibers.ob[_] (StateAlgCBPVᴰ ℓ ℓ) (𝓥 , A)) →
++    (A₁ᴰ A₂ᴰ : Fibers.ob[_] (SACBPVᴰ ℓ) (𝓥 , A)) →
+     EqPsh.Reprⱽ
+-      ((EqPsh._[-][-,_] {x = (𝓥 , A)} (StateAlgCBPVᴰ ℓ ℓ) A₁ᴰ)
++      ((EqPsh._[-][-,_] {x = (𝓥 , A)} (SACBPVᴰ ℓ) A₁ᴰ)
+         EqPsh.×ⱽPsh
+-       (EqPsh._[-][-,_] {x = (𝓥 , A)} (StateAlgCBPVᴰ ℓ ℓ) A₂ᴰ))
++       (EqPsh._[-][-,_] {x = (𝓥 , A)} (SACBPVᴰ ℓ) A₂ᴰ))
+   StateAlgCBPVValueBinProductsEqⱽ ℓ {A} A₁ᴰ A₂ᴰ =
+     EqPsh.UEⱽ→Reprⱽ _ (StateAlgCBPVIdR ℓ) ue
+     where
+     ue : EqPsh.UEⱽ
+-      ((EqPsh._[-][-,_] {x = (𝓥 , A)} (StateAlgCBPVᴰ ℓ ℓ) A₁ᴰ)
++      ((EqPsh._[-][-,_] {x = (𝓥 , A)} (SACBPVᴰ ℓ) A₁ᴰ)
+         EqPsh.×ⱽPsh
+-       (EqPsh._[-][-,_] {x = (𝓥 , A)} (StateAlgCBPVᴰ ℓ ℓ) A₂ᴰ))
++       (EqPsh._[-][-,_] {x = (𝓥 , A)} (SACBPVᴰ ℓ) A₂ᴰ))
+       (StateAlgCBPVIdR ℓ)
+     ue .EqPsh.UEⱽ.v x =
+       (A₁ᴰ x .fst × A₂ᴰ x .fst) , isSet× (A₁ᴰ x .snd) (A₂ᴰ x .snd)
+@@ -268,20 +280,20 @@ private
+     StateAlgᴰFibration ℓ
+ 
+   StateAlgCBPVValueTerminalsⱽ :
+-    ∀ ℓ → ValueTerminalsⱽ (StateAlgCBPVᴰ ℓ ℓ)
++    ∀ ℓ → ValueTerminalsⱽ (SACBPVᴰ ℓ)
+   StateAlgCBPVValueTerminalsⱽ ℓ A =
+-    EqTerminalⱽ→Terminalⱽ (StateAlgCBPVAssoc ℓ) (StateAlgCBPVᴰ ℓ ℓ)
++    EqTerminalⱽ→Terminalⱽ (StateAlgCBPVAssoc ℓ) (SACBPVᴰ ℓ)
+       (StateAlgCBPVValueTerminalsEqⱽ ℓ A)
+ 
+   StateAlgCBPVValueBinProductsⱽ :
+-    ∀ ℓ → ValueBinProductsⱽ (StateAlgCBPVᴰ ℓ ℓ)
++    ∀ ℓ → ValueBinProductsⱽ (SACBPVᴰ ℓ)
+   StateAlgCBPVValueBinProductsⱽ ℓ {A} A₁ᴰ A₂ᴰ =
+     EqBinProductⱽ→BinProductⱽ
+-      (StateAlgCBPVAssoc ℓ) (StateAlgCBPVᴰ ℓ ℓ)
++      (StateAlgCBPVAssoc ℓ) (SACBPVᴰ ℓ)
+       (StateAlgCBPVValueBinProductsEqⱽ ℓ A₁ᴰ A₂ᴰ)
+ 
+   StateAlgCBPVAssoc^op : ∀ ℓ →
+-    EqPsh.ReprEqAssoc ((∫C (StateAlgCBPV {ℓ = ℓ} .fst)) ^op)
++    EqPsh.ReprEqAssoc (SACBPVᵒᵖ ℓ)
+   StateAlgCBPVAssoc^op ℓ (𝓥 , A)
+     {c = 𝓥 , W} {c' = 𝓥 , X} {c'' = 𝓥 , Y}
+     _ _ _ _ Eq.refl = Eq.refl
+@@ -290,22 +302,22 @@ private
+     _ _ _ _ Eq.refl = Eq.refl
+   StateAlgCBPVAssoc^op ℓ x f g p f⋆g e = Eq.pathToEq
+     (sym (C.⋆Assoc f g p) ∙ cong (λ fg → fg C.⋆ p) (Eq.eqToPath e))
+-    where module C = Category ((∫C (StateAlgCBPV {ℓ = ℓ} .fst)) ^op)
++    where module C = Category (SACBPVᵒᵖ ℓ)
+ 
+   StateAlgCBPVValueInitialsEqⱽ : ∀ ℓ →
+-    ValueInitialsⱽ (StateAlgCBPVᴰ ℓ ℓ)
++    ValueInitialsⱽ (SACBPVᴰ ℓ)
+   StateAlgCBPVValueInitialsEqⱽ ℓ A =
+     EqTerminalⱽ→Terminalⱽ (StateAlgCBPVAssoc^op ℓ)
+-      ((StateAlgCBPVᴰ ℓ ℓ) ^opᴰ) (EqPsh.UEⱽ→Reprⱽ _ idR ue)
++      (SACBPVᴰᵒᵖ ℓ) (EqPsh.UEⱽ→Reprⱽ _ idR ue)
+     where
+-    idR : EqPsh.EqIdR ((∫C (StateAlgCBPV {ℓ = ℓ} .fst)) ^op)
++    idR : EqPsh.EqIdR (SACBPVᵒᵖ ℓ)
+     idR {x = 𝓥 , X} {y = 𝓥 , Y} f = Eq.refl
+     idR {x = 𝓒 , X} {y = 𝓥 , Y} f = Eq.refl
+     idR {x = 𝓥 , X} {y = 𝓒 , Y} ()
+     idR {x = 𝓒 , X} {y = 𝓒 , Y} f = Eq.refl
+     ue : EqPsh.UEⱽ
+-      (EqPsh.UnitⱽPsh {Cᴰ = (StateAlgCBPVᴰ ℓ ℓ) ^opᴰ}
+-        {P = ((∫C (StateAlgCBPV {ℓ = ℓ} .fst)) ^op) [-, (𝓥 , A) ]}) idR
++      (EqPsh.UnitⱽPsh {Cᴰ = (SACBPVᴰ ℓ) ^opᴰ}
++        {P = (SACBPVᵒᵖ ℓ) [-, (𝓥 , A) ]}) idR
+     ue .EqPsh.UEⱽ.v _ = ⊥* , isProp→isSet isProp⊥*
+     ue .EqPsh.UEⱽ.e = tt
+     ue .EqPsh.UEⱽ.universal .isPshIsoEq.nIso ((𝓥 , X) , Xᴰ , f) .fst _ _ ()
+@@ -318,12 +330,12 @@ private
+       funExt₂ λ _ ()
+ 
+   StateAlgCBPVValueBinCoProductsEqⱽ : ∀ ℓ →
+-    ValueBinCoProductsⱽ (StateAlgCBPVᴰ ℓ ℓ)
++    ValueBinCoProductsⱽ (SACBPVᴰ ℓ)
+   StateAlgCBPVValueBinCoProductsEqⱽ ℓ {A} A₁ᴰ A₂ᴰ =
+     EqBinProductⱽ→BinProductⱽ (StateAlgCBPVAssoc^op ℓ)
+-      ((StateAlgCBPVᴰ ℓ ℓ) ^opᴰ) (EqPsh.UEⱽ→Reprⱽ _ idR ue)
++      (SACBPVᴰᵒᵖ ℓ) (EqPsh.UEⱽ→Reprⱽ _ idR ue)
+     where
+-    idR : EqPsh.EqIdR ((∫C (StateAlgCBPV {ℓ = ℓ} .fst)) ^op)
++    idR : EqPsh.EqIdR (SACBPVᵒᵖ ℓ)
+     idR {x = 𝓥 , X} {y = 𝓥 , Y} f = Eq.refl
+     idR {x = 𝓒 , X} {y = 𝓥 , Y} f = Eq.refl
+     idR {x = 𝓥 , X} {y = 𝓒 , Y} ()
+@@ -333,8 +345,8 @@ private
+       (λ a → Sum.rec (h a ∘ inl) (h a ∘ inr)) ≡ h
+     case-η h = funExt₂ λ _ → λ { (inl _) → refl ; (inr _) → refl }
+     ue : EqPsh.UEⱽ
+-      (((StateAlgCBPVᴰ ℓ ℓ ^opᴰ) EqPsh.[-][-, A₁ᴰ ]) EqPsh.×ⱽPsh
+-       ((StateAlgCBPVᴰ ℓ ℓ ^opᴰ) EqPsh.[-][-, A₂ᴰ ])) idR
++      (((SACBPVᴰᵒᵖ ℓ) EqPsh.[-][-, A₁ᴰ ]) EqPsh.×ⱽPsh
++       ((SACBPVᴰᵒᵖ ℓ) EqPsh.[-][-, A₂ᴰ ])) idR
+     ue .EqPsh.UEⱽ.v a =
+       (A₁ᴰ a .fst ⊎ A₂ᴰ a .fst) , isSet⊎ (A₁ᴰ a .snd) (A₂ᴰ a .snd)
+     ue .EqPsh.UEⱽ.e = (λ _ → inl) , (λ _ → inr)
+@@ -348,14 +360,14 @@ private
+     ue .EqPsh.UEⱽ.universal .isPshIsoEq.nIso ((𝓒 , X) , Xᴰ , f) .snd .snd h = case-η h
+ 
+   StateAlgCBPVComputationTerminalsⱽ : ∀ ℓ →
+-    ComputationTerminalsⱽ (StateAlgCBPVᴰ ℓ ℓ)
++    ComputationTerminalsⱽ (SACBPVᴰ ℓ)
+   StateAlgCBPVComputationTerminalsⱽ ℓ B =
+-    EqTerminalⱽ→Terminalⱽ (StateAlgCBPVAssoc ℓ) (StateAlgCBPVᴰ ℓ ℓ)
++    EqTerminalⱽ→Terminalⱽ (StateAlgCBPVAssoc ℓ) (SACBPVᴰ ℓ)
+       (EqPsh.UEⱽ→Reprⱽ _ (StateAlgCBPVIdR ℓ) ue)
+     where
+     ue : EqPsh.UEⱽ
+-      (EqPsh.UnitⱽPsh {Cᴰ = StateAlgCBPVᴰ ℓ ℓ}
+-        {P = (∫C (StateAlgCBPV {ℓ = ℓ} .fst)) [-, (𝓒 , B) ]})
++      (EqPsh.UnitⱽPsh {Cᴰ = SACBPVᴰ ℓ}
++        {P = (SACBPV ℓ) [-, (𝓒 , B) ]})
+       (StateAlgCBPVIdR ℓ)
+     ue .EqPsh.UEⱽ.v .fst _ = Unit* , isSetUnit*
+     ue .EqPsh.UEⱽ.v .snd = Unitⱽ (B .snd) ℓ
+@@ -372,14 +384,14 @@ private
+       ∫Homoᴰ≡ _ h (λ _ → isSetUnit*) (funExt₂ λ _ _ → refl)
+ 
+   StateAlgCBPVComputationBinProductsⱽ : ∀ ℓ →
+-    ComputationBinProductsⱽ (StateAlgCBPVᴰ ℓ ℓ)
++    ComputationBinProductsⱽ (SACBPVᴰ ℓ)
+   StateAlgCBPVComputationBinProductsⱽ ℓ {B} B₁ᴰ B₂ᴰ =
+-    EqBinProductⱽ→BinProductⱽ (StateAlgCBPVAssoc ℓ) (StateAlgCBPVᴰ ℓ ℓ)
++    EqBinProductⱽ→BinProductⱽ (StateAlgCBPVAssoc ℓ) (SACBPVᴰ ℓ)
+       (EqPsh.UEⱽ→Reprⱽ _ (StateAlgCBPVIdR ℓ) ue)
+     where
+     ue : EqPsh.UEⱽ
+-      (((StateAlgCBPVᴰ ℓ ℓ) EqPsh.[-][-, B₁ᴰ ]) EqPsh.×ⱽPsh
+-       ((StateAlgCBPVᴰ ℓ ℓ) EqPsh.[-][-, B₂ᴰ ]))
++      (((SACBPVᴰ ℓ) EqPsh.[-][-, B₁ᴰ ]) EqPsh.×ⱽPsh
++       ((SACBPVᴰ ℓ) EqPsh.[-][-, B₂ᴰ ]))
+       (StateAlgCBPVIdR ℓ)
+     ue .EqPsh.UEⱽ.v .fst x =
+       (B₁ᴰ .fst x .fst × B₂ᴰ .fst x .fst) ,
+@@ -404,13 +416,13 @@ private
+         (λ x → isSet× (B₁ᴰ .fst x .snd) (B₂ᴰ .fst x .snd)) refl
+ 
+   StateAlgCBPVVerticalCartesianLifts : ∀ ℓ k →
+-    hasVerticalCartesianLiftsAt (StateAlgCBPVᴰ ℓ ℓ) k
++    hasVerticalCartesianLiftsAt (SACBPVᴰ ℓ) k
+   StateAlgCBPVVerticalCartesianLifts ℓ 𝓥 {A} {B} f Bᴰ =
+     EqCartesianLift→CartesianLift (StateAlgCBPVAssoc ℓ)
+-      (StateAlgCBPVᴰ ℓ ℓ) Bᴰ (𝓥 , A) (_ , f)
++      (SACBPVᴰ ℓ) Bᴰ (𝓥 , A) (_ , f)
+       (EqPsh.UEⱽ→Reprⱽ _ (StateAlgCBPVIdR ℓ) ue)
+     where
+-    ue : EqPsh.CartesianLiftUE (StateAlgCBPVᴰ ℓ ℓ)
++    ue : EqPsh.CartesianLiftUE (SACBPVᴰ ℓ)
+       (StateAlgCBPVAssoc ℓ) (StateAlgCBPVIdR ℓ) (_ , f) Bᴰ
+     ue .EqPsh.UEⱽ.v x = Bᴰ (f x)
+     ue .EqPsh.UEⱽ.e _ xᴰ = xᴰ
+@@ -422,13 +434,13 @@ private
+       ((𝓥 , X) , Xᴰ , g) .snd .snd _ = refl
+   StateAlgCBPVVerticalCartesianLifts ℓ 𝓒 {A} {B} f Bᴰ =
+     EqCartesianLift→CartesianLift (StateAlgCBPVAssoc ℓ)
+-      (StateAlgCBPVᴰ ℓ ℓ) Bᴰ (𝓒 , A) (_ , f)
++      (SACBPVᴰ ℓ) Bᴰ (𝓒 , A) (_ , f)
+       (EqPsh.UEⱽ→Reprⱽ _ (StateAlgCBPVIdR ℓ) ue)
+     where
+-    pullᴰ : Fibers.ob[_] (StateAlgCBPVᴰ ℓ ℓ) (𝓒 , A)
++    pullᴰ : Fibers.ob[_] (SACBPVᴰ ℓ) (𝓒 , A)
+     pullᴰ .fst x = Bᴰ .fst (f .fst x)
+     pullᴰ .snd = pull (f .snd) (Bᴰ .snd) (B .fst .snd)
+-    ue : EqPsh.CartesianLiftUE (StateAlgCBPVᴰ ℓ ℓ)
++    ue : EqPsh.CartesianLiftUE (SACBPVᴰ ℓ)
+       (StateAlgCBPVAssoc ℓ) (StateAlgCBPVIdR ℓ) (_ , f) Bᴰ
+     ue .EqPsh.UEⱽ.v = pullᴰ
+     ue .EqPsh.UEⱽ.e .fst _ xᴰ = xᴰ
+@@ -452,18 +464,18 @@ private
+         ∫Homoᴰ≡ _ h (λ x → Bᴰ .fst (f .fst x) .snd) refl
+ 
+   StateAlgCBPVValueOpcartesianLifts : ∀ ℓ →
+-    hasVerticalOpcartesianLiftsAt (StateAlgCBPVᴰ ℓ ℓ) 𝓥
++    hasVerticalOpcartesianLiftsAt (SACBPVᴰ ℓ) 𝓥
+   StateAlgCBPVValueOpcartesianLifts ℓ {A} {B} f Aᴰ =
+     EqCartesianLift→CartesianLift (StateAlgCBPVAssoc^op ℓ)
+-      ((StateAlgCBPVᴰ ℓ ℓ) ^opᴰ) Aᴰ (𝓥 , B) (_ , f)
++      (SACBPVᴰᵒᵖ ℓ) Aᴰ (𝓥 , B) (_ , f)
+       (EqPsh.UEⱽ→Reprⱽ _ idR ue)
+     where
+-    idR : EqPsh.EqIdR ((∫C (StateAlgCBPV {ℓ = ℓ} .fst)) ^op)
++    idR : EqPsh.EqIdR (SACBPVᵒᵖ ℓ)
+     idR {x = 𝓥 , X} {y = 𝓥 , Y} g = Eq.refl
+     idR {x = 𝓒 , X} {y = 𝓥 , Y} g = Eq.refl
+     idR {x = 𝓥 , X} {y = 𝓒 , Y} ()
+     idR {x = 𝓒 , X} {y = 𝓒 , Y} g = Eq.refl
+-    ue : EqPsh.CartesianLiftUE ((StateAlgCBPVᴰ ℓ ℓ) ^opᴰ)
++    ue : EqPsh.CartesianLiftUE (SACBPVᴰᵒᵖ ℓ)
+       (StateAlgCBPVAssoc^op ℓ) idR (_ , f) Aᴰ
+     ue .EqPsh.UEⱽ.v b .fst =
+       Σ[ a ∈ A .fst ] (f a ≡ b) × Aᴰ a .fst
+diff --git a/Cubical/Categories/Displayed/CBPV/Unary/Instances/StateAlg/Vertical.agda b/Cubical/Categories/Displayed/CBPV/Unary/Instances/StateAlg/Vertical.agda
+index 4a791e64..be26e7ac 100644
+--- a/Cubical/Categories/Displayed/CBPV/Unary/Instances/StateAlg/Vertical.agda
++++ b/Cubical/Categories/Displayed/CBPV/Unary/Instances/StateAlg/Vertical.agda
+@@ -42,6 +42,9 @@ private
+   variable
+     ℓ : Level
+ 
++  SACBPVᴰᵒᵖ : ∀ ℓ → Categoryᴰ (∫C (StateAlgCBPV {ℓ = ℓ} .fst ^opᴰ)) (ℓ-suc ℓ) ℓ
++  SACBPVᴰᵒᵖ ℓ = (StateAlgCBPVᴰ ℓ ℓ) ^opᴰᴰ
++
+   StateAlgCBPVIdR : ∀ ℓ → EqPsh.EqIdR
+     (∫C (StateAlgCBPV {ℓ = ℓ} .fst))
+   StateAlgCBPVIdR ℓ {x = 𝒱 , A} {y = 𝒱 , B} f = Eq.refl
+@@ -132,20 +135,20 @@ module _ {A : hSet ℓ} (Aᴰ : ⟨ A ⟩ → hSet ℓ) where
+   FreeStateAlgebraᴰ .snd = FreeStateAlgᴰ ⟨ A ⟩ (λ x → ⟨ Aᴰ x ⟩)
+ 
+ StateAlgCBPV-η-lift : ∀ {A : hSet ℓ} (Aᴰ : ⟨ A ⟩ → hSet ℓ)
+-  → CartesianLift ((StateAlgCBPVᴰ ℓ ℓ) ^opᴰᴰ)
++  → CartesianLift (SACBPVᴰᵒᵖ ℓ)
+       (_ , η ⟨ A ⟩) Aᴰ
+ StateAlgCBPV-η-lift {ℓ = ℓ} {A = A} Aᴰ = UniversalElementⱽ'.REPRⱽ η-ue
+   where
+   module C = Category (∫C (StateAlgCBPV { ℓ = ℓ } .fst ^opᴰ))
+-  module Cᴰ = Fibers ((StateAlgCBPVᴰ ℓ ℓ) ^opᴰᴰ)
++  module Cᴰ = Fibers (SACBPVᴰᵒᵖ ℓ)
+   module Dᴰ = Fibers (STATEALGᴰ ℓ ℓ)
+ 
+-  η-ue : UniversalElementⱽ' ((StateAlgCBPVᴰ ℓ ℓ) ^opᴰᴰ)
++  η-ue : UniversalElementⱽ' (SACBPVᴰᵒᵖ ℓ)
+     (𝓒 , FreeStateAlgebra A)
+     (CartesianLiftPshSpec
+       ((∫C (StateAlgCBPV { ℓ = ℓ } .fst ^opᴰ)) [-, (𝒱 , A) ])
+-      ((StateAlgCBPVᴰ ℓ ℓ) ^opᴰᴰ)
+-      (((StateAlgCBPVᴰ ℓ ℓ) ^opᴰᴰ) [-][-, Aᴰ ])
++      (SACBPVᴰᵒᵖ ℓ)
++      ((SACBPVᴰᵒᵖ ℓ) [-][-, Aᴰ ])
+       (_ , η ⟨ A ⟩))
+ 
+   recHom≡ : ∀ (Z : StateAlgebra ℓ) (ϕ : StateAlgHom (FreeStateAlgebra A) Z)
+@@ -214,24 +217,24 @@ StateAlgCBPV-push-lift :
+   ∀ {B B' : StateAlgebra ℓ} (ϕ : StateAlgHom B B')
+     (Bᴰ : Σ[ Xᴰ ∈ (⟨ B .fst ⟩ → hSet ℓ) ]
+       StateAlgᴰ (B .snd) (λ x → ⟨ Xᴰ x ⟩))
+-  → CartesianLift ((StateAlgCBPVᴰ ℓ ℓ) ^opᴰᴰ) (_ , ϕ) Bᴰ
++  → CartesianLift (SACBPVᴰᵒᵖ ℓ) (_ , ϕ) Bᴰ
+ StateAlgCBPV-push-lift {ℓ = ℓ} {B = B} {B' = B'} ϕ Bᴰ =
+   UniversalElementⱽ'.REPRⱽ push-ue
+   where
+   module C = Category (∫C (StateAlgCBPV { ℓ = ℓ } .fst ^opᴰ))
+-  module Cᴰ = Fibers ((StateAlgCBPVᴰ ℓ ℓ) ^opᴰᴰ)
++  module Cᴰ = Fibers (SACBPVᴰᵒᵖ ℓ)
+   module Dᴰ = Fibers (STATEALGᴰ ℓ ℓ)
+ 
+   pushBase : (∫C (StateAlgCBPV { ℓ = ℓ } .fst ^opᴰ))
+     [ (𝓒 , B') , (𝓒 , B) ]
+   pushBase = _ , ϕ
+ 
+-  push-ue : UniversalElementⱽ' ((StateAlgCBPVᴰ ℓ ℓ) ^opᴰᴰ)
++  push-ue : UniversalElementⱽ' (SACBPVᴰᵒᵖ ℓ)
+     (𝓒 , B')
+     (CartesianLiftPshSpec
+       ((∫C (StateAlgCBPV { ℓ = ℓ } .fst ^opᴰ)) [-, (𝓒 , B) ])
+-      ((StateAlgCBPVᴰ ℓ ℓ) ^opᴰᴰ)
+-      (((StateAlgCBPVᴰ ℓ ℓ) ^opᴰᴰ) [-][-, Bᴰ ]) pushBase)
++      (SACBPVᴰᵒᵖ ℓ)
++      ((SACBPVᴰᵒᵖ ℓ) [-][-, Bᴰ ]) pushBase)
+ 
+   canonical-fᴰ : ∀ {Z : StateAlgebra ℓ}
+     (ψ : StateAlgHom B' Z)
+@@ -370,7 +373,7 @@ module _ {A : hSet ℓ} {B : StateAlgebra ℓ}
+ 
+ StateAlgCBPV-Fⱽ : {ℓ : Level} → StateAlgCBPVHasFⱽ ℓ
+ StateAlgCBPV-Fⱽ {ℓ = ℓ} {A = A} {B = B} f Aᴰ =
+-  transportCartesianLift ((StateAlgCBPVᴰ ℓ ℓ) ^opᴰᴰ) factor≡f composite
++  transportCartesianLift (SACBPVᴰᵒᵖ ℓ) factor≡f composite
+   where
+   module C = Category (∫C (StateAlgCBPV { ℓ = ℓ } .fst ^opᴰ))
+ 
+@@ -380,7 +383,7 @@ StateAlgCBPV-Fⱽ {ℓ = ℓ} {A = A} {B = B} f Aᴰ =
+   η-lift = StateAlgCBPV-η-lift Aᴰ
+   push-lift = StateAlgCBPV-push-lift recf (FreeStateAlgebraᴰ Aᴰ)
+ 
+-  composite = composeCartesianLifts ((StateAlgCBPVᴰ ℓ ℓ) ^opᴰᴰ)
++  composite = composeCartesianLifts (SACBPVᴰᵒᵖ ℓ)
+     η-lift push-lift
+ 
+   factor≡f : ((_ , recf) C.⋆ (_ , η ⟨ A ⟩)) ≡ (_ , f)

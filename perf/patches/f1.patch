@@ -1,0 +1,45 @@
+diff --git a/Cubical/Categories/Instances/Presented.agda b/Cubical/Categories/Instances/Presented.agda
+index cf469675..0510e93f 100644
+--- a/Cubical/Categories/Instances/Presented.agda
++++ b/Cubical/Categories/Instances/Presented.agda
+@@ -82,9 +82,20 @@ module _ (𝓒 : Category ℓc ℓc') where
+                    (F .F-homᴰ (Ax .lhs eq))
+                    (F .F-homᴰ (Ax .rhs eq)))
+            → GlobalSection 𝓓
+-      elim F F-respects-axioms =
+-        CatQuotient.elim 𝓒 _≈_ reflₑ ⋆ₑ-cong 𝓓 F
+-          (λ _ _ → F-respects-≈) where
++      -- Performance note: this is `CatQuotient.elim`
++      -- (Cubical.Categories.Instances.Quotient.More) inlined, i.e.
++      --
++      --   elim F F-respects-axioms =
++      --     CatQuotient.elim 𝓒 _≈_ reflₑ ⋆ₑ-cong 𝓓 F (λ _ _ → F-respects-≈)
++      --
++      -- Calling it rather than inlining it costs ~60s of type-checking on
++      -- its own -- this was the single most expensive definition in the
++      -- library. Agda spends all of that conversion-checking the
++      -- instantiated type of the `F` argument,
++      -- `GlobalSection (ReindexQuo.reindex 𝓒 _≈_ reflₑ ⋆ₑ-cong 𝓓)`,
++      -- against `GlobalSection 𝓓'`, which are the same term. Written out
++      -- by hand the same definition checks in under 0.1s.
++      elim F F-respects-axioms = elim' where
+         F-respects-≈ : {x y : 𝓒 .ob} {f g : Hom[ 𝓒 , x ] y}
+           (p : f ≈ g) →
+           PathP
+@@ -101,6 +112,16 @@ module _ (𝓒 : Category ℓc ℓc') where
+           (λ i → F-respects-≈ p i 𝓓.⋆ᴰ F-respects-≈ q i)
+           ▷ (sym (F .F-seqᴰ e' f')))
+ 
++        -- defined by copatterns (rather than as a record expression) so
++        -- that `elim F p` is stuck until a field is projected out, as
++        -- `CatQuotient.elim` was.
++        elim' : GlobalSection 𝓓
++        elim' .F-obᴰ = F .F-obᴰ
++        elim' .F-homᴰ = SetQuotient.elim (λ _ → 𝓓.isSetHomᴰ) (F .F-homᴰ)
++                          (λ _ _ → F-respects-≈)
++        elim' .F-idᴰ = F .F-idᴰ
++        elim' .F-seqᴰ = elimProp2 (λ _ _ → 𝓓.isSetHomᴰ _ _) (F .F-seqᴰ)
++
+     module _ (𝓓 : Category ℓd ℓd') (F : Functor 𝓒 𝓓)
+         (F-satisfies-axioms : ∀ eq → F ⟪ Ax .lhs eq ⟫ ≡ F ⟪ Ax .rhs eq ⟫)
+         where

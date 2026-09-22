@@ -1,0 +1,28 @@
+ Checking Guarded.Later.Base (/home/steven/mikan-bench/x2-agda-main/Guarded/Later/Base.agda).
+ Checking Guarded.Later.Properties (/home/steven/mikan-bench/x2-agda-main/Guarded/Later/Properties.agda).
+Checking Multicategory.Planar (/home/steven/mikan-bench/x2-agda-main/Multicategory/Planar.agda).
+Checking Syntax.ULC (/home/steven/mikan-bench/x2-agda-main/Syntax/ULC.agda).
+ 841,289,676,640 bytes allocated in the heap
+  83,420,009,096 bytes copied during GC
+   1,790,461,608 bytes maximum residency (37 sample(s))
+       2,530,040 bytes maximum slop
+            5179 MiB total memory in use (0 MiB lost due to fragmentation)
+
+                                     Tot time (elapsed)  Avg pause  Max pause
+  Gen  0       747 colls,     0 par   66.058s  66.359s     0.0888s    0.7507s
+  Gen  1        37 colls,     0 par    8.394s   8.434s     0.2280s    0.7531s
+
+  TASKS: 4 (1 bound, 3 peak workers (3 total), using -N1)
+
+  SPARKS: 0 (0 converted, 0 overflowed, 0 dud, 0 GC'd, 0 fizzled)
+
+  INIT    time    0.006s  (  0.006s elapsed)
+  MUT     time  249.625s  (250.799s elapsed)
+  GC      time   74.452s  ( 74.794s elapsed)
+  EXIT    time    0.000s  (  0.000s elapsed)
+  Total   time  324.084s  (325.599s elapsed)
+
+  Alloc rate    3,370,219,260 bytes per MUT second
+
+  Productivity  77.0% of total user, 77.0% of total elapsed
+

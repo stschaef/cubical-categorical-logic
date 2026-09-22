@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+# Reproducible A/B for one intervention.
+#
+#   ab <name> [reps] [extra RTS]
+#
+# Method, and why each choice is made:
+#  * Two arms of the SAME worktree: arm A is the file exactly as at HEAD, arm B is
+#    HEAD + the intervention's patch. Nothing else differs.
+#  * Arms are INTERLEAVED (A B A B ...) rather than run as all-A-then-all-B, so that
+#    thermal drift, page-cache state and any background load hit both arms equally.
+#  * A warm-up run of each arm is taken and DISCARDED before the measured reps. The
+#    dependency library `cubical` is only partially built, so the first run that needs
+#    an unbuilt upstream module pays to build it -- up to +75s attributed to the wrong
+#    file. Discarding run 1 removes that.
+#  * Only the target module's own .agdai is deleted between runs; everything else stays
+#    warm, so we measure re-checking THAT module, not the library.
+#  * RTS is pinned identically in both arms (-N1, fixed heap cap, no -A unless asked)
+#    so that GC behaviour is not a confounder.
+#  * .agdai size is reported alongside time. It is deterministic and immune to machine
+#    load, so it is the trustworthy signal; time is the confirmation.
+set -uo pipefail
+SP=/tmp/claude-1000/-home-steven-cubical-categorical-logic/76005fa0-5844-4d24-a8c2-77c101597242/scratchpad
+ART=$(cd "$(dirname "$0")/.." && pwd)
+NAME=$1; REPS=${2:-3}; XRTS=${3:-}
+HEAP=${HEAP:-6G}
+WT=/home/steven/ccl-ab
+
+row=$(awk -F'\t' -v n="$NAME" '$1==n' $ART/manifest.tsv)
+[ -z "$row" ] && { echo "no such intervention: $NAME" >&2; exit 2; }
+PATCHF=$ART/patches/$(echo "$row" | cut -f2)
+MODS=$(echo "$row" | cut -f3 | tr ',' ' ')
+
+# one pristine worktree, reused across invocations
+if [ ! -d "$WT" ]; then
+  git -C /home/steven/cubical-categorical-logic worktree add -f --detach "$WT" 82334ffb >/dev/null 2>&1
+  printf '/home/steven/cubical/cubical.agda-lib\n%s/cubical-categorical-logic.agda-lib\n' "$WT" > $WT/libs.txt
+  cp -a /home/steven/cubical-categorical-logic/_build $WT/_build
+fi
+git -C "$WT" checkout -- . 2>/dev/null
+
+time1() {  # time1 <module> -> "wall user maxrssMB agdaiBytes rc"
+  local m=$1 stat out iface
+  iface="$WT/_build/2.9.0/agda/${m%.agda}.agdai"
+  stat=$(mktemp); out=$(mktemp); rm -f "$iface"
+  ( cd "$WT" && /run/current-system/sw/bin/time -v -o "$stat" \
+      agda --library-file="$WT/libs.txt" +RTS -N1 -M$HEAP $XRTS -RTS -j1 "$m" ) >"$out" 2>&1
+  local rc=$? w
+  w=$(grep -oP 'Elapsed \(wall clock\) time.*?: \K.*' "$stat" | head -1)
+  printf '%s %s %s %s %s' \
+    "$(awk -F: '{s=0;for(i=1;i<=NF;i++)s=s*60+$i;printf "%.2f",s}' <<<"$w")" \
+    "$(grep -oP 'User time \(seconds\): \K.*' "$stat" | head -1)" \
+    "$(( $(grep -oP 'Maximum resident set size \(kbytes\): \K.*' "$stat"|head -1) / 1024 ))" \
+    "$(stat -c%s "$iface" 2>/dev/null || echo 0)" "$rc"
+  [ $rc != 0 ] && { echo; echo "### FAILED: $m" >&2; tail -25 "$out" >&2; }
+  rm -f "$stat" "$out"
+}
+
+echo "=== intervention: $NAME   patch: $(basename $PATCHF)   reps=$REPS   RTS='-N1 -M$HEAP $XRTS'"
+echo "=== machine at start: load $(cut -d' ' -f1-3 /proc/loadavg), $(free -m|awk 'NR==2{print $7}')MB avail"
+declare -A RES
+for m in $MODS; do RES[$m,A]=""; RES[$m,B]=""; done
+
+apply()  { git -C "$WT" apply "$PATCHF"; }
+revert() { git -C "$WT" checkout -- .; }
+
+# warm-up (discarded) -- see note above about the partially-built cubical dependency
+for m in $MODS; do time1 "$m" >/dev/null; done
+apply || { echo "PATCH FAILED TO APPLY" >&2; exit 3; }
+for m in $MODS; do time1 "$m" >/dev/null; done
+revert
+
+for r in $(seq 1 "$REPS"); do
+  for m in $MODS; do RES[$m,A]="${RES[$m,A]} $(time1 "$m")|"; done
+  apply
+  for m in $MODS; do RES[$m,B]="${RES[$m,B]} $(time1 "$m")|"; done
+  revert
+done
+
+echo
+printf '%-72s %9s %9s %8s %10s\n' MODULE ARM WALL_s USER_s MAXRSS_MB AGDAI_B
+for m in $MODS; do
+  for arm in A B; do
+    echo "${RES[$m,$arm]}" | tr '|' '\n' | grep -v '^\s*$' | awk -v m="$m" -v a="$arm" '
+      {w+=$1; u+=$2; r+=$3; g=$4; rc=$5; n++}
+      END{ printf "%-72s %-9s %8.2f %8.2f %9d %10d%s\n", m, (a=="A"?"HEAD":"patched"), w/n, u/n, r/n, g, (rc!=0?"  RC="rc:"") }'
+  done
+done
+echo "=== machine at end:   load $(cut -d' ' -f1-3 /proc/loadavg)"

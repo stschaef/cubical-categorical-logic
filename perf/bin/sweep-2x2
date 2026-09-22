@@ -1,0 +1,263 @@
+#!/usr/bin/env bash
+#
+# Full-library build of {agda,mikan} x {base,head}, one at a time.
+#
+#   sweep-2x2 [-b BASE] [-H HEAD] [-t TOOLS] [-n REPS] [-o OUTDIR] [-w WORKDIR] [-d]
+#
+# -d stages the worktrees and prints what would be built without running it.
+# -P turns OFF parity mode (see below).
+#
+# Defaults: BASE=main, HEAD=the current branch, TOOLS=agda,mikan, REPS=1.
+#
+# Every cell is a from-scratch --build-library run with the interface cache
+# removed, taken under an exclusive lock so that two cells never overlap: wall
+# time on a loaded box is worthless, and a cell that shares the machine with
+# another build reads 3-8% slow.  GHC bytes-allocated is recorded alongside and
+# is load-immune, so a contended run is still usable for allocation.
+#
+# Mikan cannot check this library unmodified: it rejects --guarded and
+# --rewriting.  The mikan cells are therefore built on a PORT of each branch --
+# one commit that drops those flags, stubs Guarded/, and adjusts two proofs.
+# By default (parity mode) that port is applied to the agda cells too, so every
+# cell checks byte-identical source and the tools are directly comparable.  The
+# three modules it disables are 338 of 61,426 lines and about 0.7% of the
+# library's allocation, so holding them out costs the agda numbers very little.
+# -P builds the agda cells from the branch as it stands instead; the mikan cells
+# are always ported, because mikan cannot check the library otherwise.  Every
+# row records which it was.
+#
+# Environment:
+#   AGDA, MIKAN        binaries (default: whatever is on PATH)
+#   CUBICAL_DIR        checkout of agda/cubical (required)
+#   AGDA_RTS, MIKAN_RTS  RTS options (defaults are the tuned settings)
+#   MEM_MAX            systemd-run MemoryMax backstop, e.g. 13G (default: off)
+
+set -uo pipefail
+
+die() { echo "sweep-2x2: $*" >&2; exit 2; }
+
+REPO=$(git rev-parse --show-toplevel 2>/dev/null) || die "not in a git repository"
+BASE=main
+HEAD_REF=$(git -C "$REPO" rev-parse --abbrev-ref HEAD)
+TOOLS=agda,mikan
+REPS=1
+DRYRUN=
+PARITY=1
+OUTDIR=$REPO/perf/data/sweep-$(date +%Y%m%d-%H%M%S)
+WORKDIR=${TMPDIR:-/tmp}/sweep-2x2-$USER
+
+while getopts b:H:t:n:o:w:dP o; do
+  case $o in
+    b) BASE=$OPTARG ;;
+    H) HEAD_REF=$OPTARG ;;
+    t) TOOLS=$OPTARG ;;
+    n) REPS=$OPTARG ;;
+    o) OUTDIR=$OPTARG ;;
+    w) WORKDIR=$OPTARG ;;
+    d) DRYRUN=1 ;;
+    P) PARITY= ;;
+    *) die "usage: sweep-2x2 [-b BASE] [-H HEAD] [-t TOOLS] [-n REPS] [-o OUTDIR] [-w WORKDIR] [-d] [-P]" ;;
+  esac
+done
+
+AGDA=${AGDA:-agda}
+MIKAN=${MIKAN:-mikan}
+AGDA_RTS=${AGDA_RTS:--A1G -H4G}
+MIKAN_RTS=${MIKAN_RTS:--A2G}
+HEAP=${HEAP:-24G}
+MEM_MAX=${MEM_MAX:-}
+
+# GNU time, for peak RSS. Not the shell builtin, and not at /usr/bin/time on
+# every distribution. Without it the RTS report still gives allocation and peak
+# live data, so the run is worth doing with the maxrss column empty.
+TIME_BIN=${TIME_BIN:-}
+if [ -z "$TIME_BIN" ]; then
+  for c in /usr/bin/time /run/current-system/sw/bin/time /bin/time \
+           "$(command -v gtime 2>/dev/null)"; do
+    [ -n "$c" ] && [ -x "$c" ] && { TIME_BIN=$c; break; }
+  done
+fi
+[ -n "$TIME_BIN" ] || echo "sweep-2x2: no GNU time found; maxrss will be blank" >&2
+
+[ -n "${CUBICAL_DIR:-}" ] || die "set CUBICAL_DIR to a checkout of agda/cubical"
+MIKAN_CUBICAL_DIR=${MIKAN_CUBICAL_DIR:-$CUBICAL_DIR}
+[ -f "$CUBICAL_DIR/cubical.agda-lib" ] || die "no cubical.agda-lib in $CUBICAL_DIR"
+
+have() { command -v "$1" >/dev/null 2>&1 || [ -x "$1" ]; }
+
+SELECTED=()
+for t in ${TOOLS//,/ }; do
+  case $t in
+    agda)  have "$AGDA"  && SELECTED+=(agda)  || echo "sweep-2x2: no agda binary, skipping agda cells" >&2 ;;
+    mikan) have "$MIKAN" && SELECTED+=(mikan) || echo "sweep-2x2: no mikan binary, skipping mikan cells" >&2 ;;
+    *) die "unknown tool: $t" ;;
+  esac
+done
+[ ${#SELECTED[@]} -gt 0 ] || die "no usable toolchain"
+
+git -C "$REPO" rev-parse --verify -q "$BASE" >/dev/null || die "no such ref: $BASE"
+git -C "$REPO" rev-parse --verify -q "$HEAD_REF" >/dev/null || die "no such ref: $HEAD_REF"
+
+mkdir -p "$OUTDIR" "$WORKDIR"
+LOCK=$WORKDIR/lock
+SUMMARY=$OUTDIR/summary.tsv
+printf "cell\ttool\ttree\trep\trc\twall_s\tuser_s\tmaxrss_mib\talloc_gb\tmodules\tsource\n" > "$SUMMARY"
+
+# The mikan port is carried as a single commit whose subject begins "Mikan
+# port:".  It is applied as a patch to whichever tree a mikan cell builds.
+# Without it mikan stops on the first --guarded module.
+find_port() {
+  git -C "$REPO" log --all --format='%H %s' \
+    | awk '/ Mikan port:/ { print $1; exit }'
+}
+
+# One worktree per (tool, tree).  Mikan trees get the port commit on top, so
+# they are a different commit from the agda tree of the same name.
+prepare_tree() {
+  local tool=$1 ref=$2 dir=$3
+  rm -rf "$dir"
+  git -C "$REPO" worktree prune
+  git -C "$REPO" worktree add --detach --force "$dir" "$ref" >/dev/null 2>&1 \
+    || die "could not create worktree for $ref"
+  if [ "$tool" = mikan ] || [ -n "$PARITY" ]; then
+    local port
+    port=$(find_port)
+    [ -n "$port" ] || die "no 'Mikan port:' commit found; mikan cannot build this library"
+    git -C "$REPO" diff "$port~1" "$port" | git -C "$dir" apply - \
+      || die "mikan port does not apply cleanly onto $ref; rebase it first"
+  fi
+  cat > "$dir/libs.txt" <<EOF
+$CUBICAL_DIR/cubical.agda-lib
+$dir/cubical-categorical-logic.agda-lib
+EOF
+}
+
+# Agda and mikan write incompatible interfaces (.agdai vs .mki) and cannot share
+# a build directory, so each tool gets its own staged copy of the dependency.
+# It is built once and then left warm: a cell measures the cost of checking this
+# library, not of rechecking cubical underneath it.
+cubical_for() {
+  local tool=$1 bin=$2 rts=$3 dir=$WORKDIR/cubical-$1 src=$CUBICAL_DIR
+  [ "$tool" = mikan ] && src=$MIKAN_CUBICAL_DIR
+  if [ ! -d "$dir" ]; then
+    cp -r "$src" "$dir" || die "could not stage cubical for $tool"
+    rm -rf "$dir/_build"
+  fi
+  if [ ! -d "$dir/_build" ] && [ -z "$DRYRUN" ]; then
+    echo "sweep-2x2: building cubical for $tool (once)" >&2
+    cat > "$dir/libs.txt" <<EOF
+$dir/cubical.agda-lib
+EOF
+    ( cd "$dir" && "$bin" --library-file="$dir/libs.txt" -j1 \
+        +RTS -N1 $rts -M$HEAP -RTS --build-library ) >"$OUTDIR/cubical-$tool.log" 2>&1 \
+      || die "cubical failed to build under $tool; see $OUTDIR/cubical-$tool.log"
+  fi
+  echo "$dir"
+}
+
+run_cell() {
+  local tool=$1 tree=$2 ref=$3 rep=$4
+  local cell=$tool-$tree
+  local dir=$WORKDIR/$cell
+  local bin rts cub
+  case $tool in
+    agda)  bin=$AGDA;  rts=$AGDA_RTS  ;;
+    mikan) bin=$MIKAN; rts=$MIKAN_RTS ;;
+  esac
+
+  prepare_tree "$tool" "$ref" "$dir"
+  cub=$(cubical_for "$tool" "$bin" "$rts")
+  cat > "$dir/libs.txt" <<EOF
+$cub/cubical.agda-lib
+$dir/cubical-categorical-logic.agda-lib
+EOF
+
+  local modules source
+  modules=$(find "$dir/Cubical" "$dir/Gluing" "$dir/Syntax" "$dir/Multicategory" \
+              -name "*.agda" 2>/dev/null | wc -l)
+  if [ "$tool" = mikan ] || [ -n "$PARITY" ]; then
+    source=ported
+  else
+    source=native
+  fi
+
+  local log=$OUTDIR/$cell-r$rep.log
+  local stat=$OUTDIR/$cell-r$rep.time
+  local rtsfile=$OUTDIR/$cell-r$rep.rts
+
+  rm -rf "$dir/_build"
+  echo "=== $cell rep $rep: $bin -j1 +RTS $rts -RTS ($modules modules)" | tee "$log"
+
+  local -a guard=()
+  [ -n "$MEM_MAX" ] && guard=(systemd-run --user --scope --quiet
+                              -p MemoryMax="$MEM_MAX" -p MemorySwapMax=0)
+
+  if [ -n "$DRYRUN" ]; then
+    printf "  would run: %s --library-file=%s -j1 +RTS -N1 %s -M%s -RTS --build-library\n" \
+      "$bin" "$dir/libs.txt" "$rts" "$HEAP"
+    printf "%s\t%s\t%s\t%s\tdry\t\t\t\t\t%s\t%s\n" \
+      "$cell" "$tool" "$tree" "$rep" "$modules" "$source" >> "$SUMMARY"
+    return 0
+  fi
+
+  local start end rc
+  start=$(date +%s.%N)
+  ( cd "$dir" && "${guard[@]}" \
+      ${TIME_BIN:+$TIME_BIN -v -o "$stat"} \
+      "$bin" --library-file="$dir/libs.txt" -j1 \
+             +RTS -N1 $rts -M$HEAP -s"$rtsfile" -RTS \
+             --build-library ) >>"$log" 2>&1
+  rc=$?
+  end=$(date +%s.%N)
+
+  local wall user maxrss alloc
+  wall=$(awk -v s="$start" -v e="$end" 'BEGIN{printf "%.1f", e-s}')
+  user=$(grep -oP 'User time \(seconds\): \K.*' "$stat" 2>/dev/null)
+  maxrss=$(grep -oP "Maximum resident set size \\(kbytes\\): \\K[0-9]+" "$stat" 2>/dev/null)
+  if [ -z "$maxrss" ]; then
+    maxrss=$(grep -oP "^\\s*\\K[0-9,]+(?= bytes maximum residency)" "$rtsfile" 2>/dev/null \
+               | tr -d , | awk "{printf \"%d\", \$1/1024}")
+  fi
+  alloc=$(grep -oP '^\s*\K[0-9,]+(?= bytes allocated in the heap)' "$rtsfile" 2>/dev/null \
+            | tr -d , | awk '{printf "%.1f", $1/1e9}')
+
+  printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" \
+    "$cell" "$tool" "$tree" "$rep" "$rc" "$wall" "${user:-}" \
+    "$(( ${maxrss:-0} / 1024 ))" "${alloc:-}" "$modules" "$source" >> "$SUMMARY"
+
+  printf '  rc=%-3s wall=%-8s maxrss=%sMiB alloc=%sGB\n' \
+    "$rc" "${wall}s" "$(( ${maxrss:-0} / 1024 ))" "${alloc:-?}"
+}
+
+exec {LFD}>"$LOCK"
+flock "$LFD" || die "could not take the build lock"
+
+echo "sweep-2x2: base=$BASE head=$HEAD_REF tools=${SELECTED[*]} reps=$REPS"
+echo "           out=$OUTDIR work=$WORKDIR"
+echo
+
+for rep in $(seq 1 "$REPS"); do
+  for tool in "${SELECTED[@]}"; do
+    run_cell "$tool" base "$BASE"     "$rep"
+    run_cell "$tool" head "$HEAD_REF" "$rep"
+  done
+done
+
+echo
+echo "=== summary ($SUMMARY)"
+column -t -s$'\t' "$SUMMARY"
+
+awk -F'\t' 'NR>1 && $5==0 { w[$1]+=$6; a[$1]+=$9; n[$1]++ }
+END {
+  if (n["agda-base"] && n["agda-head"])
+    printf "\nagda : head is %.2fx the base in wall, %.2fx in allocation\n",
+      (w["agda-base"]/n["agda-base"])/(w["agda-head"]/n["agda-head"]),
+      (a["agda-base"]/n["agda-base"])/(a["agda-head"]/n["agda-head"])
+  if (n["mikan-base"] && n["mikan-head"])
+    printf "mikan: head is %.2fx the base in wall, %.2fx in allocation\n",
+      (w["mikan-base"]/n["mikan-base"])/(w["mikan-head"]/n["mikan-head"]),
+      (a["mikan-base"]/n["mikan-base"])/(a["mikan-head"]/n["mikan-head"])
+}' "$SUMMARY"
+
+awk -F'\t' 'NR>1 && $5!="dry" && $5!=0 { bad=1 }
+END { if (bad) print "\nsome cells failed; see the per-cell logs" }' "$SUMMARY"

@@ -1,0 +1,111 @@
+#!/usr/bin/env bash
+# Per-technique whole-library A/B for the performance sweep.
+#
+#   perf/bin/ab-tech <arm> <tag>
+#
+# <arm> is `base` (the branch as it stands) or T1..T5.  For a technique arm the
+# working tree is first put back into the state it had before that technique's
+# hunks landed, then the WHOLE library is rebuilt from scratch and GHC's own
+# allocation figure is recorded.  Reverting from the finished tree, rather than
+# applying forward from main, measures each change in the context it ships in.
+#
+# Metric: bytes allocated, from `+RTS -s`.  Deterministic to eight significant
+# figures within a worktree; wall time is indicative only.
+set -uo pipefail
+
+ROOT=/home/steven/ccl-abtech
+DATA=$ROOT/perf/data
+LIBS=$ROOT/libs.txt
+cd "$ROOT" || exit 2
+
+arm=${1:?arm}; tag=${2:?tag}
+
+blob() { git cat-file -p "$1" > "$2" || exit 3; }
+unpatch() { git show --format="" "$1" > /tmp/ab-tech-$$.patch && git apply -R /tmp/ab-tech-$$.patch || exit 3; rm -f /tmp/ab-tech-$$.patch; }
+
+D=Cubical/Categories/Displayed
+LS=Cubical/Categories/LocallySmall/Displayed
+
+git reset -q --hard HEAD >/dev/null 2>&1 || exit 2
+
+case "$arm" in
+  base) ;;
+  T1)  # argument pinning
+    blob e6dc7459 $D/Presheaf/Constructions/Exponential/Base.agda
+    blob 126591a7 $D/Presheaf/Constructions/Exponential/UniversalProperty.agda
+    blob d660d685 $D/Presheaf/Constructions/BinProduct/LocalRepresentability/Properties.agda
+    blob 0bbd6318 $LS/NaturalTransformation/IntoFiberCategory/Eq.agda
+    blob 5ab1f538 $D/Instances/Family/EqProperties.agda
+    blob b1bbb204 $D/Instances/Reindex/Cartesian.agda
+    blob 942c116e $D/CBPV/Unary/Instances/StateAlg/Vertical.agda
+    ;;
+  T2)  # shared elaboration
+    blob ad0d8a37 $D/Presheaf/Uncurried/UniversalProperties.agda
+    blob fe9a313a $D/Instances/Reindex/UniversalQuantifier.agda
+    blob 63052af6 $D/Presheaf/Uncurried/Eq/Base.agda
+    unpatch 1bb16824          # sits under c72302b8, so reverse the hunks
+    ;;
+  T3)  # notation trimming
+    blob 20eb1ed5 $LS/NaturalTransformation/IntoFiberCategory/Base.agda
+    blob 3f8bdd8a $D/Instances/Presheaf/Eq/CartesianClosed.agda
+    unpatch f4f7ba9c          # sits under the three T1 commits
+    ;;
+  T4)  # root-cause split
+    blob 1fed653c Cubical/Categories/Limits/Pullback/Alt.agda
+    ;;
+  T5)  # named projections
+    blob 22b2fe65 $D/Presheaf/Uncurried/Eq/Conversion/CartesianClosedV.agda
+    ;;
+  T8) # the single --lossy-unification pragma, re-measured here as a check that
+      # this method agrees with §3 (4.99 GB) and the lattice (4.98/4.99 GB)
+    blob 8dd3d590 $D/Instances/PropertyOver/Cartesian.agda
+    ;;
+  T2cc) # 06-RESULTS §10 reports this single commit at 6.224 GB build-wide against
+       # 0.388 GB in its own module; this arm re-measures it on its own
+    unpatch 1bb16824
+    ;;
+  T15) # all five of this session.s techniques at once, for the additivity check
+    blob e6dc7459 $D/Presheaf/Constructions/Exponential/Base.agda
+    blob 126591a7 $D/Presheaf/Constructions/Exponential/UniversalProperty.agda
+    blob 0cf0ca8b $D/Presheaf/Constructions/BinProduct/LocalRepresentability/Properties.agda
+    blob 0bbd6318 $LS/NaturalTransformation/IntoFiberCategory/Eq.agda
+    blob 5ab1f538 $D/Instances/Family/EqProperties.agda
+    blob b1bbb204 $D/Instances/Reindex/Cartesian.agda
+    blob 942c116e $D/CBPV/Unary/Instances/StateAlg/Vertical.agda
+    blob ad0d8a37 $D/Presheaf/Uncurried/UniversalProperties.agda
+    blob fe9a313a $D/Instances/Reindex/UniversalQuantifier.agda
+    blob 63052af6 $D/Presheaf/Uncurried/Eq/Base.agda
+    blob ffb234d3 $D/Presheaf/Uncurried/Eq/Conversion/CartesianClosedV.agda
+    blob 20eb1ed5 $LS/NaturalTransformation/IntoFiberCategory/Base.agda
+    blob 3f8bdd8a $D/Instances/Presheaf/Eq/CartesianClosed.agda
+    blob 1fed653c Cubical/Categories/Limits/Pullback/Alt.agda
+    ;;
+  main) # the pre-sweep baseline, built in THIS worktree so paths match
+    git checkout -q 82334ffb -- .
+    git diff --name-only --diff-filter=A 82334ffb ab-technique | xargs -r rm -f
+    ;;
+  *) echo "unknown arm $arm" >&2; exit 2 ;;
+esac
+
+git diff --stat > "$DATA/tech-$tag.diffstat"
+rm -rf "$ROOT/_build"
+t0=$SECONDS
+agda --library-file="$LIBS" --build-library -j1 \
+  +RTS -N1 -A1G -H4G -M24G "-s$DATA/rts-tech-$tag.tsv" -RTS \
+  > "$DATA/tech-$tag.log" 2>&1
+rc=$?
+wall=$((SECONDS-t0))
+git reset -q --hard HEAD >/dev/null 2>&1
+mods=$(grep -c 'Checking' "$DATA/tech-$tag.log")
+# allocation in 10^9 bytes, the unit the rest of this directory uses
+alloc=$(awk -v tag="$tag" -v arm="$arm" -v wall="$wall" -v mods="$mods" '
+  /bytes allocated in the heap/{gsub(/,/,"",$1); a=$1}
+  /bytes copied during GC/{gsub(/,/,"",$1); c=$1}
+  /bytes maximum residency/{gsub(/,/,"",$1); r=$1}
+  /MUT +time/{m=$3; sub(/s$/,"",m)}
+  /GC +time/{g=$3; sub(/s$/,"",g)}
+  END{printf "%.3f\t%.2f\t%.3f\t%s\t%s\n",a/1e9,c/1e9,r/1e9,m,g}' "$DATA/rts-tech-$tag.tsv")
+printf '%s\t%s\t%s\t%s\t%s\n' "$tag" "$arm" "$alloc" "$wall" "$mods" >> "$DATA/tech-arms.tsv"
+alloc=${alloc%%$'\t'*}
+echo "$tag $arm alloc=${alloc}GB wall=${wall}s rc=$rc modules=$mods"
+exit $rc

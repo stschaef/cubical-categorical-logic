@@ -1,0 +1,155 @@
+diff --git a/Cubical/Categories/Displayed/Instances/Reindex/UniversalQuantifier.agda b/Cubical/Categories/Displayed/Instances/Reindex/UniversalQuantifier.agda
+index 1b86e377..6846ce80 100644
+--- a/Cubical/Categories/Displayed/Instances/Reindex/UniversalQuantifier.agda
++++ b/Cubical/Categories/Displayed/Instances/Reindex/UniversalQuantifier.agda
+@@ -78,10 +78,14 @@ module _
+   where
+ 
+   private
+-    module C = Category C
+-    module D = Category D
++    module C = Category C using (ob)
++    module D = Category D using (id; _⋆_; ⋆IdR)
+     module Dᴰ = Fibers Dᴰ
++      using ( ob[_] ; idᴰ ; _⋆ᴰ_ ; ⋆IdL ; ⋆IdR
++            ; ⟨_⟩⋆⟨_⟩ ; ⟨_⟩⋆⟨⟩ ; ⟨⟩⋆⟨_⟩
++            ; cong-reind ; rectify ; ≡out ; reind-filler )
+     module cartLifts = FibrationNotation Dᴰ cartLifts
++      using ( _*_ ; ⟨_⟩⋆πⱽ ; cong-introᴰ ; sq-collapse ; sq-filler ; sq-id )
+     π-Quad : QuadrableTrans F Id (reindex Dᴰ G)
+     π-Quad = π , ((λ x yᴰ → reindexCartesianLift Dᴰ G (π ⟦ x ⟧) yᴰ
+                           (cartLifts yᴰ (G ⟅ F ⟅ x ⟆ ⟆) (G ⟪ π ⟦ x ⟧ ⟫))))
+@@ -182,9 +186,8 @@ module _
+   (cartLifts : isFibration Dᴰ)
+   where
+   private
+-    module D = Category D
+-    module Dᴰ = Fibers Dᴰ
+-    module cartLifts = FibrationNotation Dᴰ cartLifts
++    module Dᴰ = Fibers Dᴰ using (ob[_])
++    module cartLifts = FibrationNotation Dᴰ cartLifts using (_*_)
+   module _
+     {A : C .ob}
+     (-×A : BinProductsWith C A)
+@@ -193,7 +196,8 @@ module _
+     where
+     private
+       module -×A = BinProductsWithNotation -×A
+-      module -×GA = BinProductsWithNotation -×GA
++        using (_×a; ×aF; π₁; π₁Nat; module ×ue)
++      module -×GA = BinProductsWithNotation -×GA using (_×a; ×aF; π₁; π₁Nat)
+       swap = preservesProvidedBinProductsWith→preservesCartNatTrans G -×A -×GA G⟪-×A⟫≅G⟪-⟫×A
+     reflectsUniversalQuantifiers : ∀ {Γ} (Aᴰ : Dᴰ.ob[ G ⟅ Γ -×A.×a ⟆ ])
+       (∀Aᴰ : UniversalQuantifier Dᴰ (G ⟅ A ⟆) -×GA (λ Δ γ → cartLifts γ (Δ -×GA.×a) -×GA.π₁)
+@@ -222,4 +226,5 @@ module _
+         G⟪Γ×A⟫ = isUniversal→UniversalElement _ (G⟪×⟫≅G×G Γ A)
+ 
+         module GΓ×GA = BinProductNotation (bpD (G ⟅ Γ ⟆ , G ⟅ A ⟆))
+-        module G⟪Γ×A⟫ = BinProductNotation G⟪Γ×A⟫
++          using (π₁; π₂)
++        module G⟪Γ×A⟫ = BinProductNotation G⟪Γ×A⟫ using (_,p_)
+diff --git a/Cubical/Categories/Displayed/Presheaf/Uncurried/UniversalProperties.agda b/Cubical/Categories/Displayed/Presheaf/Uncurried/UniversalProperties.agda
+index 68e1648c..c2010cd5 100644
+--- a/Cubical/Categories/Displayed/Presheaf/Uncurried/UniversalProperties.agda
++++ b/Cubical/Categories/Displayed/Presheaf/Uncurried/UniversalProperties.agda
+@@ -54,8 +54,10 @@ open UniversalElementNotation
+ open UniversalElement
+ module _ {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ') where
+   private
+-    module C = Category C
++    module C = Category C using (ob; id; ⋆IdR)
+     module Cᴰ = Fibers Cᴰ
++      using ( ob[_] ; _⋆ᴰ_ ; _≡[_]_ ; ≡in ; ≡out ; rectify ; rectifyOut
++            ; reind-filler ; reind-filler⁻ )
+ 
+   Terminalⱽ : ∀ (x : C.ob) → Type _
+   Terminalⱽ x = Representableⱽ Cᴰ x UnitPshᴰ
+@@ -95,9 +97,9 @@ module _ {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ') where
+     private
+       bp-ue = RepresentationPshIso→UniversalElement _
+         (∫Representableⱽ Cᴰ _ _ bpⱽ)
+-      module ue = UniversalElementNotation bp-ue
++      module ue = UniversalElementNotation bp-ue using (element; intro; β; η)
+       module spec = PresheafNotation
+-        (PresheafᴰNotation.∫ Cᴰ (C [-, x ]) (BinProductⱽSpec Aᴰ Bᴰ))
++        (PresheafᴰNotation.∫ Cᴰ (C [-, x ]) (BinProductⱽSpec Aᴰ Bᴰ)) using (_⋆_)
+ 
+     π₁ : Cᴰ [ C.id ][ vert , Aᴰ ]
+     π₁ = ue.element .snd .fst
+@@ -179,7 +181,7 @@ module _ {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ') where
+ 
+   module BinProductᴰNotation {A B Aᴰ Bᴰ} (A×B : BinProduct C (A , B)) (Aᴰ×ᴰBᴰ : BinProductᴰ A×B Aᴰ Bᴰ) where
+     private
+-      module A×B = UniversalElementNotation A×B
++      module A×B = UniversalElementNotation A×B using (β; η)
+     open UniversalElementᴰNotation Cᴰ _ _ Aᴰ×ᴰBᴰ public
+ 
+     πᴰ₁ : Cᴰ [ ue.element .fst ][ Aᴰ×ᴰBᴰ .fst , Aᴰ ]
+@@ -230,10 +232,15 @@ module _ {C : Category ℓC ℓC'}
+   {Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ'}
+   (Cᴰᴰ : Categoryᴰ (∫C Cᴰ) ℓCᴰᴰ ℓCᴰᴰ') where
+   private
+-    module C = Category C
++    module C = Category C using (ob; id; _⋆_; ⋆IdR)
+     module Cᴰ = Fibers Cᴰ
++      using ( ob[_] ; idᴰ ; _⋆ᴰ_ ; ⋆IdR ; isSetHom ; ≡in
++            ; rectifyOut ; reind-filler ; reind-filler⁻ )
+     module Cᴰᴰ = Fibers Cᴰᴰ
+-    module ∫Cᴰ = Category (∫C Cᴰ)
++      using ( ob[_] ; _⋆ᴰ_ ; _≡[_]_ ; ≡in ; ≡out ; rectify ; rectifyOut
++            ; reind ; reind-filler ; reind-filler⁻
++            ; ⟨_⟩⋆⟨_⟩ ; ⟨_⟩⋆⟨⟩ ; ⟨⟩⋆⟨_⟩ )
++    module ∫Cᴰ = Category (∫C Cᴰ) using (_⋆_; Hom[_,_])
+ 
+   Terminalⱽᴰ : ∀ {x} → (termⱽ : Terminalⱽ Cᴰ x)
+     → Type _
+@@ -259,7 +266,7 @@ module _ {C : Category ℓC ℓC'}
+         ((x , termⱽ .fst) , termⱽᴰ .fst) ,
+         (invPshIso (∫Repr-iso Cᴰᴰ) ⋆PshIso ∫PshIsoᴰ (termⱽᴰ .snd))
+       term-ueᴰ = RepresentationPshIso→UniversalElement _ term-reprᴰ
+-      module termᴰ = UniversalElementNotation term-ueᴰ
++      module termᴰ = UniversalElementNotation term-ueᴰ using (intro)
+ 
+     vertexᴰ : Cᴰᴰ.ob[ x , termⱽ .fst ]
+     vertexᴰ = termⱽᴰ .fst
+@@ -341,7 +348,7 @@ module _ {C : Category ℓC ℓC'}
+         (makePshHomPath $ funExt λ (Γ , Γᴰ) → funExt λ (f , hᴰ) → π₂-natural hᴰ))
+     ⋆PshIso invPshIso (reindPsh× _ _ _)
+     where
+-    module bp = BinProductⱽNotation Cᴰ bpⱽ
++    module bp = BinProductⱽNotation Cᴰ bpⱽ using (vert; π₁; π₂)
+     π₁-natural : ∀ {Γ} {Γᴰ : Cᴰ.ob[ Γ ]} {f : C [ Γ , x ]}
+       (hᴰ : Cᴰ [ f ][ Γᴰ , bp.vert ])
+       → Path (Σ[ g ∈ C [ Γ , x ] ] Cᴰ [ g ][ Γᴰ , Aᴰ ])
+@@ -396,15 +403,16 @@ module _ {C : Category ℓC ℓC'}
+     (bpⱽᴰ : BinProductⱽᴰ bpⱽ Aᴰᴰ Bᴰᴰ) where
+     private
+       module bpⱽ = BinProductⱽNotation Cᴰ bpⱽ
++        using (vert; π₁; π₂; _,ⱽ_; ×βⱽ₁; ×βⱽ₂; ×ηⱽ)
+       bp-reprᴰ : RepresentationPshIso
+         (PresheafᴰNotation.∫ Cᴰᴰ _ (BinProductⱽᴰSpec bpⱽ Aᴰᴰ Bᴰᴰ))
+       bp-reprᴰ =
+         ((x , bpⱽ.vert) , bpⱽᴰ .fst) ,
+         (invPshIso (∫Repr-iso Cᴰᴰ) ⋆PshIso ∫PshIsoᴰ (bpⱽᴰ .snd))
+       bp-ueᴰ = RepresentationPshIso→UniversalElement _ bp-reprᴰ
+-      module bpᴰ = UniversalElementNotation bp-ueᴰ
++      module bpᴰ = UniversalElementNotation bp-ueᴰ using (element; intro; β; η)
+       module specᴰ = PresheafNotation
+-        (PresheafᴰNotation.∫ Cᴰᴰ _ (BinProductⱽᴰSpec bpⱽ Aᴰᴰ Bᴰᴰ))
++        (PresheafᴰNotation.∫ Cᴰᴰ _ (BinProductⱽᴰSpec bpⱽ Aᴰᴰ Bᴰᴰ)) using (_⋆_)
+ 
+     vertexᴰ : Cᴰᴰ.ob[ x , bpⱽ.vert ]
+     vertexᴰ = bpⱽᴰ .fst
+@@ -603,10 +611,9 @@ module _ {C : Category ℓC ℓC'}
+ 
+ module _ {C : Category ℓC ℓC'} (Cᴰ : Categoryᴰ C ℓCᴰ ℓCᴰ') where
+   private
+-    module C = Category C
+-    module Cᴰ = Fibers Cᴰ
++    module C = Category C using (ob)
++    module Cᴰ = Fibers Cᴰ using (ob[_])
+     Cᴰop = Cᴰ ^opᴰ
+-    module Cᴰop = Fibers Cᴰop
+ 
+   Initialⱽ : ∀ (x : C.ob) → Type _
+   Initialⱽ x = Terminalⱽ Cᴰop x

@@ -1,0 +1,13 @@
+diff --git a/Cubical/Categories/Presheaf/Representable.agda b/Cubical/Categories/Presheaf/Representable.agda
+index 23a11724..6110cf91 100644
+--- a/Cubical/Categories/Presheaf/Representable.agda
++++ b/Cubical/Categories/Presheaf/Representable.agda
+@@ -82,6 +82,8 @@ module _ {ℓo}{ℓh}{ℓp} (C : Category ℓo ℓh) (P : Presheaf C ℓp) where
+   isPropIsUniversal vertex element = isPropΠ (λ _ → isPropIsEquiv _)
+ 
+   record UniversalElement : Type (ℓ-max (ℓ-max ℓo ℓh) ℓp) where
++    no-eta-equality
++    constructor mkUniversalElement
+     field
+       vertex : C .ob
+       element : (P ⟅ vertex ⟆) .fst

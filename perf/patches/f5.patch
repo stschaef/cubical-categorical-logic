@@ -1,0 +1,89 @@
+diff --git a/Cubical/Categories/Displayed/CBPV/Unary/Instances/StateAlg/Vertical.agda b/Cubical/Categories/Displayed/CBPV/Unary/Instances/StateAlg/Vertical.agda
+index 4a791e64..15370098 100644
+--- a/Cubical/Categories/Displayed/CBPV/Unary/Instances/StateAlg/Vertical.agda
++++ b/Cubical/Categories/Displayed/CBPV/Unary/Instances/StateAlg/Vertical.agda
+@@ -140,6 +140,12 @@ StateAlgCBPV-η-lift {ℓ = ℓ} {A = A} Aᴰ = UniversalElementⱽ'.REPRⱽ η-
+   module Cᴰ = Fibers ((StateAlgCBPVᴰ ℓ ℓ) ^opᴰᴰ)
+   module Dᴰ = Fibers (STATEALGᴰ ℓ ℓ)
+ 
++  recHom≡ : ∀ (Z : StateAlgebra ℓ) (ϕ : StateAlgHom (FreeStateAlgebra A) Z)
++    → ( recFSA-f ⟨ A ⟩ (Z .snd) (ϕ .fst ∘ η ⟨ A ⟩)
++      , recFSA ⟨ A ⟩ (Z .snd) (ϕ .fst ∘ η ⟨ A ⟩)) ≡ ϕ
++  recHom≡ Z ϕ = ∫Homo≡ _ ϕ (Z .fst .snd)
++    (funExt (recFSA-η ⟨ A ⟩ (Z .snd) (ϕ .snd)))
++
+   η-ue : UniversalElementⱽ' ((StateAlgCBPVᴰ ℓ ℓ) ^opᴰᴰ)
+     (𝓒 , FreeStateAlgebra A)
+     (CartesianLiftPshSpec
+@@ -148,12 +154,6 @@ StateAlgCBPV-η-lift {ℓ = ℓ} {A = A} Aᴰ = UniversalElementⱽ'.REPRⱽ η-
+       (((StateAlgCBPVᴰ ℓ ℓ) ^opᴰᴰ) [-][-, Aᴰ ])
+       (_ , η ⟨ A ⟩))
+ 
+-  recHom≡ : ∀ (Z : StateAlgebra ℓ) (ϕ : StateAlgHom (FreeStateAlgebra A) Z)
+-    → ( recFSA-f ⟨ A ⟩ (Z .snd) (ϕ .fst ∘ η ⟨ A ⟩)
+-      , recFSA ⟨ A ⟩ (Z .snd) (ϕ .fst ∘ η ⟨ A ⟩)) ≡ ϕ
+-  recHom≡ Z ϕ = ∫Homo≡ _ ϕ (Z .fst .snd)
+-    (funExt (recFSA-η ⟨ A ⟩ (Z .snd) (ϕ .snd)))
+-
+   η-ue .UniversalElementⱽ'.vertexⱽ = FreeStateAlgebraᴰ Aᴰ
+   η-ue .UniversalElementⱽ'.elementⱽ = ηᴰ ⟨ A ⟩ (λ x → ⟨ Aᴰ x ⟩)
+   η-ue .UniversalElementⱽ'.universalⱽ ((𝓒 , Z) , Zᴰ , ϕ) .fst γᴰ =
+@@ -226,13 +226,6 @@ StateAlgCBPV-push-lift {ℓ = ℓ} {B = B} {B' = B'} ϕ Bᴰ =
+     [ (𝓒 , B') , (𝓒 , B) ]
+   pushBase = _ , ϕ
+ 
+-  push-ue : UniversalElementⱽ' ((StateAlgCBPVᴰ ℓ ℓ) ^opᴰᴰ)
+-    (𝓒 , B')
+-    (CartesianLiftPshSpec
+-      ((∫C (StateAlgCBPV { ℓ = ℓ } .fst ^opᴰ)) [-, (𝓒 , B) ])
+-      ((StateAlgCBPVᴰ ℓ ℓ) ^opᴰᴰ)
+-      (((StateAlgCBPVᴰ ℓ ℓ) ^opᴰᴰ) [-][-, Bᴰ ]) pushBase)
+-
+   canonical-fᴰ : ∀ {Z : StateAlgebra ℓ}
+     (ψ : StateAlgHom B' Z)
+     (Zᴰ : Σ[ Xᴰ ∈ (⟨ Z .fst ⟩ → hSet ℓ) ]
+@@ -287,6 +280,14 @@ StateAlgCBPV-push-lift {ℓ = ℓ} {B = B} {B' = B'} ϕ Bᴰ =
+       ∙ cong {B = λ _ → Σ ⟨ Z .fst ⟩ (λ z → ⟨ Zᴰ .fst z ⟩)}
+           (λ q → ψ .fst (q .fst) , χᴰ .fst (q .fst) (q .snd))
+           (push-path b bᴰ p)
++
++  push-ue : UniversalElementⱽ' ((StateAlgCBPVᴰ ℓ ℓ) ^opᴰᴰ)
++    (𝓒 , B')
++    (CartesianLiftPshSpec
++      ((∫C (StateAlgCBPV { ℓ = ℓ } .fst ^opᴰ)) [-, (𝓒 , B) ])
++      ((StateAlgCBPVᴰ ℓ ℓ) ^opᴰᴰ)
++      (((StateAlgCBPVᴰ ℓ ℓ) ^opᴰᴰ) [-][-, Bᴰ ]) pushBase)
++
+   push-ue .UniversalElementⱽ'.vertexⱽ = StateAlgCBPV-push-obᴰ ϕ Bᴰ
+   push-ue .UniversalElementⱽ'.elementⱽ .fst =
+     σ-fᴰ (ϕ .snd) (Bᴰ .snd) (B' .fst .snd)
+diff --git a/Cubical/Categories/Displayed/FixedPoint.agda b/Cubical/Categories/Displayed/FixedPoint.agda
+index c3ddfab5..59fa9b85 100644
+--- a/Cubical/Categories/Displayed/FixedPoint.agda
++++ b/Cubical/Categories/Displayed/FixedPoint.agda
+@@ -1,3 +1,4 @@
++{-# OPTIONS --lossy-unification #-}
+ -- Displayed and vertical fixed points
+ --
+ -- These are "displayed diagrammatic concepts", maybe the properties
+@@ -216,7 +217,19 @@ module _ {C : Category ℓC ℓC'}{D : Category ℓD ℓD'} (F : Functor C D) (D
+       ∙ ∫NT Dᴰ.next .N-hom _ ∙ Dᴰ.Cᴰ.⟨ Dᴰ.Cᴰ.reind-filler _ ⟩⋆⟨⟩
+       ∙ Dᴰ.Cᴰ.reind-revealed-filler _)
+   reindexGuardedLogic .isFibCᴰ =
+-    -- TODO: Why is this so slow
++    -- Answering the TODO that used to be here ("Why is this so slow"):
++    -- this one clause used to cost ~20s of the ~23s spent type-checking
++    -- this module. It is not isFibrationReindex itself -- the very same
++    -- term, given the explicit top-level signature
++    --   isFibration (reindex Dᴰ.Cᴰ F)
++    -- elaborates in <10ms. The cost is the conversion check between the
++    -- field's expected type isFibration (reindexGuardedLogic .Cᴰ) and the
++    -- inferred isFibration (reindex Dᴰ.Cᴰ F): under exact unification Agda
++    -- re-reduces the copattern projection and eta-compares two Categoryᴰ
++    -- records over and over, allocating ~17GB for this single module.
++    -- --lossy-unification (at the top of this file) matches on the head
++    -- symbol and skips the arguments, which takes this clause to ~20ms and
++    -- the module from ~28s to ~8s wall.
+     isFibrationReindex {ℓC = ℓC}{ℓC' = ℓC'}{ℓD = ℓD}{ℓD' = ℓD'}{C = C}{D = D} Dᴰ.Cᴰ F Dᴰ.isFibCᴰ
+   reindexGuardedLogic .termⱽ = TerminalsⱽReindex F Dᴰ.termⱽ
+   reindexGuardedLogic .gfpⱽ {A} {Aᴰ} f = reindexFixed-pointⱽ Dᴰ.Cᴰ F

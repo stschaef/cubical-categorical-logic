@@ -1,0 +1,15 @@
+case	module	arm	alloc_GB	wall_s	mem_MiB	rc
+presented	Cubical/Categories/Instances/Presented.agda	A	80.3331	57.008	2152	0
+presented	Cubical/Categories/Instances/Presented.agda	B	3.2893	2.224	475	0
+notation-trim	Cubical/Categories/LocallySmall/Displayed/Instances/Sets/Base.agda	A	13.2979	11.215	1647	0
+notation-trim	Cubical/Categories/LocallySmall/Displayed/Instances/Sets/Base.agda	B	2.2482	1.603	370	0
+notation-trim	Cubical/Categories/LocallySmall/Displayed/Presheaf/GloballySmall/IntoFiberCategory/Base.agda	A	71.3532	55.989	2749	0
+notation-trim	Cubical/Categories/LocallySmall/Displayed/Presheaf/GloballySmall/IntoFiberCategory/Base.agda	B	19.3210	12.037	1217	0
+rectifyout	Cubical/Categories/Displayed/Presheaf/Uncurried/UniversalProperties.agda	A	42.8987	29.477	3905	0
+rectifyout	Cubical/Categories/Displayed/Presheaf/Uncurried/UniversalProperties.agda	B	19.5257	22.047	1984	0
+fixedpoint	Cubical/Categories/Displayed/FixedPoint.agda	A	16.1753	21.548	2076	0
+fixedpoint	Cubical/Categories/Displayed/FixedPoint.agda	B	16.1753	19.160	2076	0
+propertyover	Cubical/Categories/Displayed/Instances/PropertyOver/Cartesian.agda	A	8.4983	11.178	1312	0
+propertyover	Cubical/Categories/Displayed/Instances/PropertyOver/Cartesian.agda	B	3.7259	4.332	801	0
+reindexccc	Cubical/Categories/Displayed/Instances/Reindex/CartesianClosed.agda	A	0	0	0	42
+reindexccc	Cubical/Categories/Displayed/Instances/Reindex/CartesianClosed.agda	B	27.1273	26.138	3145	0

@@ -1,0 +1,138 @@
+diff --git a/Cubical/Categories/Direct/Product.agda b/Cubical/Categories/Direct/Product.agda
+index d9985ae4..09ed66fe 100644
+--- a/Cubical/Categories/Direct/Product.agda
++++ b/Cubical/Categories/Direct/Product.agda
+@@ -58,12 +58,26 @@ module _ (Wo : WFOrder ℓD ℓ<) (Wo' : WFOrder ℓD' ℓ<') where
+       inr (a≡a' Eq.∙ a'≡a'' , W'.trans< b<b' b'<b'')
+ 
+     wf<Lex : WellFounded _<Lex_
+-    wf<Lex (a , b) = go a (W.wf< a) b (W'.wf< b)
++    wf<Lex (a , b) = accLex (W.wf< a) (W'.wf< b)
+       where
+-        go : ∀ a → Acc W._<_ a → ∀ b → Acc W'._<_ b → Acc _<Lex_ (a , b)
+-        go a aA@(acc rsA) b (acc rsB) = acc λ where
+-          (a' , b') (inl a'<a)             → go a' (rsA a' a'<a) b' (W'.wf< b')
+-          (a' , b') (inr (Eq.refl , b'<b)) → go a  aA            b' (rsB b' b'<b)
++        -- Split across a mutual pair rather than writing one function that
++        -- descends lexicographically. The point is the second clause of
++        -- `accLex'`: the first component is unchanged there, so it has to be
++        -- handed back as the *variable* `accA`. Writing this as a single
++        -- function forces that argument to be reconstructed as `acc rsA` (via
++        -- an as-pattern), which Mikan's termination checker does not accept as
++        -- a non-increase. Cf. the same variable-vs-constructor distinction
++        -- behind the indexed `Acc` in Cubical.Induction.WellFounded.
++        accLex  : ∀ {a b} → Acc W._<_ a → Acc W'._<_ b → Acc _<Lex_ (a , b)
++        accLex' : ∀ {a b} → Acc W._<_ a → Acc W'._<_ b
++                → ∀ q → q <Lex (a , b) → Acc _<Lex_ q
++
++        accLex accA accB = acc (accLex' accA accB)
++
++        accLex' (acc rsA) accB (a' , b') (inl a'<a) =
++          accLex (rsA a' a'<a) (W'.wf< b')
++        accLex' accA (acc rsB) (a' , b') (inr (Eq.refl , b'<b)) =
++          accLex accA (rsB b' b'<b)
+ 
+   LexWFOrder : WFOrder (ℓ-max ℓD ℓD') (ℓ-max ℓ< (ℓ-max ℓD ℓ<'))
+   LexWFOrder = record
+diff --git a/Gluing/Category/Forded.agda b/Gluing/Category/Forded.agda
+index 721e25cd..aa50ff3c 100644
+--- a/Gluing/Category/Forded.agda
++++ b/Gluing/Category/Forded.agda
+@@ -41,13 +41,18 @@ module Normalization (Q : Quiver ℓC ℓC') where
+   -- has a normal form, but there's no reason to bother truncating it.
+   -- data NormalForm {o1 o2} (e : FQ [ o1 , o2 ]) : Type (ℓ-max ℓC ℓC') where
+ 
+-  data NormalForm {o1 o2} (e : FQ [ o1 , o2 ]) : Type (ℓ-max ℓC' ℓC) where
+-    cons : ∀ gen e'
++  -- `o2` and `e` are *indices*, not parameters: the recursive field `nfe'`
++  -- in `cons` lives at a different morphism, and Mikan's termination checker
++  -- only tracks structural descent across a changing index (not a changing
++  -- parameter). Cf. the same index-vs-parameter shape in `Cubical.Data.W.Indexed`.
++  data NormalForm {o1} : ∀ {o2} → FQ [ o1 , o2 ] → Type (ℓ-max ℓC' ℓC) where
++    cons : ∀ {o2} {e : FQ [ o1 , o2 ]} gen e'
+          → (o2≡cod : o2 Eq.≡ Q .snd .cod gen)
+          → (e≡e'⋆gen : Eq.HEq (Eq.ap (FQ [ o1 ,_]) o2≡cod) e (e' ⋆ₑ ⇑ Q gen))
+          → (nfe' : NormalForm e')
+          → NormalForm e
+-    nil : (o1≡o2 : o1 Eq.≡ o2)
++    nil : ∀ {o2} {e : FQ [ o1 , o2 ]}
++      → (o1≡o2 : o1 Eq.≡ o2)
+       → Eq.HEq (Eq.ap (FQ [ o1 ,_]) o1≡o2) (FQ.id {o1}) e
+       → NormalForm e
+ 
+diff --git a/Guarded/Gluing/Canonicity.agda b/Guarded/Gluing/Canonicity.agda
+index 5e27a8e4..77cc8d66 100644
+--- a/Guarded/Gluing/Canonicity.agda
++++ b/Guarded/Gluing/Canonicity.agda
+@@ -1,3 +1,11 @@
++{-# OPTIONS --cubical #-}
++-- DISABLED under Mikan (1lab's Agda fork): this module relies on
++-- --guarded and/or --rewriting, which Mikan does not support. The
++-- original contents are preserved in the block comment below.
++module Guarded.Gluing.Canonicity where
++
++{- ORIGINAL CONTENTS (disabled):
++
+ {-
+ 
+   A guarded canonicity theorem
+@@ -220,3 +228,5 @@ GuardedCanonicity M =
+   (EXP.⋆IdL M)
+   (GuardedCanonicitySection .F-homᴰ M EXP.id _)
+ 
++
++-}
+diff --git a/Guarded/Later/Base.agda b/Guarded/Later/Base.agda
+index ddbcba02..90e94909 100644
+--- a/Guarded/Later/Base.agda
++++ b/Guarded/Later/Base.agda
+@@ -1,3 +1,11 @@
++{-# OPTIONS --cubical #-}
++-- DISABLED under Mikan (1lab's Agda fork): this module relies on
++-- --guarded and/or --rewriting, which Mikan does not support. The
++-- original contents are preserved in the block comment below.
++module Guarded.Later.Base where
++
++{- ORIGINAL CONTENTS (disabled):
++
+ {-# OPTIONS --cubical --rewriting --guarded #-}
+ {-# OPTIONS --allow-unsolved-metas #-}
+ 
+@@ -90,3 +98,5 @@ postulate
+ 
+ postulate
+   force-beta : ∀ {A : Set l} (x : A) → force (λ k _ → x) ≣ λ k → x
++
++-}
+diff --git a/Guarded/Later/Properties.agda b/Guarded/Later/Properties.agda
+index 035b5c1c..2d0a2cdd 100644
+--- a/Guarded/Later/Properties.agda
++++ b/Guarded/Later/Properties.agda
+@@ -1,3 +1,11 @@
++{-# OPTIONS --cubical #-}
++-- DISABLED under Mikan (1lab's Agda fork): this module relies on
++-- --guarded and/or --rewriting, which Mikan does not support. The
++-- original contents are preserved in the block comment below.
++module Guarded.Later.Properties where
++
++{- ORIGINAL CONTENTS (disabled):
++
+ {-# OPTIONS --cubical --rewriting --guarded #-}
+ {-# OPTIONS --allow-unsolved-metas #-}
+ 
+@@ -22,3 +30,5 @@ isSet▹ ▹isSetA x y x≡y x≡y' i j t = ▹isSetA t (x t) (y t) (λ i → x
+ -- ▹Π⁻ : {A : Type ℓ}{B : A → Type ℓ'} → ((a : A) → ▹ (B a)) → ▹ ((a : A) → B a)
+ -- ▹Π⁻ = λ f t a → {!f a t!}
+ 
++
++-}
+diff --git a/cubical-categorical-logic.agda-lib b/cubical-categorical-logic.agda-lib
+index 2086fd78..a21acaca 100644
+--- a/cubical-categorical-logic.agda-lib
++++ b/cubical-categorical-logic.agda-lib
+@@ -1,4 +1,4 @@
+ name: cubical-categorical-logic
+ include: .
+ depend: cubical
+-flags: --cubical --postfix-projections --guardedness -WnoUnsupportedIndexedMatch --guarded --rewriting
++flags: --cubical --postfix-projections --guardedness -WnoUnsupportedIndexedMatch

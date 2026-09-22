@@ -1,0 +1,6 @@
+#name	patch	modules-to-measure (comma separated)
+presented	f1.patch	Cubical/Categories/Instances/Presented.agda
+locallysmall	f4.patch	Cubical/Categories/LocallySmall/Displayed/Instances/Sets/Base.agda,Cubical/Categories/LocallySmall/Displayed/Presheaf/GloballySmall/IntoFiberCategory/Base.agda,Cubical/Categories/LocallySmall/Displayed/NaturalTransformation/IntoFiberCategory/Base.agda,Cubical/Categories/LocallySmall/Displayed/Presheaf/GloballySmall/IntoFiberCategory/Properties.agda
+fixedpoint	f5.patch	Cubical/Categories/Displayed/FixedPoint.agda
+reindexccc	f3.patch	Cubical/Categories/Displayed/Instances/Reindex/CartesianClosed.agda
+copytrim	imports.patch	Cubical/Categories/Displayed/Instances/Reindex/UniversalQuantifier.agda,Cubical/Categories/Displayed/Presheaf/Uncurried/UniversalProperties.agda

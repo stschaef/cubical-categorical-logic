@@ -1,0 +1,21 @@
+diff --git a/Cubical/Algebra/State.agda b/Cubical/Algebra/State.agda
+index b3486ba9..3bcaee27 100644
+--- a/Cubical/Algebra/State.agda
++++ b/Cubical/Algebra/State.agda
+@@ -1,5 +1,6 @@
+ -- Algebras for the theory of a Boolean state.
+ -- The free algebras are given by the state monad.
++{-# OPTIONS --no-lossy-unification #-}
+ module Cubical.Algebra.State where
+ 
+ open import Cubical.Foundations.Prelude
+diff --git a/cubical-categorical-logic.agda-lib b/cubical-categorical-logic.agda-lib
+index 2086fd78..c73e7fd9 100644
+--- a/cubical-categorical-logic.agda-lib
++++ b/cubical-categorical-logic.agda-lib
+@@ -1,4 +1,4 @@
+ name: cubical-categorical-logic
+ include: .
+ depend: cubical
+-flags: --cubical --postfix-projections --guardedness -WnoUnsupportedIndexedMatch --guarded --rewriting
++flags: --cubical --postfix-projections --guardedness -WnoUnsupportedIndexedMatch --guarded --rewriting --lossy-unification

@@ -1,0 +1,28 @@
+Option --cubical no longer has any effect, and is only accepted for compatibility.
+
+/home/steven/mikan-bench/x2-perfall/Guarded/Later/Base.agda:1.1-26: warning: -W[no]OptionRedundant
+Option --cubical no longer has any effect, and is only accepted for compatibility.
+ 261,037,914,808 bytes allocated in the heap
+  11,410,812,576 bytes copied during GC
+   1,001,216,536 bytes maximum residency (9 sample(s))
+       4,133,168 bytes maximum slop
+            4130 MiB total memory in use (0 MiB lost due to fragmentation)
+
+                                     Tot time (elapsed)  Avg pause  Max pause
+  Gen  0       112 colls,     0 par    9.265s   9.309s     0.0831s    0.3222s
+  Gen  1         9 colls,     0 par    0.543s   0.546s     0.0607s    0.1862s
+
+  TASKS: 4 (1 bound, 3 peak workers (3 total), using -N1)
+
+  SPARKS: 0 (0 converted, 0 overflowed, 0 dud, 0 GC'd, 0 fizzled)
+
+  INIT    time    0.012s  (  0.013s elapsed)
+  MUT     time   86.253s  ( 86.691s elapsed)
+  GC      time    9.808s  (  9.855s elapsed)
+  EXIT    time    0.000s  (  0.000s elapsed)
+  Total   time   96.075s  ( 96.560s elapsed)
+
+  Alloc rate    3,026,406,300 bytes per MUT second
+
+  Productivity  89.8% of total user, 89.8% of total elapsed
+

@@ -1,0 +1,17 @@
+technique	file	alloc_A_GB	alloc_B_GB	wall_A_s	wall_B_s	rc_A	rc_B
+T4	Cubical/Categories/Limits/Pullback/Alt.agda	15.1811	7.7974	5.594	3.462	0	0
+T5	Cubical/Categories/Displayed/Presheaf/Uncurried/Eq/Conversion/CartesianClosedV.agda	9.6234	9.6041	4.117	4.106	0	0
+T3	Cubical/Categories/LocallySmall/Displayed/NaturalTransformation/IntoFiberCategory/Base.agda	9.6896	6.7952	4.395	3.096	0	0
+T3	Cubical/Categories/Displayed/Instances/Presheaf/Eq/CartesianClosed.agda	9.5611	9.2440	4.533	4.484	0	0
+T3	Cubical/Categories/Displayed/Presheaf/Constructions/BinProduct/LocalRepresentability/Properties.agda	7.9689	7.7957	3.671	3.592	0	0
+T2	Cubical/Categories/Displayed/Presheaf/Uncurried/UniversalProperties.agda	19.7884	19.6379	7.791	7.706	0	0
+T2	Cubical/Categories/Displayed/Instances/Reindex/UniversalQuantifier.agda	10.8844	9.7868	4.874	4.398	0	0
+T2	Cubical/Categories/Displayed/Presheaf/Uncurried/Eq/Base.agda	7.9172	7.8584	3.607	3.606	0	0
+T2	Cubical/Categories/Displayed/Presheaf/Uncurried/Eq/Conversion/CartesianClosedV.agda	9.9915	9.6041	4.348	4.104	0	0
+T1	Cubical/Categories/Displayed/Presheaf/Constructions/Exponential/Base.agda	8.5717	5.2786	3.405	2.569	0	0
+T1	Cubical/Categories/Displayed/Presheaf/Constructions/Exponential/UniversalProperty.agda	5.9223	5.4908	2.786	2.681	0	0
+T1	Cubical/Categories/Displayed/Presheaf/Constructions/BinProduct/LocalRepresentability/Properties.agda	11.6043	7.7957	5.052	3.589	0	0
+T1	Cubical/Categories/LocallySmall/Displayed/NaturalTransformation/IntoFiberCategory/Eq.agda	8.7925	8.2040	3.384	3.286	0	0
+T1	Cubical/Categories/Displayed/Instances/Family/EqProperties.agda	12.4120	6.0218	5.303	3.153	0	0
+T1	Cubical/Categories/Displayed/Instances/Reindex/Cartesian.agda	6.8117	6.6940	3.371	3.374	0	0
+T1	Cubical/Categories/Displayed/CBPV/Unary/Instances/StateAlg/Vertical.agda	20.5430	13.8466	8.822	6.540	0	0

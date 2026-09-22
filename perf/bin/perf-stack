@@ -1,0 +1,282 @@
+#!/usr/bin/env bash
+#
+# Build every revision of the performance stack and aggregate the results.
+#
+#   perf-stack [-o REPORT] [-w WORKDIR] [-r REVS] [-n REPS] [-k] [-d]
+#
+# AGDA ONLY.  This measures source edits, where the tool is held fixed.  For the
+# agda-vs-mikan comparison use perf/bin/sweep-2x2, which builds {agda,mikan} x
+# {two trees} and applies the "Mikan port:" commit to the mikan cells (mikan
+# rejects --guarded and --rewriting, so it cannot check this library unmodified).
+#
+# Walks the stack bottom to top, building each revision from scratch and
+# recording GHC bytes allocated, wall time and peak RSS.  Emits one markdown
+# report with each revision's cumulative and marginal cost.
+#
+# Revisions are addressed by bookmark/branch name.  jj is used when available
+# (colocating the repo if it is not already), git otherwise; the two paths
+# produce identical results, jj is simply what the maintainer drives day to day.
+#
+# Allocation is the metric that matters: it is deterministic to eight
+# significant figures within a worktree, so a marginal cost of a few hundred MB
+# is real.  Wall time on a loaded machine varies by up to 17% and is recorded
+# only as an indication.  Runs are serialised under an exclusive lock for that
+# reason -- two concurrent builds make every wall figure meaningless.
+#
+# Environment:
+#   CUBICAL_DIR   checkout of agda/cubical (required)
+#   AGDA          the binary (default: agda)
+#   RTS_OPTS      default: -A1G -H4G -M24G
+#   HEAP          overrides the -M in RTS_OPTS
+
+set -uo pipefail
+
+die() { echo "perf-stack: $*" >&2; exit 2; }
+
+REPO=$(git rev-parse --show-toplevel 2>/dev/null) || die "not in a git repository"
+REPORT=$REPO/perf/STACK-RESULTS.md
+WORKDIR=${TMPDIR:-/tmp}/perf-stack-$USER
+REPS=1
+KEEP=
+DRY=
+REVS=
+
+while getopts o:w:r:n:kd o; do
+  case $o in
+    o) REPORT=$OPTARG ;;
+    w) WORKDIR=$OPTARG ;;
+    r) REVS=$OPTARG ;;
+    n) REPS=$OPTARG ;;
+    k) KEEP=1 ;;
+    d) DRY=1 ;;
+    *) die "usage: perf-stack [-o REPORT] [-w WORKDIR] [-r REVS] [-n REPS] [-k] [-d]" ;;
+  esac
+done
+
+AGDA=${AGDA:-agda}
+RTS_OPTS=${RTS_OPTS:--A1G -H4G -M24G}
+[ -n "${HEAP:-}" ] && RTS_OPTS=$(echo "$RTS_OPTS" | sed "s/-M[0-9]*[GM]/-M$HEAP/")
+
+[ -n "${CUBICAL_DIR:-}" ] || die "set CUBICAL_DIR to a checkout of agda/cubical"
+[ -f "$CUBICAL_DIR/cubical.agda-lib" ] || die "no cubical.agda-lib in $CUBICAL_DIR"
+command -v "$AGDA" >/dev/null || die "no agda binary ($AGDA)"
+
+# The stack, bottom to top.  `main` is the baseline; merge-candidate is the
+# accumulation we intend to merge, and carries no reind-normal-form work.
+DEFAULT_REVS="main
+perf/01-rectifyout
+perf/02-presented
+perf/03-notation-trim
+perf/04-arg-pinning
+perf/05-fixedpoint
+perf/06-intform-sharing
+perf/07-root-cause-split
+perf/08-lossy-unification
+perf/09-notation-trim-2
+perf/10-shared-elab
+perf/11-uq-record
+perf/12-named-projections
+perf/merge-candidate"
+
+[ -n "$REVS" ] && DEFAULT_REVS=$(echo "$REVS" | tr ',' '\n')
+
+# ---------------------------------------------------------------- VCS backend
+#
+# jj and git differ only in how a revision is materialised into a work tree.
+# Everything downstream of `checkout_rev` is identical.
+
+VCS=git
+if command -v jj >/dev/null 2>&1 && [ -d "$REPO/.jj" ]; then
+  VCS=jj
+elif command -v jj >/dev/null 2>&1; then
+  # jj is installed but this repo is not colocated.  We do NOT colocate it
+  # ourselves: `jj git init --colocate` snapshots the working copy into git's
+  # index, which silently stages anything the .gitignore does not cover (this
+  # repo has a root-anchored /_build/ that misses nested _build dirs).  Run
+  # `jj git init --colocate` yourself if you want the jj path.
+  echo "perf-stack: jj found but $REPO is not colocated; using git" >&2
+  echo "            (run: jj git init --colocate   -- to use jj instead)" >&2
+fi
+
+rev_exists() {
+  case $VCS in
+    jj) jj --repository "$REPO" log --no-graph -r "$1" -T '"x"' >/dev/null 2>&1 ;;
+    *)  git -C "$REPO" rev-parse --verify -q "$1" >/dev/null ;;
+  esac
+}
+
+rev_id() {
+  case $VCS in
+    jj) jj --repository "$REPO" log --no-graph -r "$1" -T 'commit_id.short(12)' 2>/dev/null ;;
+    *)  git -C "$REPO" rev-parse --short=12 "$1" 2>/dev/null ;;
+  esac
+}
+
+# Materialise a revision into $2.  Both backends produce a detached tree; we
+# never move the user's working copy, so an interrupted run leaves no mess.
+checkout_rev() {
+  local rev=$1 dir=$2
+  rm -rf "$dir"
+  git -C "$REPO" worktree prune 2>/dev/null
+  case $VCS in
+    jj)
+      mkdir -p "$dir"
+      # `jj file list` + restore is slower than a git worktree for a tree this
+      # size, and jj's own workspaces cannot point at an arbitrary revision
+      # without moving it, so we use git's worktree machinery even under jj.
+      # The revision is resolved through jj so jj-only revsets keep working.
+      local cid; cid=$(rev_id "$rev")
+      [ -n "$cid" ] || return 1
+      rmdir "$dir" 2>/dev/null
+      git -C "$REPO" worktree add --detach --force "$dir" "$cid" >/dev/null 2>&1 ;;
+    *)
+      git -C "$REPO" worktree add --detach --force "$dir" "$rev" >/dev/null 2>&1 ;;
+  esac
+}
+
+# --------------------------------------------------------------------- checks
+MISSING=
+for r in $DEFAULT_REVS; do rev_exists "$r" || MISSING="$MISSING $r"; done
+if [ -n "$MISSING" ]; then
+  echo "perf-stack: these revisions do not exist:$MISSING" >&2
+  echo "perf-stack: build the stack first, or pass -r with the ones you have" >&2
+  [ -z "$DRY" ] && exit 2
+fi
+
+mkdir -p "$WORKDIR"
+DATA=$WORKDIR/results.tsv
+[ -f "$DATA" ] || printf 'rev\tcommit\trep\trc\talloc_bytes\twall_s\tuser_s\tmaxrss_kib\tmodules\n' > "$DATA"
+
+# GNU time is not at a fixed path across distributions, and the RTS report
+# carries peak live data if it is missing entirely.
+TIME_BIN=
+for c in /usr/bin/time /run/current-system/sw/bin/time /bin/time "$(command -v gtime 2>/dev/null)"; do
+  [ -n "$c" ] && [ -x "$c" ] && { TIME_BIN=$c; break; }
+done
+
+echo "perf-stack: backend=$VCS  reps=$REPS  work=$WORKDIR"
+echo "            cubical=$CUBICAL_DIR"
+echo "            rts=$RTS_OPTS"
+echo
+
+exec {LFD}>"$WORKDIR/lock"
+flock "$LFD" || die "could not take the build lock"
+
+# One staged, pre-built cubical shared by every revision: we are measuring this
+# library, not its dependency.
+CUB=$WORKDIR/cubical
+if [ ! -d "$CUB" ] && [ -z "$DRY" ]; then
+  cp -r "$CUBICAL_DIR" "$CUB" || die "could not stage cubical"
+  rm -rf "$CUB/_build"
+fi
+if [ -d "$CUB" ] && [ ! -d "$CUB/_build" ] && [ -z "$DRY" ]; then
+  echo "perf-stack: building cubical once (shared by every revision)" >&2
+  printf '%s/cubical.agda-lib\n' "$CUB" > "$CUB/libs.txt"
+  ( cd "$CUB" && "$AGDA" --library-file="$CUB/libs.txt" -j1 +RTS -N1 $RTS_OPTS -RTS \
+      --build-library ) > "$WORKDIR/cubical.log" 2>&1 \
+    || { echo "perf-stack: cubical failed; see $WORKDIR/cubical.log" >&2; exit 2; }
+fi
+
+run_rev() {
+  local rev=$1 rep=$2
+  local tag; tag=$(echo "$rev" | tr '/' '-')
+  local dir=$WORKDIR/$tag
+  local cid; cid=$(rev_id "$rev")
+
+  if [ -n "$DRY" ]; then
+    printf '  %-28s %s  (would build)\n' "$rev" "${cid:-?}"
+    return 0
+  fi
+
+  checkout_rev "$rev" "$dir" || { echo "  $rev: could not check out" >&2; return 1; }
+  printf '%s/cubical.agda-lib\n%s/cubical-categorical-logic.agda-lib\n' "$CUB" "$dir" > "$dir/libs.txt"
+  rm -rf "$dir/_build"
+
+  local stat=$WORKDIR/$tag-r$rep.time rts=$WORKDIR/$tag-r$rep.rts log=$WORKDIR/$tag-r$rep.log
+  local s e rc
+  s=$(date +%s.%N)
+  ( cd "$dir" && ${TIME_BIN:+$TIME_BIN -v -o "$stat"} \
+      "$AGDA" --library-file="$dir/libs.txt" -j1 \
+      +RTS -N1 $RTS_OPTS -s"$rts" -RTS --build-library ) > "$log" 2>&1
+  rc=$?
+  e=$(date +%s.%N)
+
+  local alloc wall user maxrss mods
+  alloc=$(grep -oP '^\s*\K[0-9,]+(?= bytes allocated)' "$rts" 2>/dev/null | tr -d ,)
+  wall=$(awk -v s="$s" -v e="$e" 'BEGIN{printf "%.1f", e-s}')
+  user=$(grep -oP 'User time \(seconds\): \K.*' "$stat" 2>/dev/null)
+  maxrss=$(grep -oP 'Maximum resident set size \(kbytes\): \K[0-9]+' "$stat" 2>/dev/null)
+  [ -z "$maxrss" ] && maxrss=$(grep -oP '^\s*\K[0-9,]+(?= bytes maximum residency)' "$rts" 2>/dev/null | tr -d , | awk '{printf "%d",$1/1024}')
+  mods=$(grep -c 'Checking' "$log" 2>/dev/null)
+
+  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+    "$rev" "${cid:-}" "$rep" "$rc" "${alloc:-}" "$wall" "${user:-}" "${maxrss:-}" "${mods:-}" >> "$DATA"
+  printf '  %-28s rc=%-3s %8.3f GB  %6ss  %5s MiB\n' \
+    "$rev" "$rc" "$(echo "${alloc:-0}" | awk '{print $1/1e9}')" "$wall" "$(( ${maxrss:-0} / 1024 ))"
+  [ -z "$KEEP" ] && rm -rf "$dir/_build"
+  return 0
+}
+
+for rep in $(seq 1 "$REPS"); do
+  [ "$REPS" -gt 1 ] && echo "--- rep $rep"
+  for r in $DEFAULT_REVS; do run_rev "$r" "$rep"; done
+done
+
+[ -n "$DRY" ] && { echo; echo "perf-stack: dry run, nothing built"; exit 0; }
+
+# ------------------------------------------------------------------- the report
+{
+  echo "# Performance stack: per-edit results"
+  echo
+  echo "Generated $(date -u '+%Y-%m-%d %H:%M UTC') by \`perf/bin/perf-stack\`."
+  echo "Backend \`$VCS\`, \`agda -j1 +RTS -N1 $RTS_OPTS -RTS --build-library\`,"
+  echo "one shared pre-built cubical, every build from scratch under an exclusive lock."
+  echo
+  echo "Allocation is GHC bytes allocated from the RTS's own \`-s\` report. It is"
+  echo "deterministic to eight significant figures within a worktree, which is why"
+  echo "marginal costs of a few hundred MB are meaningful here. Wall time on a loaded"
+  echo "machine varies by up to 17% and is indicative only."
+  echo
+  echo "## Per revision"
+  echo
+  printf '| revision | alloc GB | marginal GB | %% of total | wall s | maxrss MiB | rc |\n'
+  printf '|---|---:|---:|---:|---:|---:|---:|\n'
+  awk -F'\t' -v OFS='' '
+    NR>1 && $4==0 { n[$1]++; a[$1]+=$5; w[$1]+=$6; m[$1]+=$8; if(!( $1 in seen)){order[++k]=$1; seen[$1]=1} }
+    NR>1 && $4!=0 { bad[$1]=$4 }
+    END{
+      for(i=1;i<=k;i++){ r=order[i]; A[r]=a[r]/n[r]; W[r]=w[r]/n[r]; M[r]=m[r]/n[r] }
+      base=A[order[1]]; tip=A[order[k]]; span=base-tip
+      prev=base
+      for(i=1;i<=k;i++){ r=order[i]
+        marg = (i==1) ? 0 : (prev - A[r])
+        pct  = (span!=0 && i>1) ? marg/span*100 : 0
+        printf "| `%s` | %.3f | %s | %s | %.0f | %.0f | %s |\n",
+          r, A[r]/1e9,
+          (i==1 ? "—" : sprintf("%+.3f", -marg/1e9)),
+          (i==1 ? "—" : sprintf("%.1f%%", pct)),
+          W[r], M[r]/1024, (r in bad ? bad[r] : 0)
+        prev=A[r] }
+      printf "\n**Baseline %.3f GB -> tip %.3f GB: %.3f GB saved, %.2fx.**\n", base/1e9, tip/1e9, span/1e9, base/tip
+    }' "$DATA"
+  echo
+  echo "## Notes"
+  echo
+  echo "- \`marginal GB\` is this revision minus the one below it: the cost of that"
+  echo "  single edit, measured in the context it ships in."
+  echo "- \`perf/merge-candidate\` is the accumulation intended for \`main\`. It carries"
+  echo "  no reind-normal-form work: that technique measured ~0 GB library-wide across"
+  echo "  four separate attempts and is excluded deliberately."
+  echo "- A revision whose marginal cost is negative made the build *more* expensive."
+  echo "  Several candidate techniques did; they are not in this stack."
+  echo
+  echo "## Raw data"
+  echo
+  echo '```'
+  column -t -s$'\t' "$DATA" 2>/dev/null || cat "$DATA"
+  echo '```'
+} > "$REPORT"
+
+echo
+echo "perf-stack: wrote $REPORT"
+awk -F'\t' 'NR>1 && $4!=0 {bad=1} END{if(bad) print "perf-stack: some revisions failed; see the per-revision logs"}' "$DATA"

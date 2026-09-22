@@ -1,0 +1,28 @@
+ Checking Guarded.Later.Base (/home/steven/mikan-bench/x2-agda-perfall/Guarded/Later/Base.agda).
+ Checking Guarded.Later.Properties (/home/steven/mikan-bench/x2-agda-perfall/Guarded/Later/Properties.agda).
+Checking Multicategory.Planar (/home/steven/mikan-bench/x2-agda-perfall/Multicategory/Planar.agda).
+Checking Syntax.ULC (/home/steven/mikan-bench/x2-agda-perfall/Syntax/ULC.agda).
+ 543,816,903,328 bytes allocated in the heap
+  38,851,558,136 bytes copied during GC
+   1,583,772,272 bytes maximum residency (24 sample(s))
+       1,207,696 bytes maximum slop
+            4192 MiB total memory in use (0 MiB lost due to fragmentation)
+
+                                     Tot time (elapsed)  Avg pause  Max pause
+  Gen  0       482 colls,     0 par   32.932s  33.013s     0.0685s    0.6604s
+  Gen  1        24 colls,     0 par    2.564s   2.570s     0.1071s    0.3239s
+
+  TASKS: 4 (1 bound, 3 peak workers (3 total), using -N1)
+
+  SPARKS: 0 (0 converted, 0 overflowed, 0 dud, 0 GC'd, 0 fizzled)
+
+  INIT    time    0.008s  (  0.008s elapsed)
+  MUT     time  164.434s  (164.821s elapsed)
+  GC      time   35.496s  ( 35.583s elapsed)
+  EXIT    time    0.001s  (  0.000s elapsed)
+  Total   time  199.938s  (200.412s elapsed)
+
+  Alloc rate    3,307,204,084 bytes per MUT second
+
+  Productivity  82.2% of total user, 82.2% of total elapsed
+

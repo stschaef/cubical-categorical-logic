@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+# Per-module arm of the per-technique A/B.  Run it against a warm `_build` of
+# the branch as it stands.
+#
+#   perf/bin/ab-tech-module <T1|T2|T3|T4|T5>
+#
+# For each file a technique touches, ONLY THAT FILE is moved back to its
+# pre-technique state and ONLY THAT MODULE is re-checked, against otherwise
+# identical and up-to-date interfaces.  Moving the whole file set at once and
+# then measuring one module charges that module with rebuilding the rest of the
+# set, which inflates the reading by up to 8x; the first attempt did exactly
+# that and its numbers are kept, marked invalid, in
+# perf/data/tech-permodule-MULTIFILE-INVALID.tsv.
+#
+# The sum of the per-file deltas, set against the whole-library delta from
+# `ab-tech`, is the technique's amplification factor.
+set -uo pipefail
+ROOT=/home/steven/ccl-abtech
+DATA=$ROOT/perf/data
+LIBS=$ROOT/libs.txt
+cd "$ROOT" || exit 2
+arm=${1:?arm}
+
+D=Cubical/Categories/Displayed
+LS=Cubical/Categories/LocallySmall/Displayed
+
+# one "<file> <how>" per line; how is a blob sha or `-<commit>` for a reverse patch
+recipe() {
+  case "$1" in
+    T1) cat <<R
+$D/Presheaf/Constructions/Exponential/Base.agda e6dc7459
+$D/Presheaf/Constructions/Exponential/UniversalProperty.agda 126591a7
+$D/Presheaf/Constructions/BinProduct/LocalRepresentability/Properties.agda d660d685
+$LS/NaturalTransformation/IntoFiberCategory/Eq.agda 0bbd6318
+$D/Instances/Family/EqProperties.agda 5ab1f538
+$D/Instances/Reindex/Cartesian.agda b1bbb204
+$D/CBPV/Unary/Instances/StateAlg/Vertical.agda 942c116e
+R
+    ;;
+    T2) cat <<R
+$D/Presheaf/Uncurried/UniversalProperties.agda ad0d8a37
+$D/Instances/Reindex/UniversalQuantifier.agda fe9a313a
+$D/Presheaf/Uncurried/Eq/Base.agda 63052af6
+$D/Presheaf/Uncurried/Eq/Conversion/CartesianClosedV.agda -1bb16824
+R
+    ;;
+    T3) cat <<R
+$LS/NaturalTransformation/IntoFiberCategory/Base.agda 20eb1ed5
+$D/Instances/Presheaf/Eq/CartesianClosed.agda 3f8bdd8a
+$D/Presheaf/Constructions/BinProduct/LocalRepresentability/Properties.agda -f4f7ba9c
+R
+    ;;
+    T4) echo "Cubical/Categories/Limits/Pullback/Alt.agda 1fed653c" ;;
+    T5) echo "$D/Presheaf/Uncurried/Eq/Conversion/CartesianClosedV.agda 22b2fe65" ;;
+  esac
+}
+
+measure() {
+  local m=$1 rts o rc
+  rts=$(mktemp); o=$(mktemp)
+  rm -f "$ROOT/_build/2.9.0/agda/${m%.agda}.agdai"
+  agda --library-file="$LIBS" -j1 +RTS -N1 -A1G -H4G -M24G "-s$rts" -RTS "$m" > "$o" 2>&1
+  rc=$?
+  if [ $rc -ne 0 ]; then echo "0 0 $rc"; sed -n '1,8p' "$o" >&2; rm -f "$rts" "$o"; return; fi
+  awk '/bytes allocated in the heap/{gsub(/,/,"",$1); a=$1}
+       /Total[ ]+time/{for(i=1;i<=NF;i++) if($i ~ /^[0-9.]+s$/){sub(/s$/,"",$i); t=$i; break}}
+       END{printf "%.4f %s 0\n", a/1e9, (t==""?"0":t)}' "$rts"
+  rm -f "$rts" "$o"
+}
+
+git checkout -q -- .
+recipe "$arm" | while read -r f how; do
+  [ -z "$f" ] && continue
+  read -r bB wB rcB <<<"$(measure "$f")"
+  case "$how" in
+    -*) git show --format="" "${how#-}" > /tmp/abtm-$$.patch && git apply -R /tmp/abtm-$$.patch; rm -f /tmp/abtm-$$.patch ;;
+    *)  git cat-file -p "$how" > "$f" ;;
+  esac
+  read -r bA wA rcA <<<"$(measure "$f")"
+  git checkout -q -- "$f"
+  measure "$f" > /dev/null
+  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$arm" "$f" "$bA" "$bB" "$wA" "$wB" "$rcA" "$rcB" \
+    >> "$DATA/tech-permodule.tsv"
+  printf '%-4s %-66s A=%-9s B=%-9s d=%-8s\n' "$arm" "$(echo "$f"|sed 's#Cubical/Categories/##;s#\.agda$##')" \
+    "$bA" "$bB" "$(awk -v a=$bA -v b=$bB 'BEGIN{printf "%.3f",a-b}')"
+done
+git checkout -q -- .
