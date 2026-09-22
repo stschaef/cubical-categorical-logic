@@ -87,8 +87,8 @@ Two traps that cost this investigation real time:
 
 `perf/06-RESULTS.md` has the full account: §§1-9 the earlier sweep and RTS
 tuning, §10 the argument-pinning clusters, §11 the reind-normal-form closing
-account, §12 the structures unblocked, §13 the final 2x2, §14 the per-technique
-A/B with its additivity and amplification checks. The headline figures, all on one
+account, §12 the structures unblocked, §13 the final 2x2, and §14 the
+per-technique A/B with its additivity and amplification checks. The headline figures, all on one
 machine (12 cores, 31 GiB, `-j1 +RTS -N1 -A1G -H4G -M24G`):
 
     agda  x main          847.8 GB   301.5 s
