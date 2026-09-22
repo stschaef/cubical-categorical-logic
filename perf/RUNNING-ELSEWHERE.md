@@ -102,3 +102,37 @@ machine (12 cores, 31 GiB, `-j1 +RTS -N1 -A1G -H4G -M24G`):
                                    mikan 719.1 / 235.5
 
 The dependency is ~2.7x the library, so most of a cold build is cubical.
+
+## What must exist on the remote you are working from
+
+The scripts address revisions by name and resolve them against your local refs
+first, then against each remote in turn, so `perf/01-rectifyout` works whether
+you have checked it out or merely fetched it.
+
+For the full stack run, the remote needs:
+
+    perf/01-rectifyout ... perf/12-named-projections   the per-edit stack
+    perf/merge-candidate                               the accumulation
+    perf/harness                                       these scripts and docs
+
+For the agda-vs-mikan sweep it also needs:
+
+    perf/mikan-port    a branch whose tip is the "Mikan port:" commit
+
+`sweep-2x2` finds that commit by subject line across all refs and applies it as
+a patch to each mikan cell. Without it on the remote, the mikan cells fail with
+"no 'Mikan port:' commit found" -- the agda cells are unaffected.
+
+If you have fetched but not checked out, confirm with:
+
+    git fetch --all
+    perf/bin/perf-stack -d        # resolves every revision, builds nothing
+
+A revision printed as `?` is one the script could not resolve.
+
+## A caution on the baseline
+
+`main` is the baseline for every ratio here, and the recorded numbers were taken
+against `main` @ 82334ffb. If the `main` you resolve is a different commit, your
+baseline is a different tree and the ratios will not match the ones in
+`06-RESULTS.md`. Check with `git rev-parse main` before comparing.

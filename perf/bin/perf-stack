@@ -98,17 +98,27 @@ elif command -v jj >/dev/null 2>&1; then
   echo "            (run: jj git init --colocate   -- to use jj instead)" >&2
 fi
 
-rev_exists() {
-  case $VCS in
-    jj) jj --repository "$REPO" log --no-graph -r "$1" -T '"x"' >/dev/null 2>&1 ;;
-    *)  git -C "$REPO" rev-parse --verify -q "$1" >/dev/null ;;
-  esac
+# Resolve a revision name.  A user who has only fetched sees the stack as
+# remote-tracking refs (origin/perf/01-...), and a bare "perf/01-..." does not
+# resolve through rev-parse -- refs/remotes/<name> only matches a remote
+# literally called "perf".  So try the bare name, then each remote in turn.
+resolve_ref() {
+  local r=$1
+  if git -C "$REPO" rev-parse --verify -q "$r" >/dev/null 2>&1; then echo "$r"; return 0; fi
+  local rem
+  for rem in $(git -C "$REPO" remote); do
+    if git -C "$REPO" rev-parse --verify -q "$rem/$r" >/dev/null 2>&1; then echo "$rem/$r"; return 0; fi
+  done
+  return 1
 }
 
+rev_exists() { resolve_ref "$1" >/dev/null; }
+
 rev_id() {
+  local r; r=$(resolve_ref "$1") || return 1
   case $VCS in
-    jj) jj --repository "$REPO" log --no-graph -r "$1" -T 'commit_id.short(12)' 2>/dev/null ;;
-    *)  git -C "$REPO" rev-parse --short=12 "$1" 2>/dev/null ;;
+    jj) jj --repository "$REPO" log --no-graph -r "$r" -T 'commit_id.short(12)' 2>/dev/null ;;
+    *)  git -C "$REPO" rev-parse --short=12 "$r" 2>/dev/null ;;
   esac
 }
 
@@ -130,7 +140,7 @@ checkout_rev() {
       rmdir "$dir" 2>/dev/null
       git -C "$REPO" worktree add --detach --force "$dir" "$cid" >/dev/null 2>&1 ;;
     *)
-      git -C "$REPO" worktree add --detach --force "$dir" "$rev" >/dev/null 2>&1 ;;
+      git -C "$REPO" worktree add --detach --force "$dir" "$(resolve_ref "$rev")" >/dev/null 2>&1 ;;
   esac
 }
 
